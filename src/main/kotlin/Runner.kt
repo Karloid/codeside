@@ -10,6 +10,7 @@ internal constructor(host: String, port: Int, token: String) {
     private val outputStream: OutputStream
 
     init {
+        println("try connect  $host $port")
         val socket = Socket(host, port)
         socket.tcpNoDelay = true
         inputStream = BufferedInputStream(socket.getInputStream())
@@ -41,6 +42,7 @@ internal constructor(host: String, port: Int, token: String) {
         @Throws(IOException::class)
         @JvmStatic
         fun main(args: Array<String>) {
+            println("Hello world")
             val host = if (args.size < 1) "127.0.0.1" else args[0]
             val port = if (args.size < 2) 31001 else Integer.parseInt(args[1])
             val token = if (args.size < 3) "0000000000000000" else args[2]

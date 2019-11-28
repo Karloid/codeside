@@ -1,6 +1,8 @@
 plugins {
     id 'java'
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.3.61'
+    id "com.github.johnrengelman.shadow" version "5.2.0"
 }
 
 group 'com.krld'
@@ -22,4 +24,51 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+shadowJar() {
+    archiveName = '../../strategy.jar'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'Runner'
+    }
+}
+
+application {
+    mainClassName = 'Runner'
+}
+
+task doZip(type: Exec) {
+
+    commandLine 'sh', '-c', 'cd ./src/main/kotlin;' +
+            ' zip -r -X "../../../lastSources.zip" * -x LibGdxPainter.java -x LibGdxObj.java -x LibGdxShower.java ' +
+            '-x LibGdxDataToPaint.java && cd ../../../'
+}
+
+private static String getLr(String suspend) {
+    def command = 'cd ./lr; ./aicup2019' +
+            ' --config config.txt &' +
+            ''
+    println(command)
+    return command
+}
+
+task delay(type: Exec, dependsOn: 'startLr') {
+    commandLine 'sh', '-c', 'sleep 1'
+}
+
+/*task startLr()  {
+    def processBuilder0 = new ProcessBuilder(['sh','-c',
+                                             '../kill.sh || ' +
+                                                     './aicup2019'+
+                                                     ' --config config.txt '])
+    processBuilder0.directory(new File("./lr"))
+    def process0 = processBuilder0.start()
+    println("process0 " + process0)
+}*/
+
+task runApp(type:JavaExec, dependsOn: [doZip, shadowJar]) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = "Runner"
 }
