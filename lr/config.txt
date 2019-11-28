@@ -1,0 +1,11 @@
+{
+    "options_preset": "Round1",
+    "players": [
+        "Quickstart",
+        {
+            "Tcp": {
+                "port": 31001
+            }
+        }
+    ]
+}

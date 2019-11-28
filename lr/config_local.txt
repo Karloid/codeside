@@ -1,0 +1,7 @@
+{
+    "options_preset": "Round1",
+    "players": [
+        "Quickstart",
+        "Keyboard"
+    ]
+}
