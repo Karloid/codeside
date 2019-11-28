@@ -1,4 +1,3 @@
-
 import util.StreamUtil
 import java.io.*
 import java.net.Socket
@@ -21,7 +20,7 @@ internal constructor(host: String, port: Int, token: String) {
 
     @Throws(IOException::class)
     internal fun run() {
-        val myStrategy = MyStrategy()
+        val myStrategy: Strategy = MyStrategy()
         val debug = Debug(outputStream)
         while (true) {
             val message = model.ServerMessageGame.readFrom(inputStream)
@@ -42,7 +41,7 @@ internal constructor(host: String, port: Int, token: String) {
         @Throws(IOException::class)
         @JvmStatic
         fun main(args: Array<String>) {
-            println("Hello world")
+            println("Started")
             val host = if (args.size < 1) "127.0.0.1" else args[0]
             val port = if (args.size < 2) 31001 else Integer.parseInt(args[1])
             val token = if (args.size < 3) "0000000000000000" else args[2]

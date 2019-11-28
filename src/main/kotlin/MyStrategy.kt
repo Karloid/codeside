@@ -1,8 +1,8 @@
 import model.*
 
-class MyStrategy {
+class MyStrategy:Strategy {
 
-    fun getAction(unit: model.Unit, game: Game, debug: Debug): UnitAction {
+    override fun getAction(unit: model.Unit, game: Game, debug: Debug): UnitAction {
         var nearestEnemy: model.Unit? = null
         for (other in game.units) {
             if (other.playerId != unit.playerId) {
