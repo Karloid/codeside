@@ -5,6 +5,7 @@ import util.StreamUtil
 abstract class CustomData {
     @Throws(java.io.IOException::class)
     abstract fun writeTo(stream: java.io.OutputStream)
+
     companion object {
         @Throws(java.io.IOException::class)
         fun readFrom(stream: java.io.InputStream): CustomData {
@@ -20,10 +21,12 @@ abstract class CustomData {
 
     class Log : CustomData {
         lateinit var text: String
+
         constructor() {}
         constructor(text: String) {
             this.text = text
         }
+
         companion object {
             val TAG = 0
             @Throws(java.io.IOException::class)
@@ -33,6 +36,7 @@ abstract class CustomData {
                 return result
             }
         }
+
         @Throws(java.io.IOException::class)
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
@@ -44,12 +48,14 @@ abstract class CustomData {
         lateinit var pos: model.Vec2Float
         lateinit var size: model.Vec2Float
         lateinit var color: model.ColorFloat
+
         constructor() {}
         constructor(pos: model.Vec2Float, size: model.Vec2Float, color: model.ColorFloat) {
             this.pos = pos
             this.size = size
             this.color = color
         }
+
         companion object {
             val TAG = 1
             @Throws(java.io.IOException::class)
@@ -61,6 +67,7 @@ abstract class CustomData {
                 return result
             }
         }
+
         @Throws(java.io.IOException::class)
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
@@ -75,6 +82,7 @@ abstract class CustomData {
         lateinit var p2: model.Vec2Float
         var width: Float = 0.0f
         lateinit var color: model.ColorFloat
+
         constructor() {}
         constructor(p1: model.Vec2Float, p2: model.Vec2Float, width: Float, color: model.ColorFloat) {
             this.p1 = p1
@@ -82,6 +90,10 @@ abstract class CustomData {
             this.width = width
             this.color = color
         }
+
+        constructor(p1: Vec2Double, p2: Vec2Double, width: Float, color: ColorFloat) :
+                this(p1.toFloat(), p2.toFloat(), width, color)
+
         companion object {
             val TAG = 2
             @Throws(java.io.IOException::class)
@@ -94,6 +106,7 @@ abstract class CustomData {
                 return result
             }
         }
+
         @Throws(java.io.IOException::class)
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
@@ -106,10 +119,12 @@ abstract class CustomData {
 
     class Polygon : CustomData {
         lateinit var vertices: Array<model.ColoredVertex>
+
         constructor() {}
         constructor(vertices: Array<model.ColoredVertex>) {
             this.vertices = vertices
         }
+
         companion object {
             val TAG = 3
             @Throws(java.io.IOException::class)
@@ -123,6 +138,7 @@ abstract class CustomData {
                 return result
             }
         }
+
         @Throws(java.io.IOException::class)
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)

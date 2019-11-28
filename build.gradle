@@ -45,27 +45,9 @@ task doZip(type: Exec) {
             '-x LibGdxDataToPaint.java && cd ../../../'
 }
 
-private static String getLr(String suspend) {
-    def command = 'cd ./lr; ./aicup2019' +
-            ' --config config.txt &' +
-            ''
-    println(command)
-    return command
-}
-
 task delay(type: Exec, dependsOn: 'startLr') {
     commandLine 'sh', '-c', 'sleep 1'
 }
-
-/*task startLr()  {
-    def processBuilder0 = new ProcessBuilder(['sh','-c',
-                                             '../kill.sh || ' +
-                                                     './aicup2019'+
-                                                     ' --config config.txt '])
-    processBuilder0.directory(new File("./lr"))
-    def process0 = processBuilder0.start()
-    println("process0 " + process0)
-}*/
 
 task runApp(type:JavaExec, dependsOn: [doZip, shadowJar]) {
     classpath = sourceSets.main.runtimeClasspath

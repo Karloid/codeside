@@ -6,9 +6,9 @@ class Unit {
     var playerId: Int = 0
     var id: Int = 0
     var health: Int = 0
-    lateinit var position: model.Vec2Double
-    lateinit var size: model.Vec2Double
-    lateinit var jumpState: model.JumpState
+    lateinit var position: Vec2Double
+    lateinit var size: Vec2Double
+    lateinit var jumpState: JumpState
     var walkedRight: Boolean = false
     var stand: Boolean = false
     var onGround: Boolean = false
@@ -16,7 +16,7 @@ class Unit {
     var mines: Int = 0
     var weapon: model.Weapon? = null
     constructor() {}
-    constructor(playerId: Int, id: Int, health: Int, position: model.Vec2Double, size: model.Vec2Double, jumpState: model.JumpState, walkedRight: Boolean, stand: Boolean, onGround: Boolean, onLadder: Boolean, mines: Int, weapon: model.Weapon?) {
+    constructor(playerId: Int, id: Int, health: Int, position: Vec2Double, size: Vec2Double, jumpState: JumpState, walkedRight: Boolean, stand: Boolean, onGround: Boolean, onLadder: Boolean, mines: Int, weapon: model.Weapon?) {
         this.playerId = playerId
         this.id = id
         this.health = health
@@ -37,9 +37,9 @@ class Unit {
             result.playerId = StreamUtil.readInt(stream)
             result.id = StreamUtil.readInt(stream)
             result.health = StreamUtil.readInt(stream)
-            result.position = model.Vec2Double.readFrom(stream)
-            result.size = model.Vec2Double.readFrom(stream)
-            result.jumpState = model.JumpState.readFrom(stream)
+            result.position = Vec2Double.readFrom(stream)
+            result.size = Vec2Double.readFrom(stream)
+            result.jumpState = JumpState.readFrom(stream)
             result.walkedRight = StreamUtil.readBoolean(stream)
             result.stand = StreamUtil.readBoolean(stream)
             result.onGround = StreamUtil.readBoolean(stream)

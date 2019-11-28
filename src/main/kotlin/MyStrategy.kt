@@ -1,13 +1,18 @@
 import model.*
 
-class MyStrategy:Strategy {
+class MyStrategy : Strategy {
 
     override fun getAction(unit: model.Unit, game: Game, debug: Debug): UnitAction {
+        debug.draw(CustomData.Line(game.units[0].position, game.units[1].position, 1 / 20f, ColorFloat(1f, 0f, 0f, 1f)))
+
         var nearestEnemy: model.Unit? = null
         for (other in game.units) {
             if (other.playerId != unit.playerId) {
-                if (nearestEnemy == null || distanceSqr(unit.position,
-                                other.position) < distanceSqr(unit.position, nearestEnemy.position)) {
+                if (nearestEnemy == null || distanceSqr(
+                        unit.position,
+                        other.position
+                    ) < distanceSqr(unit.position, nearestEnemy.position)
+                ) {
                     nearestEnemy = other
                 }
             }
@@ -15,8 +20,11 @@ class MyStrategy:Strategy {
         var nearestWeapon: LootBox? = null
         for (lootBox in game.lootBoxes) {
             if (lootBox.item is Item.Weapon) {
-                if (nearestWeapon == null || distanceSqr(unit.position,
-                                lootBox.position) < distanceSqr(unit.position, nearestWeapon.position)) {
+                if (nearestWeapon == null || distanceSqr(
+                        unit.position,
+                        lootBox.position
+                    ) < distanceSqr(unit.position, nearestWeapon.position)
+                ) {
                     nearestWeapon = lootBox
                 }
             }
@@ -28,10 +36,13 @@ class MyStrategy:Strategy {
             targetPos = nearestEnemy.position
         }
         debug.draw(CustomData.Log("Target pos: $targetPos"))
+
         var aim = Vec2Double(0.0, 0.0)
         if (nearestEnemy != null) {
-            aim = Vec2Double(nearestEnemy.position.x - unit.position.x,
-                    nearestEnemy.position.y - unit.position.y)
+            aim = Vec2Double(
+                nearestEnemy.position.x - unit.position.x,
+                nearestEnemy.position.y - unit.position.y
+            )
         }
         var jump = targetPos.y > unit.position.y;
         if (targetPos.x > unit.position.x && game.level.tiles[(unit.position.x + 1).toInt()][(unit.position.y).toInt()] == Tile.WALL) {
