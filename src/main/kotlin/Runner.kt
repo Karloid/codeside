@@ -1,3 +1,4 @@
+
 import util.StreamUtil
 import java.io.*
 import java.net.Socket
@@ -9,7 +10,6 @@ internal constructor(host: String, port: Int, token: String) {
     private val outputStream: OutputStream
 
     init {
-        println("try connect  $host $port")
         val socket = Socket(host, port)
         socket.tcpNoDelay = true
         inputStream = BufferedInputStream(socket.getInputStream())
