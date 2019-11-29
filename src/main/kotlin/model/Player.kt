@@ -11,7 +11,7 @@ class Player {
         this.score = score
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Player {
             val result = Player()
             result.id = StreamUtil.readInt(stream)
@@ -19,7 +19,7 @@ class Player {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, id)
         StreamUtil.writeInt(stream, score)

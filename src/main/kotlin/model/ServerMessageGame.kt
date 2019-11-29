@@ -9,7 +9,7 @@ class ServerMessageGame {
         this.playerView = playerView
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ServerMessageGame {
             val result = ServerMessageGame()
             if (StreamUtil.readBoolean(stream)) {
@@ -20,7 +20,7 @@ class ServerMessageGame {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         val playerView = playerView;
         if (playerView == null) {

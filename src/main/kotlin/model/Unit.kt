@@ -31,7 +31,7 @@ class Unit {
         this.weapon = weapon
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Unit {
             val result = Unit()
             result.playerId = StreamUtil.readInt(stream)
@@ -53,7 +53,7 @@ class Unit {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, playerId)
         StreamUtil.writeInt(stream, id)

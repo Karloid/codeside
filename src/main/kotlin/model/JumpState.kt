@@ -15,7 +15,7 @@ class JumpState {
         this.canCancel = canCancel
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): JumpState {
             val result = JumpState()
             result.canJump = StreamUtil.readBoolean(stream)
@@ -25,7 +25,7 @@ class JumpState {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeBoolean(stream, canJump)
         StreamUtil.writeDouble(stream, speed)

@@ -13,7 +13,7 @@ class BulletParams {
         this.damage = damage
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): BulletParams {
             val result = BulletParams()
             result.speed = StreamUtil.readDouble(stream)
@@ -22,7 +22,7 @@ class BulletParams {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeDouble(stream, speed)
         StreamUtil.writeDouble(stream, size)

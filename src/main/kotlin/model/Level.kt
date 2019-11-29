@@ -9,7 +9,7 @@ class Level {
         this.tiles = tiles
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Level {
             val result = Level()
             result.tiles = Array(StreamUtil.readInt(stream), {
@@ -31,7 +31,7 @@ class Level {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, tiles.size)
         for (tilesElement in tiles) {

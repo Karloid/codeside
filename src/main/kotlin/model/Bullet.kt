@@ -23,7 +23,7 @@ class Bullet {
         this.explosionParams = explosionParams
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Bullet {
             val result = Bullet()
             when (StreamUtil.readInt(stream)) {
@@ -46,7 +46,7 @@ class Bullet {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, weaponType.discriminant)
         StreamUtil.writeInt(stream, unitId)

@@ -21,7 +21,7 @@ class Mine {
         this.explosionParams = explosionParams
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Mine {
             val result = Mine()
             result.playerId = StreamUtil.readInt(stream)
@@ -44,7 +44,7 @@ class Mine {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, playerId)
         position.writeTo(stream)

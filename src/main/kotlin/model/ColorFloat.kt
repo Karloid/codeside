@@ -15,7 +15,7 @@ class ColorFloat {
         this.a = a
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ColorFloat {
             val result = ColorFloat()
             result.r = StreamUtil.readFloat(stream)
@@ -25,7 +25,7 @@ class ColorFloat {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeFloat(stream, r)
         StreamUtil.writeFloat(stream, g)

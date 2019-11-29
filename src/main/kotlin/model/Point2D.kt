@@ -1,7 +1,11 @@
 package model
+
+import Direction
 import FastMath
+import MainKt
 import f
 import util.StreamUtil
+import kotlin.math.round
 
 class Point2D {
     var x: Double
@@ -12,6 +16,12 @@ class Point2D {
 
     val intY: Int
         get() = y.toInt()
+
+    val roundX: Int
+        get() = round(x).toInt()
+
+    val roundY: Int
+        get() = round(y).toInt()
 
     val fx: Float
         get() = x.toFloat()
@@ -96,11 +106,11 @@ class Point2D {
         return Point2D(this)
     }
 
-    fun sub(v: Point2D): Point2D {
+    operator fun minus(v: Point2D): Point2D {
         return Point2D(x - v.x, y - v.y)
     }
 
-    fun sub(dx: Double, dy: Double): Point2D {
+    fun minus(dx: Double, dy: Double): Point2D {
         return Point2D(x - dx, y - dy)
     }
 
@@ -217,6 +227,30 @@ class Point2D {
         return Vec2Float(x.toFloat(), y.toFloat())
     }
 
+    fun dirTo(pos: Point2D): Direction {
+        return when {
+            pos.x - 1 == x -> Direction.RIGHT
+            pos.x + 1 == x -> Direction.LEFT
+            pos.y + 1 == y -> Direction.DOWN
+            pos.y - 1 == y -> Direction.UP
+            else -> {
+                MainKt.myDebugLog("unable to find dir for $this $pos")
+                Direction.UP
+            }
+        }
+    }
+
+    fun applyDir(direction: Direction): Point2D {
+        return this.add(
+            when (direction) {
+                Direction.LEFT -> LEFT
+                Direction.UP -> UP
+                Direction.RIGHT -> RIGHT
+                Direction.DOWN -> DOWN
+            }
+        )
+    }
+
     companion object {
 
         fun angle(x: Double, y: Double): Float {
@@ -240,5 +274,10 @@ class Point2D {
             result.y = StreamUtil.readDouble(stream)
             return result
         }
+
+        val UP = Point2D(0, 1)
+        val RIGHT = Point2D(1, 0)
+        val DOWN = Point2D(0, -1)
+        val LEFT = Point2D(-1, 0)
     }
 }

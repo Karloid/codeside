@@ -11,7 +11,7 @@ class Vec2Float {
         this.y = y
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Vec2Float {
             val result = Vec2Float()
             result.x = StreamUtil.readFloat(stream)
@@ -19,7 +19,7 @@ class Vec2Float {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeFloat(stream, x)
         StreamUtil.writeFloat(stream, y)

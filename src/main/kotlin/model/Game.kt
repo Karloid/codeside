@@ -1,5 +1,6 @@
 package model
 
+import Direction
 import util.StreamUtil
 
 class Game {
@@ -11,8 +12,18 @@ class Game {
     lateinit var bullets: Array<model.Bullet>
     lateinit var mines: Array<model.Mine>
     lateinit var lootBoxes: Array<model.LootBox>
+
     constructor() {}
-    constructor(currentTick: Int, properties: model.Properties, level: model.Level, players: Array<model.Player>, units: Array<model.Unit>, bullets: Array<model.Bullet>, mines: Array<model.Mine>, lootBoxes: Array<model.LootBox>) {
+    constructor(
+        currentTick: Int,
+        properties: model.Properties,
+        level: model.Level,
+        players: Array<model.Player>,
+        units: Array<model.Unit>,
+        bullets: Array<model.Bullet>,
+        mines: Array<model.Mine>,
+        lootBoxes: Array<model.LootBox>
+    ) {
         this.currentTick = currentTick
         this.properties = properties
         this.level = level
@@ -22,8 +33,9 @@ class Game {
         this.mines = mines
         this.lootBoxes = lootBoxes
     }
+
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Game {
             val result = Game()
             result.currentTick = StreamUtil.readInt(stream)
@@ -57,7 +69,7 @@ class Game {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, currentTick)
         properties.writeTo(stream)
@@ -82,5 +94,10 @@ class Game {
         for (lootBoxesElement in lootBoxes) {
             lootBoxesElement.writeTo(stream)
         }
+    }
+
+    fun getTile(position: Point2D, dir: Direction): Tile? {
+        val newPos = position.copy().applyDir(dir)
+        return level.tiles.get(newPos.roundX).get(newPos.roundY)
     }
 }

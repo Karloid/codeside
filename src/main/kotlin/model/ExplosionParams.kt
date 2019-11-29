@@ -11,7 +11,7 @@ class ExplosionParams {
         this.damage = damage
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ExplosionParams {
             val result = ExplosionParams()
             result.radius = StreamUtil.readDouble(stream)
@@ -19,7 +19,7 @@ class ExplosionParams {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeDouble(stream, radius)
         StreamUtil.writeInt(stream, damage)

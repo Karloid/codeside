@@ -49,7 +49,7 @@ class Properties {
         this.killScore = killScore
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Properties {
             val result = Properties()
             result.maxTickCount = StreamUtil.readInt(stream)
@@ -89,7 +89,7 @@ class Properties {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, maxTickCount)
         StreamUtil.writeInt(stream, teamSize)

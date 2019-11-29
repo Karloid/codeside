@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class CustomData {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): CustomData {
             when (StreamUtil.readInt(stream)) {
                 Log.TAG -> return Log.readFrom(stream)
@@ -27,14 +27,14 @@ abstract class CustomData {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Log {
                 val result = Log()
                 result.text = StreamUtil.readString(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeString(stream, text)
@@ -53,7 +53,7 @@ abstract class CustomData {
         }
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Rect {
                 val result = Rect()
                 result.pos = Vec2Float.readFrom(stream)
@@ -62,7 +62,7 @@ abstract class CustomData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             pos.writeTo(stream)
@@ -88,7 +88,7 @@ abstract class CustomData {
 
         companion object {
             val TAG = 2
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Line {
                 val result = Line()
                 result.p1 = Vec2Float.readFrom(stream)
@@ -98,7 +98,7 @@ abstract class CustomData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             p1.writeTo(stream)
@@ -116,7 +116,7 @@ abstract class CustomData {
         }
         companion object {
             val TAG = 3
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Polygon {
                 val result = Polygon()
                 result.vertices = Array(StreamUtil.readInt(stream), {
@@ -127,7 +127,7 @@ abstract class CustomData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeInt(stream, vertices.size)
@@ -153,7 +153,7 @@ abstract class CustomData {
         }
         companion object {
             val TAG = 4
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): PlacedText {
                 val result = PlacedText()
                 result.text = StreamUtil.readString(stream)
@@ -169,7 +169,7 @@ abstract class CustomData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeString(stream, text)

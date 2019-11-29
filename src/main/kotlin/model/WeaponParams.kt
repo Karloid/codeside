@@ -25,7 +25,7 @@ class WeaponParams {
         this.explosion = explosion
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): WeaponParams {
             val result = WeaponParams()
             result.magazineSize = StreamUtil.readInt(stream)
@@ -44,7 +44,7 @@ class WeaponParams {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, magazineSize)
         StreamUtil.writeDouble(stream, fireRate)

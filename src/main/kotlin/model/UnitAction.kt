@@ -21,7 +21,7 @@ class UnitAction {
         this.plantMine = plantMine
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): UnitAction {
             val result = UnitAction()
             result.velocity = StreamUtil.readDouble(stream)
@@ -34,7 +34,7 @@ class UnitAction {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeDouble(stream, velocity)
         StreamUtil.writeBoolean(stream, jump)

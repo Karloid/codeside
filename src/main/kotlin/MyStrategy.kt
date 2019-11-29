@@ -1,6 +1,8 @@
+import Direction.LEFT
+import Direction.RIGHT
 import model.*
-import model.Point2D
 import model.Unit
+import kotlin.reflect.KClass
 
 class MyStrategy : Strategy {
 
@@ -8,7 +10,7 @@ class MyStrategy : Strategy {
     private lateinit var me: Unit
     private lateinit var game: Game
 
-    override fun getAction(me: model.Unit, game: Game, debug: Debug): UnitAction {
+    override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         this.me = me
         this.game = game
         this.debug = debug
@@ -19,33 +21,16 @@ class MyStrategy : Strategy {
     private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
         debug.draw(CustomData.Line(game.units[0].position, game.units[1].position, 1 / 20f, ColorFloat(1f, 0f, 0f, 1f)))
 
-        var nearestEnemy: Unit? = null
-        for (other in game.units) {
-            if (other.playerId != me.playerId) {
-                if (nearestEnemy == null || distanceSqr(
-                        me.position,
-                        other.position
-                    ) < distanceSqr(me.position, nearestEnemy.position)
-                ) {
-                    nearestEnemy = other
-                }
-            }
-        }
-        var nearestWeapon: LootBox? = null
-        for (lootBox in game.lootBoxes) {
-            if (lootBox.item is Item.Weapon) {
-                if (nearestWeapon == null || distanceSqr(
-                        me.position,
-                        lootBox.position
-                    ) < distanceSqr(me.position, nearestWeapon.position)
-                ) {
-                    nearestWeapon = lootBox
-                }
-            }
-        }
+        val nearestEnemy: Unit? = getClosestEnemy()
+        val nearestWeapon = getClosest(Item.Weapon::class)
+        val nearestHealth = getClosest(Item.HealthPack::class)
+
         var targetPos: Point2D = me.position
+
         if (me.weapon == null && nearestWeapon != null) {
             targetPos = nearestWeapon.position
+        } else if (nearestHealth != null) {
+            targetPos = nearestHealth.position
         } else if (nearestEnemy != null) {
             targetPos = nearestEnemy.position
         }
@@ -53,27 +38,33 @@ class MyStrategy : Strategy {
 
         var aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
-            aim = Point2D(
-                nearestEnemy.position.x - me.position.x,
-                nearestEnemy.position.y - me.position.y
-            )
+            aim = nearestEnemy.position.copy() - me.position
         }
         var jump = targetPos.y > me.position.y;
-        if (targetPos.x > me.position.x && game.level.tiles[(me.position.x + 1).toInt()][(me.position.y).toInt()] == Tile.WALL) {
+        if (targetPos.x > me.position.x && game.getTile(me.position, RIGHT) == Tile.WALL) {
             jump = true
         }
-        if (targetPos.x < me.position.x && game.level.tiles[(me.position.x - 1).toInt()][(me.position.y).toInt()] == Tile.WALL) {
+        if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
             jump = true
         }
-        val action = UnitAction()
-        action.velocity = targetPos.x - me.position.x
-        action.jump = jump
-        action.jumpDown = !jump
-        action.aim = aim
-        action.shoot = true
-        action.swapWeapon = false
-        action.plantMine = false
-        return action
+
+        return UnitAction().apply {
+            velocity = (targetPos.x - me.position.x) * 10000
+            this.jump = jump
+            jumpDown = !jump
+            this.aim = aim
+            shoot = true
+            swapWeapon = false
+            plantMine = false
+        }
+    }
+
+    private fun <T : Any> getClosest(type: KClass<T>): LootBox? {
+        return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
+    }
+
+    private fun getClosestEnemy(): Unit? {
+        return game.units.filter { it.isMy().not() }.minBy { it.position.distance(me.position) }
     }
 
     companion object {
@@ -81,4 +72,10 @@ class MyStrategy : Strategy {
             return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
         }
     }
+
+    private fun Unit.isMy(): Boolean {
+        return me.playerId == playerId
+    }
+
 }
+

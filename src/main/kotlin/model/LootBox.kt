@@ -11,7 +11,7 @@ class LootBox {
         this.item = item
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): LootBox {
             val result = LootBox()
             result.position = model.Point2D.readFrom(stream)
@@ -20,7 +20,7 @@ class LootBox {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         position.writeTo(stream)
         size.writeTo(stream)

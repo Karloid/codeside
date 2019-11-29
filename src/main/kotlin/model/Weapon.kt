@@ -23,7 +23,7 @@ class Weapon {
         this.lastFireTick = lastFireTick
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Weapon {
             val result = Weapon()
             when (StreamUtil.readInt(stream)) {
@@ -54,7 +54,7 @@ class Weapon {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, typ.discriminant)
         params.writeTo(stream)

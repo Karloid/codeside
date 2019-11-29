@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class PlayerMessageGame {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): PlayerMessageGame {
             when (StreamUtil.readInt(stream)) {
                 CustomDataMessage.TAG -> return CustomDataMessage.readFrom(stream)
@@ -24,14 +24,14 @@ abstract class PlayerMessageGame {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): CustomDataMessage {
                 val result = CustomDataMessage()
                 result.data = model.CustomData.readFrom(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             data.writeTo(stream)
@@ -46,7 +46,7 @@ abstract class PlayerMessageGame {
         }
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): ActionMessage {
                 val result = ActionMessage()
                 val actionSize = StreamUtil.readInt(stream)
@@ -61,7 +61,7 @@ abstract class PlayerMessageGame {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeInt(stream, action.size)
