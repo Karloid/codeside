@@ -40,9 +40,9 @@ application {
 
 task doZip(type: Exec) {
 
-    commandLine 'sh', '-c', 'cd ./src/main/kotlin;' +
-            ' zip -r -X "../../../lastSources.zip" * -x LibGdxPainter.java -x LibGdxObj.java -x LibGdxShower.java ' +
-            '-x LibGdxDataToPaint.java && cd ../../../'
+    commandLine 'sh', '-c', '' +
+            ' zip -r -X "lastSources.zip" ./src/ -x LibGdxPainter.java -x "*.DS_Store"; ' +
+            ' zip -r -X "lastSources.zip" ./pom.xml; '
 }
 
 task delay(type: Exec, dependsOn: 'startLr') {
