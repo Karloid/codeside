@@ -42,11 +42,11 @@ abstract class CustomData {
     }
 
     class Rect : CustomData {
-        lateinit var pos: model.Vec2Float
-        lateinit var size: model.Vec2Float
+        lateinit var pos: Vec2Float
+        lateinit var size: Vec2Float
         lateinit var color: model.ColorFloat
         constructor() {}
-        constructor(pos: model.Vec2Float, size: model.Vec2Float, color: model.ColorFloat) {
+        constructor(pos: Vec2Float, size: Vec2Float, color: model.ColorFloat) {
             this.pos = pos
             this.size = size
             this.color = color
@@ -56,8 +56,8 @@ abstract class CustomData {
             @Throws(java.io.IOException::class)
             fun readFrom(stream: java.io.InputStream): Rect {
                 val result = Rect()
-                result.pos = model.Vec2Float.readFrom(stream)
-                result.size = model.Vec2Float.readFrom(stream)
+                result.pos = Vec2Float.readFrom(stream)
+                result.size = Vec2Float.readFrom(stream)
                 result.color = model.ColorFloat.readFrom(stream)
                 return result
             }
@@ -72,24 +72,27 @@ abstract class CustomData {
     }
 
     class Line : CustomData {
-        lateinit var p1: model.Vec2Float
-        lateinit var p2: model.Vec2Float
+        lateinit var p1: Vec2Float
+        lateinit var p2: Vec2Float
         var width: Float = 0.0f
         lateinit var color: model.ColorFloat
         constructor() {}
-        constructor(p1: model.Vec2Float, p2: model.Vec2Float, width: Float, color: model.ColorFloat) {
+        constructor(p1: Vec2Float, p2: Vec2Float, width: Float, color: model.ColorFloat) {
             this.p1 = p1
             this.p2 = p2
             this.width = width
             this.color = color
         }
+        constructor(p1: Point2D, p2: Point2D, width: Float, color: ColorFloat) :
+                this(p1.toFloat(), p2.toFloat(), width, color)
+
         companion object {
             val TAG = 2
             @Throws(java.io.IOException::class)
             fun readFrom(stream: java.io.InputStream): Line {
                 val result = Line()
-                result.p1 = model.Vec2Float.readFrom(stream)
-                result.p2 = model.Vec2Float.readFrom(stream)
+                result.p1 = Vec2Float.readFrom(stream)
+                result.p2 = Vec2Float.readFrom(stream)
                 result.width = StreamUtil.readFloat(stream)
                 result.color = model.ColorFloat.readFrom(stream)
                 return result
@@ -136,12 +139,12 @@ abstract class CustomData {
 
     class PlacedText : CustomData {
         lateinit var text: String
-        lateinit var pos: model.Vec2Float
+        lateinit var pos: Vec2Float
         lateinit var alignment: model.TextAlignment
         var size: Float = 0.0f
         lateinit var color: model.ColorFloat
         constructor() {}
-        constructor(text: String, pos: model.Vec2Float, alignment: model.TextAlignment, size: Float, color: model.ColorFloat) {
+        constructor(text: String, pos: Vec2Float, alignment: model.TextAlignment, size: Float, color: model.ColorFloat) {
             this.text = text
             this.pos = pos
             this.alignment = alignment
@@ -154,7 +157,7 @@ abstract class CustomData {
             fun readFrom(stream: java.io.InputStream): PlacedText {
                 val result = PlacedText()
                 result.text = StreamUtil.readString(stream)
-                result.pos = model.Vec2Float.readFrom(stream)
+                result.pos = Vec2Float.readFrom(stream)
                 when (StreamUtil.readInt(stream)) {
                 0 ->result.alignment = model.TextAlignment.LEFT
                 1 ->result.alignment = model.TextAlignment.CENTER

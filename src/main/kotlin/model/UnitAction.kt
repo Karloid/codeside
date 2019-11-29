@@ -6,12 +6,12 @@ class UnitAction {
     var velocity: Double = 0.0
     var jump: Boolean = false
     var jumpDown: Boolean = false
-    lateinit var aim: model.Vec2Double
+    lateinit var aim: model.Point2D
     var shoot: Boolean = false
     var swapWeapon: Boolean = false
     var plantMine: Boolean = false
     constructor() {}
-    constructor(velocity: Double, jump: Boolean, jumpDown: Boolean, aim: model.Vec2Double, shoot: Boolean, swapWeapon: Boolean, plantMine: Boolean) {
+    constructor(velocity: Double, jump: Boolean, jumpDown: Boolean, aim: model.Point2D, shoot: Boolean, swapWeapon: Boolean, plantMine: Boolean) {
         this.velocity = velocity
         this.jump = jump
         this.jumpDown = jumpDown
@@ -27,7 +27,7 @@ class UnitAction {
             result.velocity = StreamUtil.readDouble(stream)
             result.jump = StreamUtil.readBoolean(stream)
             result.jumpDown = StreamUtil.readBoolean(stream)
-            result.aim = model.Vec2Double.readFrom(stream)
+            result.aim = model.Point2D.readFrom(stream)
             result.shoot = StreamUtil.readBoolean(stream)
             result.swapWeapon = StreamUtil.readBoolean(stream)
             result.plantMine = StreamUtil.readBoolean(stream)

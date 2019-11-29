@@ -6,8 +6,8 @@ class Unit {
     var playerId: Int = 0
     var id: Int = 0
     var health: Int = 0
-    lateinit var position: model.Vec2Double
-    lateinit var size: model.Vec2Double
+    lateinit var position: model.Point2D
+    lateinit var size: model.Point2D
     lateinit var jumpState: model.JumpState
     var walkedRight: Boolean = false
     var stand: Boolean = false
@@ -16,7 +16,7 @@ class Unit {
     var mines: Int = 0
     var weapon: model.Weapon? = null
     constructor() {}
-    constructor(playerId: Int, id: Int, health: Int, position: model.Vec2Double, size: model.Vec2Double, jumpState: model.JumpState, walkedRight: Boolean, stand: Boolean, onGround: Boolean, onLadder: Boolean, mines: Int, weapon: model.Weapon?) {
+    constructor(playerId: Int, id: Int, health: Int, position: model.Point2D, size: model.Point2D, jumpState: model.JumpState, walkedRight: Boolean, stand: Boolean, onGround: Boolean, onLadder: Boolean, mines: Int, weapon: model.Weapon?) {
         this.playerId = playerId
         this.id = id
         this.health = health
@@ -37,8 +37,8 @@ class Unit {
             result.playerId = StreamUtil.readInt(stream)
             result.id = StreamUtil.readInt(stream)
             result.health = StreamUtil.readInt(stream)
-            result.position = model.Vec2Double.readFrom(stream)
-            result.size = model.Vec2Double.readFrom(stream)
+            result.position = model.Point2D.readFrom(stream)
+            result.size = model.Point2D.readFrom(stream)
             result.jumpState = model.JumpState.readFrom(stream)
             result.walkedRight = StreamUtil.readBoolean(stream)
             result.stand = StreamUtil.readBoolean(stream)

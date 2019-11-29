@@ -1,17 +1,31 @@
 import model.*
+import model.Point2D
+import model.Unit
 
 class MyStrategy : Strategy {
 
-    override fun getAction(unit: model.Unit, game: Game, debug: Debug): UnitAction {
+    private lateinit var debug: Debug
+    private lateinit var me: Unit
+    private lateinit var game: Game
+
+    override fun getAction(me: model.Unit, game: Game, debug: Debug): UnitAction {
+        this.me = me
+        this.game = game
+        this.debug = debug
+        val action = smartGuy(debug, game, me)
+        return action
+    }
+
+    private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
         debug.draw(CustomData.Line(game.units[0].position, game.units[1].position, 1 / 20f, ColorFloat(1f, 0f, 0f, 1f)))
 
-        var nearestEnemy: model.Unit? = null
+        var nearestEnemy: Unit? = null
         for (other in game.units) {
-            if (other.playerId != unit.playerId) {
+            if (other.playerId != me.playerId) {
                 if (nearestEnemy == null || distanceSqr(
-                        unit.position,
+                        me.position,
                         other.position
-                    ) < distanceSqr(unit.position, nearestEnemy.position)
+                    ) < distanceSqr(me.position, nearestEnemy.position)
                 ) {
                     nearestEnemy = other
                 }
@@ -21,38 +35,38 @@ class MyStrategy : Strategy {
         for (lootBox in game.lootBoxes) {
             if (lootBox.item is Item.Weapon) {
                 if (nearestWeapon == null || distanceSqr(
-                        unit.position,
+                        me.position,
                         lootBox.position
-                    ) < distanceSqr(unit.position, nearestWeapon.position)
+                    ) < distanceSqr(me.position, nearestWeapon.position)
                 ) {
                     nearestWeapon = lootBox
                 }
             }
         }
-        var targetPos: Vec2Double = unit.position
-        if (unit.weapon == null && nearestWeapon != null) {
+        var targetPos: Point2D = me.position
+        if (me.weapon == null && nearestWeapon != null) {
             targetPos = nearestWeapon.position
         } else if (nearestEnemy != null) {
             targetPos = nearestEnemy.position
         }
         debug.draw(CustomData.Log("Target pos: $targetPos"))
 
-        var aim = Vec2Double(0.0, 0.0)
+        var aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
-            aim = Vec2Double(
-                nearestEnemy.position.x - unit.position.x,
-                nearestEnemy.position.y - unit.position.y
+            aim = Point2D(
+                nearestEnemy.position.x - me.position.x,
+                nearestEnemy.position.y - me.position.y
             )
         }
-        var jump = targetPos.y > unit.position.y;
-        if (targetPos.x > unit.position.x && game.level.tiles[(unit.position.x + 1).toInt()][(unit.position.y).toInt()] == Tile.WALL) {
+        var jump = targetPos.y > me.position.y;
+        if (targetPos.x > me.position.x && game.level.tiles[(me.position.x + 1).toInt()][(me.position.y).toInt()] == Tile.WALL) {
             jump = true
         }
-        if (targetPos.x < unit.position.x && game.level.tiles[(unit.position.x - 1).toInt()][(unit.position.y).toInt()] == Tile.WALL) {
+        if (targetPos.x < me.position.x && game.level.tiles[(me.position.x - 1).toInt()][(me.position.y).toInt()] == Tile.WALL) {
             jump = true
         }
         val action = UnitAction()
-        action.velocity = targetPos.x - unit.position.x
+        action.velocity = targetPos.x - me.position.x
         action.jump = jump
         action.jumpDown = !jump
         action.aim = aim
@@ -63,7 +77,7 @@ class MyStrategy : Strategy {
     }
 
     companion object {
-        internal fun distanceSqr(a: Vec2Double, b: Vec2Double): Double {
+        internal fun distanceSqr(a: Point2D, b: Point2D): Double {
             return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
         }
     }

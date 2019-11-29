@@ -6,13 +6,13 @@ class Bullet {
     lateinit var weaponType: model.WeaponType
     var unitId: Int = 0
     var playerId: Int = 0
-    lateinit var position: model.Vec2Double
-    lateinit var velocity: model.Vec2Double
+    lateinit var position: model.Point2D
+    lateinit var velocity: model.Point2D
     var damage: Int = 0
     var size: Double = 0.0
     var explosionParams: model.ExplosionParams? = null
     constructor() {}
-    constructor(weaponType: model.WeaponType, unitId: Int, playerId: Int, position: model.Vec2Double, velocity: model.Vec2Double, damage: Int, size: Double, explosionParams: model.ExplosionParams?) {
+    constructor(weaponType: model.WeaponType, unitId: Int, playerId: Int, position: model.Point2D, velocity: model.Point2D, damage: Int, size: Double, explosionParams: model.ExplosionParams?) {
         this.weaponType = weaponType
         this.unitId = unitId
         this.playerId = playerId
@@ -34,8 +34,8 @@ class Bullet {
             }
             result.unitId = StreamUtil.readInt(stream)
             result.playerId = StreamUtil.readInt(stream)
-            result.position = model.Vec2Double.readFrom(stream)
-            result.velocity = model.Vec2Double.readFrom(stream)
+            result.position = model.Point2D.readFrom(stream)
+            result.velocity = model.Point2D.readFrom(stream)
             result.damage = StreamUtil.readInt(stream)
             result.size = StreamUtil.readDouble(stream)
             if (StreamUtil.readBoolean(stream)) {
