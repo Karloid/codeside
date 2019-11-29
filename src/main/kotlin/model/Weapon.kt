@@ -3,8 +3,8 @@ package model
 import util.StreamUtil
 
 class Weapon {
-    lateinit var typ: model.WeaponType
-    lateinit var params: model.WeaponParams
+    lateinit var typ: WeaponType
+    lateinit var params: WeaponParams
     var magazine: Int = 0
     var wasShooting: Boolean = false
     var spread: Double = 0.0
@@ -12,7 +12,7 @@ class Weapon {
     var lastAngle: Double? = null
     var lastFireTick: Int? = null
     constructor() {}
-    constructor(typ: model.WeaponType, params: model.WeaponParams, magazine: Int, wasShooting: Boolean, spread: Double, fireTimer: Double?, lastAngle: Double?, lastFireTick: Int?) {
+    constructor(typ: WeaponType, params: WeaponParams, magazine: Int, wasShooting: Boolean, spread: Double, fireTimer: Double?, lastAngle: Double?, lastFireTick: Int?) {
         this.typ = typ
         this.params = params
         this.magazine = magazine
@@ -27,12 +27,12 @@ class Weapon {
         fun readFrom(stream: java.io.InputStream): Weapon {
             val result = Weapon()
             when (StreamUtil.readInt(stream)) {
-            0 ->result.typ = model.WeaponType.PISTOL
-            1 ->result.typ = model.WeaponType.ASSAULT_RIFLE
-            2 ->result.typ = model.WeaponType.ROCKET_LAUNCHER
+            0 ->result.typ = WeaponType.PISTOL
+            1 ->result.typ = WeaponType.ASSAULT_RIFLE
+            2 ->result.typ = WeaponType.ROCKET_LAUNCHER
             else -> throw java.io.IOException("Unexpected discriminant value")
             }
-            result.params = model.WeaponParams.readFrom(stream)
+            result.params = WeaponParams.readFrom(stream)
             result.magazine = StreamUtil.readInt(stream)
             result.wasShooting = StreamUtil.readBoolean(stream)
             result.spread = StreamUtil.readDouble(stream)

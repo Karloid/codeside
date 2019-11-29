@@ -31,6 +31,8 @@ class MyStrategy : Strategy {
             targetPos = nearestWeapon.position
         } else if (nearestHealth != null) {
             targetPos = nearestHealth.position
+        } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
+            targetPos = nearestWeapon.position
         } else if (nearestEnemy != null) {
             targetPos = nearestEnemy.position
         }
