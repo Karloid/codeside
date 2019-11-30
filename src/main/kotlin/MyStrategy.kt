@@ -42,10 +42,17 @@ class MyStrategy : Strategy {
         val action = UnitAction()
 
         val nearestEnemy: Unit? = getClosestEnemy()
-        val nearestWeapon = getClosest(Item.Weapon::class)
-        val nearestHealth = getClosest(Item.HealthPack::class)
+        val nearestWeapon = getClosestItem(Item.Weapon::class)
+        val nearestHealth = getClosestItem(Item.HealthPack::class)
 
         var targetPos: Point2D = me.position
+
+        val wantSwapToRocketLauncher = wantSwapToRocketLauncher(me)
+        if (wantSwapToRocketLauncher) {
+            getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)?.let {
+                action.swapWeapon = isClose(it.position)
+            }
+        }
 
         if (me.weapon == null && nearestWeapon != null) {
             myPrint { "go pick weapon ${nearestWeapon.posInfo()}" }
@@ -55,22 +62,27 @@ class MyStrategy : Strategy {
             myPrint { "go pick ${nearestHealth.posInfo()}" }
 
             targetPos = nearestHealth.position
+        } else if (wantSwapToRocketLauncher) {
+            val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)!!
+            myPrint { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
+            targetPos = rocket.position
+            action.swapWeapon = isClose(targetPos)
         } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             myPrint { "go pick ${nearestWeapon.posInfo()} instead pistol " }
-
             targetPos = nearestWeapon.position
             action.swapWeapon = isClose(targetPos)
         } else if (nearestEnemy != null) {
             myPrint { "go to enemy" }
-
-            targetPos = nearestEnemy.position.copy() - Point2D(-3, 0)
+            val mul = if (me.position.x - targetPos.x > 0) -1 else 1
+            var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 6 } ?: 4
+            targetPos = nearestEnemy.position.copy() + Point2D(distance * mul, 0)
         }
 
         action.aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
             val aims = listOf(
-                nearestEnemy.top() - me.center(),
-                nearestEnemy.position.copy() - me.center(),
+                //    nearestEnemy.top() - me.center(),
+                //  nearestEnemy.position.copy() - me.center(),
                 nearestEnemy.center() - me.center()
             )
 
@@ -102,6 +114,16 @@ class MyStrategy : Strategy {
         return action
     }
 
+    private fun wantSwapToRocketLauncher(me: Unit): Boolean {
+        val b = me.weapon?.typ != WeaponType.ROCKET_LAUNCHER
+        if (!b) {
+            return false
+        }
+        val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER) ?: return false
+
+        return rocket.position.distance(me.position) < getClosestEnemy()?.position?.distance(me.position) ?: 10.0
+    }
+
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {
         val center = me.center()
         action.aim = aims.last()
@@ -109,9 +131,12 @@ class MyStrategy : Strategy {
         var canShootOnce = false
 
         val lastWeaponAngle = me.weapon?.lastAngle ?: 0.0
+        val isRocketLauncher = me.weapon?.typ == WeaponType.ROCKET_LAUNCHER
+
         aims.map { aim ->
             var wallHitPercent = 0.0
             var targetHitPercent = 0.0
+            var meHitPercent = 0.0
 
             me.weapon?.let { weapon ->
                 val aimAngle = aim.angle()
@@ -120,7 +145,8 @@ class MyStrategy : Strategy {
                 val stepAngle = weapon.spread / rayCountOneSide
 
                 var stuckCount = 0
-                var targetCount = 0
+                var hitTargetCount = 0
+                var hitMeCount = 0
 
                 val totalRaysCount = rayCountOneSide * 2 + 1
 
@@ -128,24 +154,31 @@ class MyStrategy : Strategy {
                     val rayIndex = i - rayCountOneSide
                     val ray = Point2D(aimAngle + rayIndex * stepAngle).length(40 * 1.5)
 
-                    val stuckTarget = Ref(false)
+                    val hitTarget = Ref(false)
+                    val hitMe = Ref(false)
                     val hitPoint = Ref<Point2D?>(null)
 
                     val stuckWall =
                         didStuckWithSomething(
                             center.copy(),
                             center.copy() + ray.copy(),
-                            stuckTarget,
+                            hitTarget,
+                            hitMe,
                             target,
                             weapon.params.bullet.size,
-                            hitPoint
+                            hitPoint,
+                            isRocketLauncher,
+                            weapon
                         )
 
                     if (stuckWall) {
                         stuckCount++
                     }
-                    if (stuckTarget.ref) {
-                        targetCount++
+                    if (hitTarget.ref) {
+                        hitTargetCount++
+                    }
+                    if (hitMe.ref) {
+                        hitMeCount++
                     }
 
                     //debug.line(center, center.copy() + ray, ColorFloat.AIM_RAY_FAILED)
@@ -153,15 +186,16 @@ class MyStrategy : Strategy {
 
 
                 wallHitPercent = stuckCount / totalRaysCount.toDouble()
-                targetHitPercent = targetCount / totalRaysCount.toDouble()
+                targetHitPercent = hitTargetCount / totalRaysCount.toDouble()
+                meHitPercent = hitMeCount / totalRaysCount.toDouble()
             }
 
-            AimScore(aim, wallHitPercent, targetHitPercent)
+            AimScore(aim, wallHitPercent, targetHitPercent, meHitPercent)
         }.filter {
-            if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
-                it.wallHitPercent < 0.2f //TODO goodCalc
+            if (isRocketLauncher) {
+                it.hitTargetPercent > 0.3f && it.hitTargetPercent >= it.hitMePercent
             } else {
-                it.targetHitPercent > 0.4f
+                it.hitTargetPercent > 0.4f
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
@@ -180,13 +214,17 @@ class MyStrategy : Strategy {
         return canShootOnce
     }
 
+    //TODO refactor
     private fun didStuckWithSomething(
         from: Point2D,
         to: Point2D,
-        weGetTargetRef: Ref<Boolean>,
+        hitTarget: Ref<Boolean>,
+        hitMe: Ref<Boolean>,
         target: Unit,
         pointSize: Double,
-        hitPoint: Ref<Point2D?>
+        hitPoint: Ref<Point2D?>,
+        rocketLauncher: Boolean,
+        weapon: Weapon
     ): Boolean {
         var pointToCheck = from.copy()
 
@@ -202,7 +240,7 @@ class MyStrategy : Strategy {
             val distanceTarget = signedDist(pointToCheck, target)
             val distanceWalls = signedDist(pointToCheck, null)
 
-            val isTargetClosest = distanceTarget < distanceWalls
+            var isTargetClosest = distanceTarget < distanceWalls
 
             var distance = if (isTargetClosest) {
                 distanceTarget
@@ -213,8 +251,17 @@ class MyStrategy : Strategy {
             distance -= pointSize
 
             if (distance < epsilon) {
+                rocketLauncher.then {
+                    val explosionRadius = weapon.params.explosion!!.radius
+                    val targetAffected = isRocketAffected(target, pointToCheck, explosionRadius)
+                    val meAffected = isRocketAffected(me, pointToCheck, explosionRadius)
+                    if (targetAffected) {
+                        isTargetClosest = true
+                    }
+                    hitMe.ref = meAffected
+                }
                 weGetWalls = !isTargetClosest
-                weGetTargetRef.ref = isTargetClosest
+                hitTarget.ref = isTargetClosest
                 hitPoint.ref = (pointToCheck.copy())
                 break
             }
@@ -236,13 +283,21 @@ class MyStrategy : Strategy {
             val endFinal = hitPoint.ref ?: to
 
             val color =
-                weGetTargetRef.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
+                hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
                 ?: ColorFloat.AIM_RAY_MILK
 
             debug.rect(endFinal, Point2D(0.1, 0.1), color)
             debug.line(from, endFinal, color)
         }
         return weGetWalls
+    }
+
+    private fun isRocketAffected(target: Unit, pointToCheck: Point2D, explosionRadius: Double): Boolean {
+        val center = target.center()
+        return (center - pointToCheck).abs().let {
+            it.x <= explosionRadius &&
+                    it.y <= explosionRadius
+        }
     }
 
     private fun signedDist(pointToCheck: Point2D, target: Unit?): Double {
@@ -284,8 +339,15 @@ class MyStrategy : Strategy {
 
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1
 
-    private fun <T : Any> getClosest(type: KClass<T>): LootBox? {
+    private fun <T : Any> getClosestItem(type: KClass<T>): LootBox? {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
+    }
+
+    private fun getClosestWeaponItem(weaponType: WeaponType): LootBox? {
+        return game.lootBoxes.filter {
+            val item = it.item
+            item is Item.Weapon && item.weaponType == weaponType
+        }.minBy { it.position.distance(me.position) }
     }
 
     private fun getClosestEnemy(): Unit? {
