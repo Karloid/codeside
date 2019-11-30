@@ -52,5 +52,5 @@ task delay(type: Exec, dependsOn: 'startLr') {
 task runApp(type:JavaExec, dependsOn: [doZip, shadowJar]) {
     classpath = sourceSets.main.runtimeClasspath
 
-    main = "Runner"
+    main = "MainKt"
 }
