@@ -65,13 +65,15 @@ class MyStrategy : Strategy {
         }
         debug.draw(CustomData.Log("Target pos: $targetPos"))
 
-        var aim = Point2D(0.0, 0.0)
+        action.aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
-            aim = nearestEnemy.position.copy() - me.position
+            val aims = listOf(
+                nearestEnemy.top() - me.position,
+                nearestEnemy.position.copy() - me.position,
+                nearestEnemy.center() - me.position
+            )
 
-            drawAimStuff(aim)
-
-            if (canShot(nearestEnemy, aim)) {
+            if (canShot(nearestEnemy, aims, action)) {
                 action.shoot = true
             }
         }
@@ -82,11 +84,10 @@ class MyStrategy : Strategy {
         if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
             jump = true
         }
-        myPrint { "me ${me.position} _ target->$targetPos" }
+        myPrint { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
         action.velocity = (targetPos.x - me.position.x) * 10000
         action.jump = jump
         action.jumpDown = targetPos.y - me.position.y < -0.5f
-        action.aim = aim
         action.plantMine = false
 
 
@@ -94,43 +95,57 @@ class MyStrategy : Strategy {
         return action
     }
 
-    private fun canShot(unit: Unit, aim: Point2D): Boolean {
+    private fun canShot(unit: Unit, aims: List<Point2D>, action: UnitAction): Boolean {
         val center = me.center()
+        action.aim = aims.last()
 
-        me.weapon?.let {
-            val aimAngle = aim.angle()
-            val upAimAngle = aimAngle + it.spread
-            val downAimAngle = aimAngle - it.spread
+        var canShootOnce: Boolean = false
 
-            val rayCount = 6
-            val stepAngle = it.spread / rayCount
-            repeat(rayCount * 2 + 1) { i ->
-                val rayIndex = i - rayCount
-                val ray = Point2D(aimAngle + rayIndex * stepAngle).length(aim.length())
+        aims.forEach { aim ->
+            me.weapon?.let {
+                val aimAngle = aim.angle()
 
-                rayMarce(center.copy(), center.copy() + ray.copy())
-                //debug.line(center, center.copy() + ray, ColorFloat.AIM_RAY_FAILED)
+                val rayCountOneSide = 6
+                val stepAngle = it.spread / rayCountOneSide
+
+                var stuckCount = 0
+
+                val totalRaysCount = rayCountOneSide * 2 + 1
+
+                repeat(totalRaysCount) { i ->
+                    val rayIndex = i - rayCountOneSide
+                    val ray = Point2D(aimAngle + rayIndex * stepAngle).length(aim.length())
+
+                    val stuckSomething = didStuckWithSomething(center.copy(), center.copy() + ray.copy())
+
+                    if (stuckSomething) {
+                        stuckCount++
+                    }
+                    //debug.line(center, center.copy() + ray, ColorFloat.AIM_RAY_FAILED)
+                }
+
+                val canShoot = stuckCount / totalRaysCount.toFloat() < 0.2f
+                if (canShoot) {
+                    action.aim = aim
+                    canShootOnce = true
+                }
             }
-
-            val upAim = Point2D(upAimAngle).length(aim.length())
-            val downAim = Point2D(downAimAngle).length(aim.length())
-
-            //debug.line(center, center.copy() + upAim, ColorFloat.AIM_SPREAD)
-            //debug.line(center, center.copy() + downAim, ColorFloat.AIM_SPREAD)
         }
 
-        return false
+        return canShootOnce
     }
 
-    private fun rayMarce(from: Point2D, to: Point2D) {
+    private fun didStuckWithSomething(from: Point2D, to: Point2D): Boolean {
         var pointToCheck = from.copy()
 
         var weGetSomething = false
 
+        var rayLengthMax = from.distance(to)
+
         val epsilon = 0.0001
 
         while (true) {
-            d { debug.rect(pointToCheck, Point2D(0.2, 0.2), ColorFloat.POINT_TO_CHECK) }
+            // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }
 
             val distance = signedDist(pointToCheck)
 
@@ -139,17 +154,21 @@ class MyStrategy : Strategy {
                 break
             }
 
-            val remainingVector = from - to
+            val remainingVector = to - pointToCheck
             val remainingDist = remainingVector.length()
             if (remainingDist < epsilon) {
                 break
             }
             pointToCheck += remainingVector.length(distance)
+            if (pointToCheck.distance(from) >= rayLengthMax) {
+                break
+            }
 
-            d {debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK)}
+            //d {debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK)}
         }
 
         d { debug.line(from, to, weGetSomething.then { ColorFloat.AIM_RAY_FAILED } ?: ColorFloat.AIM_RAY_GOOD) }
+        return weGetSomething
     }
 
     private fun signedDist(pointToCheck: Point2D): Double {

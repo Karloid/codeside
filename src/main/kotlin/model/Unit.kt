@@ -93,4 +93,8 @@ class Unit {
     fun center(): Point2D {
         return position.copy().plus(0.0, size.y / 2)
     }
+
+    fun top(): Point2D {
+        return position.copy().plus(0.0, size.y)
+    }
 }
