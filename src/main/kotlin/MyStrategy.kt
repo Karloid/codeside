@@ -2,6 +2,7 @@ import Direction.*
 import MainKt.Companion.myLog
 import model.*
 import model.Unit
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.reflect.KClass
 
@@ -25,6 +26,7 @@ class MyStrategy : Strategy {
         end = System.currentTimeMillis()
         printAction(action)
         printMap()
+        debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
         return action
     }
 
@@ -63,7 +65,6 @@ class MyStrategy : Strategy {
 
             targetPos = nearestEnemy.position.copy() - Point2D(-3, 0)
         }
-        debug.draw(CustomData.Log("Target pos: $targetPos"))
 
         action.aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
@@ -85,7 +86,14 @@ class MyStrategy : Strategy {
             jump = true
         }
         myPrint { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
-        action.velocity = (targetPos.x - me.position.x) * 10000
+        val travelDistX = targetPos.x - me.position.x
+        val travelDistY = targetPos.y - me.position.y
+
+        if (Math.abs(travelDistX) < 0.49 && abs(travelDistY) < 0.2) {
+            action.velocity = 0.0
+        } else {
+            action.velocity = travelDistX * 10000
+        }
         action.jump = jump
         action.jumpDown = targetPos.y - me.position.y < -0.5f
         action.plantMine = false
@@ -100,6 +108,7 @@ class MyStrategy : Strategy {
 
         var canShootOnce = false
 
+        val lastWeaponAngle = me.weapon?.lastAngle ?: 0.0
         aims.map { aim ->
             var wallHitPercent = 0.0
             var targetHitPercent = 0.0
@@ -152,11 +161,19 @@ class MyStrategy : Strategy {
             if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
                 it.wallHitPercent < 0.2f //TODO goodCalc
             } else {
-                it.targetHitPercent > 0.3f
+                it.targetHitPercent > 0.4f
             }
-        }.maxBy { it.targetHitPercent }
+        }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
-                action.aim = it.aim
+                val angleDiff = lastWeaponAngle - it.aim.angle()
+                myPrint { "aim angle diff ${angleDiff.f()}" }
+                if (abs(angleDiff) < 0.05) {
+                    myPrint { "keep old angle" }
+                    action.aim = Point2D(lastWeaponAngle).length(2.0)
+                } else {
+                    action.aim = it.aim
+                }
+                canShootOnce = true
                 myPrint { "fire at $it" }
             }
 
@@ -231,13 +248,14 @@ class MyStrategy : Strategy {
     private fun signedDist(pointToCheck: Point2D, target: Unit?): Double {
         var minDist = Double.MAX_VALUE
 
-        val wallSize = Point2D(1, 1)
+        val wallSize = Point2D(0.5, 0.5)
 
         if (target != null) {
-            minDist = signedDstToBox(pointToCheck.copy(), target.center(), target.size)
+            minDist = signedDstToBox(pointToCheck.copy(), target.center(), target.size.copy().mul(0.5))
         } else {
             game.level.walls.fori {
-                minDist = minOf(signedDstToBox(pointToCheck.copy(), it, wallSize), minDist)
+                val rectCenter = it.copy().plus(0.5, 0.5)
+                minDist = minOf(signedDstToBox(pointToCheck.copy(), rectCenter, wallSize), minDist)
             }
         }
         return minDist
