@@ -41,7 +41,7 @@ enum class Direction {
                 "right" -> RIGHT
                 "down" -> DOWN
                 else -> {
-                    MainKt.myDebugLog("invalid string for direction $s")
+                    MainKt.myLog("invalid string for direction $s")
                     LEFT
                 }
             }

@@ -234,7 +234,7 @@ class Point2D {
             pos.y + 1 == y -> Direction.DOWN
             pos.y - 1 == y -> Direction.UP
             else -> {
-                MainKt.myDebugLog("unable to find dir for $this $pos")
+                MainKt.myLog("unable to find dir for $this $pos")
                 Direction.UP
             }
         }

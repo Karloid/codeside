@@ -1,5 +1,6 @@
 package model
 
+import f
 import util.StreamUtil
 
 class UnitAction {
@@ -20,6 +21,8 @@ class UnitAction {
         this.swapWeapon = swapWeapon
         this.plantMine = plantMine
     }
+
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): UnitAction {
@@ -43,5 +46,9 @@ class UnitAction {
         StreamUtil.writeBoolean(stream, shoot)
         StreamUtil.writeBoolean(stream, swapWeapon)
         StreamUtil.writeBoolean(stream, plantMine)
+    }
+
+    override fun toString(): String {
+        return "UnitAction(velocity=${velocity.f()}, jump=$jump, jumpDown=$jumpDown, aim=$aim.f(), shoot=$shoot, swapWeapon=$swapWeapon, plantMine=$plantMine)"
     }
 }

@@ -1,5 +1,6 @@
 import Direction.LEFT
 import Direction.RIGHT
+import MainKt.Companion.myLog
 import model.*
 import model.Unit
 import kotlin.reflect.KClass
@@ -15,10 +16,21 @@ class MyStrategy : Strategy {
         this.game = game
         this.debug = debug
         val action = smartGuy(debug, game, me)
+        printAction(action)
         return action
     }
 
+    private inline fun printAction(action: UnitAction) {
+        myPrint { "action:$action" }
+    }
+
+    private inline fun myPrint(function: () -> String) {
+         myLog { game.currentTick.toString() + ": " + function() }
+    }
+
     private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
+        val action = UnitAction()
+
         debug.draw(CustomData.Line(game.units[0].position, game.units[1].position, 1 / 20f, ColorFloat(1f, 0f, 0f, 1f)))
 
         val nearestEnemy: Unit? = getClosestEnemy()
@@ -33,6 +45,7 @@ class MyStrategy : Strategy {
             targetPos = nearestHealth.position
         } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             targetPos = nearestWeapon.position
+            action.swapWeapon = isClose(targetPos)
         } else if (nearestEnemy != null) {
             targetPos = nearestEnemy.position
         }
@@ -50,16 +63,17 @@ class MyStrategy : Strategy {
             jump = true
         }
 
-        return UnitAction().apply {
-            velocity = (targetPos.x - me.position.x) * 10000
-            this.jump = jump
-            jumpDown = !jump
-            this.aim = aim
-            shoot = true
-            swapWeapon = false
-            plantMine = false
-        }
+        action.velocity = (targetPos.x - me.position.x) * 10000
+        action.jump = jump
+        action.jumpDown = !jump
+        action.aim = aim
+        action.shoot = true
+        action.plantMine = false
+
+        return action
     }
+
+    private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1
 
     private fun <T : Any> getClosest(type: KClass<T>): LootBox? {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
@@ -79,5 +93,9 @@ class MyStrategy : Strategy {
         return me.playerId == playerId
     }
 
+    private fun Point2D.distMe(): Double {
+        return this.distance(me.position)
+    }
 }
+
 

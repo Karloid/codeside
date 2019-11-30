@@ -1,7 +1,12 @@
 class MainKt {
     companion object {
-        fun myDebugLog(s: String) {
-            println(s)
+        var enabledLog = true
+        fun myLog(s: String) {
+            enabledLog.then { println(s) }
+        }
+
+        inline fun myLog(s: () -> String) {
+            enabledLog.then { println(s()) }
         }
     }
 }
