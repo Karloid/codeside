@@ -19,11 +19,15 @@ class ColorFloat {
 
     companion object {
 
+        val POINT_TO_CHECK = ColorFloat(0f, 0f, 1f, 1f)
         val WALL: ColorFloat = ColorFloat(Color.LIGHT_GRAY)
         val WALL_UNDER_ME: ColorFloat = ColorFloat(Color.DARK_GRAY)
 
         val AIM: ColorFloat = ColorFloat(1f, 0f, 0f, 1f)
         val AIM_SPREAD: ColorFloat = ColorFloat(1f, 0f, 0f, 0.6f)
+        val AIM_RAY_GOOD: ColorFloat = ColorFloat(0.1f, 0.7f, 0f, 0.6f)
+        val AIM_RAY_FAILED: ColorFloat = ColorFloat(1f, 0f, 1f, 0.6f)
+        val RAY_DIST_CHECK: ColorFloat = ColorFloat(1f, 1f, 1f, 0.1f)
 
         fun readFrom(stream: java.io.InputStream): ColorFloat {
             val result = ColorFloat()

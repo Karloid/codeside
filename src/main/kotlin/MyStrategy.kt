@@ -2,6 +2,7 @@ import Direction.*
 import MainKt.Companion.myLog
 import model.*
 import model.Unit
+import kotlin.math.max
 import kotlin.reflect.KClass
 
 class MyStrategy : Strategy {
@@ -59,7 +60,7 @@ class MyStrategy : Strategy {
             action.swapWeapon = isClose(targetPos)
         } else if (nearestEnemy != null) {
             myPrint { "go to enemy" }
-            
+
             targetPos = nearestEnemy.position
         }
         debug.draw(CustomData.Log("Target pos: $targetPos"))
@@ -70,7 +71,7 @@ class MyStrategy : Strategy {
 
             drawAimStuff(aim)
 
-            if (canShot(nearestEnemy)) {
+            if (canShot(nearestEnemy, aim)) {
                 action.shoot = true
             }
         }
@@ -88,28 +89,99 @@ class MyStrategy : Strategy {
         action.aim = aim
         action.plantMine = false
 
+
+        //debug.circle(me.position, 4.0, ColorFloat.RAY_DIST_CHECK)
         return action
     }
 
-    private fun canShot(unit: Unit): Boolean {
-        return true
-    }
-
-    private fun drawAimStuff(aim: Point2D) {
+    private fun canShot(unit: Unit, aim: Point2D): Boolean {
         val center = me.center()
-
-        d { debug.line(center, center.copy() + aim, ColorFloat.AIM) }
 
         me.weapon?.let {
             val aimAngle = aim.angle()
             val upAimAngle = aimAngle + it.spread
             val downAimAngle = aimAngle - it.spread
+
+            val rayCount = 6
+            val stepAngle = it.spread / rayCount
+            repeat(rayCount * 2 + 1) { i ->
+                val rayIndex = i - rayCount
+                val ray = Point2D(aimAngle + rayIndex * stepAngle).length(aim.length())
+
+                rayMarce(center.copy(), center.copy() + ray.copy())
+                //debug.line(center, center.copy() + ray, ColorFloat.AIM_RAY_FAILED)
+            }
+
             val upAim = Point2D(upAimAngle).length(aim.length())
             val downAim = Point2D(downAimAngle).length(aim.length())
 
-            debug.line(center, center.copy() + upAim, ColorFloat.AIM_SPREAD)
-            debug.line(center, center.copy() + downAim, ColorFloat.AIM_SPREAD)
+            //debug.line(center, center.copy() + upAim, ColorFloat.AIM_SPREAD)
+            //debug.line(center, center.copy() + downAim, ColorFloat.AIM_SPREAD)
         }
+
+        return false
+    }
+
+    private fun rayMarce(from: Point2D, to: Point2D) {
+        var pointToCheck = from.copy()
+
+        var weGetSomething = false
+
+        val epsilon = 0.0001
+
+        while (true) {
+            d { debug.rect(pointToCheck, Point2D(0.2, 0.2), ColorFloat.POINT_TO_CHECK) }
+
+            val distance = signedDist(pointToCheck)
+
+            if (distance < epsilon) {
+                weGetSomething = true
+                break
+            }
+
+            val remainingVector = from - to
+            val remainingDist = remainingVector.length()
+            if (remainingDist < epsilon) {
+                break
+            }
+            pointToCheck += remainingVector.length(distance)
+
+            d {debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK)}
+        }
+
+        d { debug.line(from, to, weGetSomething.then { ColorFloat.AIM_RAY_FAILED } ?: ColorFloat.AIM_RAY_GOOD) }
+    }
+
+    private fun signedDist(pointToCheck: Point2D): Double {
+        var minDist = Double.MAX_VALUE
+
+        val wallSize = Point2D(1, 1)
+
+        game.level.walls.fori {
+            minDist = minOf(signedDstToBox(pointToCheck.copy(), it, wallSize), minDist)
+        }
+        return minDist
+    }
+
+    private fun signedDstToBox(pointToCheck: Point2D, rectCenter: Point2D, rectSize: Point2D): Double {
+        val offset = (pointToCheck - rectCenter).abs() - rectSize
+        val unsignedDst = max(offset, 0.0).length()
+        val dstInsideBox = min(offset, 0.0).max()
+        return unsignedDst + dstInsideBox
+    }
+
+    private fun max(point: Point2D, value: Double): Point2D {
+        return Point2D(max(point.x, value), max(point.y, value))
+    }
+
+    private fun min(point: Point2D, value: Double): Point2D {
+        return Point2D(Math.min(point.x, value), Math.min(point.y, value))
+    }
+
+    private fun drawAimStuff(aim: Point2D) {
+        val center = me.center()
+
+        // d { debug.line(center, center.copy() + aim, ColorFloat.AIM) }
     }
 
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1

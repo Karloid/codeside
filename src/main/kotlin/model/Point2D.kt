@@ -251,6 +251,21 @@ class Point2D {
         )
     }
 
+    fun abs(): Point2D {
+        if (x < 0) {
+            x *= -1
+        }
+        if (y < 0) {
+            y *= -1
+        }
+
+        return this
+    }
+
+    fun max(): Double {
+        return Math.max(x, y)
+    }
+
     companion object {
 
         fun angle(x: Double, y: Double): Float {

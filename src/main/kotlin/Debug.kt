@@ -1,7 +1,4 @@
-import model.ColorFloat
-import model.CustomData
-import model.Point2D
-import model.Vec2Float
+import model.*
 import java.io.IOException
 import java.io.OutputStream
 
@@ -30,5 +27,18 @@ class Debug(private val stream: OutputStream) {
 
     fun rect(x: Int, y: Int, size: Point2D, color: ColorFloat) {
         draw(CustomData.Rect(Vec2Float(x.toFloat(), y.toFloat()), size.toFloat(), color))
+    }
+
+    fun rect(center: Point2D, size: Point2D, color: ColorFloat) {
+        draw(CustomData.Rect(center.toFloat(), size.toFloat(), color))
+    }
+
+    fun circle(center: Point2D, radius: Double, color: ColorFloat) {
+        val count = 16
+
+        draw(CustomData.Polygon(Array(count) { i ->
+            val point = Point2D((Math.PI * 2) / count * i).length(radius).plus(center).toFloat()
+            ColoredVertex(point, color)
+        }))
     }
 }

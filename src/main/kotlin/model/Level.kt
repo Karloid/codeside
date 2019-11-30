@@ -4,6 +4,7 @@ import PlainArray
 import util.StreamUtil
 
 class Level {
+    val walls = ArrayList<Point2D>(30 * 40)
     lateinit var tiles: PlainArray<Tile>
 
     constructor() {}
@@ -25,7 +26,7 @@ class Level {
                 }
 
                 repeat(height) { y ->
-                    val tilesValueValue = when (StreamUtil.readInt(stream)) {
+                    val tile = when (StreamUtil.readInt(stream)) {
                         0 -> Tile.EMPTY
                         1 -> Tile.WALL
                         2 -> Tile.PLATFORM
@@ -33,7 +34,10 @@ class Level {
                         4 -> Tile.JUMP_PAD
                         else -> throw java.io.IOException("Unexpected discriminant value")
                     }
-                    plainArray!!.setFast(x, y, tilesValueValue)
+                    if (tile == Tile.WALL) {
+                        result.walls.add(Point2D(x, y))
+                    }
+                    plainArray!!.setFast(x, y, tile)
                 }
             }
             result.tiles = plainArray!!
