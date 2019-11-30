@@ -1,4 +1,3 @@
-
 import Direction.*
 import MainKt.Companion.myLog
 import model.*
@@ -46,23 +45,33 @@ class MyStrategy : Strategy {
         var targetPos: Point2D = me.position
 
         if (me.weapon == null && nearestWeapon != null) {
+            myPrint { "go pick weapon ${nearestWeapon.posInfo()}" }
+
             targetPos = nearestWeapon.position
         } else if (nearestHealth != null) {
+            myPrint { "go pick ${nearestHealth.posInfo()}" }
+
             targetPos = nearestHealth.position
         } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
+            myPrint { "go pick ${nearestWeapon.posInfo()} instead pistol " }
+
             targetPos = nearestWeapon.position
             action.swapWeapon = isClose(targetPos)
         } else if (nearestEnemy != null) {
+            myPrint { "go to enemy" }
+            
             targetPos = nearestEnemy.position
         }
         debug.draw(CustomData.Log("Target pos: $targetPos"))
 
         var aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
+            aim = nearestEnemy.position.copy() - me.position
+
+            drawAimStuff(aim)
 
             if (canShot(nearestEnemy)) {
-                aim = nearestEnemy.position.copy() - me.position
-                drawAimStuff(aim)
+                action.shoot = true
             }
         }
         var jump = targetPos.y > me.position.y;
@@ -72,12 +81,11 @@ class MyStrategy : Strategy {
         if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
             jump = true
         }
-
+        myPrint { "me ${me.position} _ target->$targetPos" }
         action.velocity = (targetPos.x - me.position.x) * 10000
         action.jump = jump
-        action.jumpDown = !jump
+        action.jumpDown = targetPos.y - me.position.y < -0.5f
         action.aim = aim
-        action.shoot = true
         action.plantMine = false
 
         return action

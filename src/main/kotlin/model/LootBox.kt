@@ -26,4 +26,8 @@ class LootBox {
         size.writeTo(stream)
         item.writeTo(stream)
     }
+
+    fun posInfo(): String {
+        return "$position + $item"
+    }
 }
