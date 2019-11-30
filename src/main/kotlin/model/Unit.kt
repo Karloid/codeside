@@ -15,8 +15,22 @@ class Unit {
     var onLadder: Boolean = false
     var mines: Int = 0
     var weapon: model.Weapon? = null
+
     constructor() {}
-    constructor(playerId: Int, id: Int, health: Int, position: model.Point2D, size: model.Point2D, jumpState: model.JumpState, walkedRight: Boolean, stand: Boolean, onGround: Boolean, onLadder: Boolean, mines: Int, weapon: model.Weapon?) {
+    constructor(
+        playerId: Int,
+        id: Int,
+        health: Int,
+        position: model.Point2D,
+        size: model.Point2D,
+        jumpState: model.JumpState,
+        walkedRight: Boolean,
+        stand: Boolean,
+        onGround: Boolean,
+        onLadder: Boolean,
+        mines: Int,
+        weapon: model.Weapon?
+    ) {
         this.playerId = playerId
         this.id = id
         this.health = health
@@ -30,6 +44,7 @@ class Unit {
         this.mines = mines
         this.weapon = weapon
     }
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Unit {
@@ -73,5 +88,9 @@ class Unit {
             StreamUtil.writeBoolean(stream, true)
             weapon.writeTo(stream)
         }
+    }
+
+    fun center(): Point2D {
+        return position.copy().plus(0.0, size.y / 2)
     }
 }

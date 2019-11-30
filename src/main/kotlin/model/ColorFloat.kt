@@ -7,6 +7,7 @@ class ColorFloat {
     var g: Float = 0.0f
     var b: Float = 0.0f
     var a: Float = 0.0f
+
     constructor() {}
     constructor(r: Float, g: Float, b: Float, a: Float) {
         this.r = r
@@ -14,7 +15,11 @@ class ColorFloat {
         this.b = b
         this.a = a
     }
+
     companion object {
+
+        val AIM: ColorFloat = ColorFloat(1f, 0f, 0f, 1f)
+        val AIM_SPREAD: ColorFloat = ColorFloat(1f, 0f, 0f, 0.6f)
 
         fun readFrom(stream: java.io.InputStream): ColorFloat {
             val result = ColorFloat()

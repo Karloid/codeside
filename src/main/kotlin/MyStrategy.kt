@@ -31,8 +31,6 @@ class MyStrategy : Strategy {
     private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
         val action = UnitAction()
 
-        debug.draw(CustomData.Line(game.units[0].position, game.units[1].position, 1 / 20f, ColorFloat(1f, 0f, 0f, 1f)))
-
         val nearestEnemy: Unit? = getClosestEnemy()
         val nearestWeapon = getClosest(Item.Weapon::class)
         val nearestHealth = getClosest(Item.HealthPack::class)
@@ -54,6 +52,8 @@ class MyStrategy : Strategy {
         var aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
             aim = nearestEnemy.position.copy() - me.position
+
+            drawAimStuff(aim)
         }
         var jump = targetPos.y > me.position.y;
         if (targetPos.x > me.position.x && game.getTile(me.position, RIGHT) == Tile.WALL) {
@@ -71,6 +71,21 @@ class MyStrategy : Strategy {
         action.plantMine = false
 
         return action
+    }
+
+    private fun drawAimStuff(aim: Point2D) {
+        val center = me.center()
+        debug.line(center, center.copy() + aim, ColorFloat.AIM)
+        me.weapon?.let {
+            val aimAngle = aim.angle()
+            val upAimAngle = aimAngle + it.spread
+            val downAimAngle = aimAngle - it.spread
+            val upAim = Point2D(upAimAngle).length(aim.length())
+            val downAim = Point2D(downAimAngle).length(aim.length())
+
+            debug.line(center, center.copy() + upAim, ColorFloat.AIM_SPREAD)
+            debug.line(center, center.copy() + downAim, ColorFloat.AIM_SPREAD)
+        }
     }
 
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1

@@ -78,7 +78,7 @@ class Point2D {
     }
 
 
-    fun add(x: Double, y: Double): Point2D {
+    fun plus(x: Double, y: Double): Point2D {
         return Point2D(this.x + x, this.y + y)
     }
 
@@ -205,8 +205,8 @@ class Point2D {
     }
 
 
-    fun add(point: Point2D): Point2D {
-        return add(point.x, point.y)
+    operator fun plus(point: Point2D): Point2D {
+        return plus(point.x, point.y)
     }
 
     fun rotate(angle: Double): Point2D {
@@ -241,7 +241,7 @@ class Point2D {
     }
 
     fun applyDir(direction: Direction): Point2D {
-        return this.add(
+        return this.plus(
             when (direction) {
                 Direction.LEFT -> LEFT
                 Direction.UP -> UP
