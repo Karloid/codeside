@@ -25,7 +25,7 @@ class MyStrategy : Strategy {
     }
 
     private inline fun myPrint(function: () -> String) {
-         myLog { game.currentTick.toString() + ": " + function() }
+        myLog { game.currentTick.toString() + ": " + function() }
     }
 
     private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
@@ -51,9 +51,11 @@ class MyStrategy : Strategy {
 
         var aim = Point2D(0.0, 0.0)
         if (nearestEnemy != null) {
-            aim = nearestEnemy.position.copy() - me.position
 
-            drawAimStuff(aim)
+            if (canShot(nearestEnemy)) {
+                aim = nearestEnemy.position.copy() - me.position
+                drawAimStuff(aim)
+            }
         }
         var jump = targetPos.y > me.position.y;
         if (targetPos.x > me.position.x && game.getTile(me.position, RIGHT) == Tile.WALL) {
@@ -71,6 +73,10 @@ class MyStrategy : Strategy {
         action.plantMine = false
 
         return action
+    }
+
+    private fun canShot(unit: Unit): Boolean {
+        return true
     }
 
     private fun drawAimStuff(aim: Point2D) {

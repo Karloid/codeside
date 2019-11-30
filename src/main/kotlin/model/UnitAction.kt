@@ -49,6 +49,6 @@ class UnitAction {
     }
 
     override fun toString(): String {
-        return "UnitAction(velocity=${velocity.f()}, jump=$jump, jumpDown=$jumpDown, aim=$aim.f(), shoot=$shoot, swapWeapon=$swapWeapon, plantMine=$plantMine)"
+        return "UnitAction(velocity=${velocity.f()}, jump=$jump, jumpDown=$jumpDown, aim=$aim, shoot=$shoot, swapWeapon=$swapWeapon, plantMine=$plantMine)"
     }
 }

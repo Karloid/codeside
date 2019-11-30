@@ -6,7 +6,7 @@ import util.StreamUtil
 class Game {
     var currentTick: Int = 0
     lateinit var properties: model.Properties
-    lateinit var level: model.Level
+    lateinit var level: Level
     lateinit var players: Array<model.Player>
     lateinit var units: Array<model.Unit>
     lateinit var bullets: Array<model.Bullet>
@@ -17,7 +17,7 @@ class Game {
     constructor(
         currentTick: Int,
         properties: model.Properties,
-        level: model.Level,
+        level: Level,
         players: Array<model.Player>,
         units: Array<model.Unit>,
         bullets: Array<model.Bullet>,
@@ -40,7 +40,7 @@ class Game {
             val result = Game()
             result.currentTick = StreamUtil.readInt(stream)
             result.properties = model.Properties.readFrom(stream)
-            result.level = model.Level.readFrom(stream)
+            result.level = Level.readFrom(stream)
             result.players = Array(StreamUtil.readInt(stream), {
                 var playersValue: model.Player
                 playersValue = model.Player.readFrom(stream)
@@ -98,6 +98,6 @@ class Game {
 
     fun getTile(position: Point2D, dir: Direction): Tile? {
         val newPos = position.copy().applyDir(dir)
-        return level.tiles.get(newPos.roundX).get(newPos.roundY)
+        return level.tiles.get(newPos)
     }
 }
