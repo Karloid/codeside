@@ -1,4 +1,11 @@
+fun d(function: () -> kotlin.Unit) {
+    if (MainKt.enabledLog) {
+        function()
+    }
+}
+
 class MainKt {
+
     companion object {
         var enabledLog = true
         fun myLog(s: String) {

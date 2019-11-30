@@ -1,6 +1,7 @@
 package model
 
 import util.StreamUtil
+import java.awt.Color
 
 class ColorFloat {
     var r: Float = 0.0f
@@ -18,6 +19,9 @@ class ColorFloat {
 
     companion object {
 
+        val WALL: ColorFloat = ColorFloat(Color.LIGHT_GRAY)
+        val WALL_UNDER_ME: ColorFloat = ColorFloat(Color.DARK_GRAY)
+
         val AIM: ColorFloat = ColorFloat(1f, 0f, 0f, 1f)
         val AIM_SPREAD: ColorFloat = ColorFloat(1f, 0f, 0f, 0.6f)
 
@@ -30,6 +34,8 @@ class ColorFloat {
             return result
         }
     }
+
+    constructor(color: Color) : this(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
 
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeFloat(stream, r)

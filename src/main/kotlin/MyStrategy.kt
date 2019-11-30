@@ -1,5 +1,5 @@
-import Direction.LEFT
-import Direction.RIGHT
+
+import Direction.*
 import MainKt.Companion.myLog
 import model.*
 import model.Unit
@@ -11,17 +11,25 @@ class MyStrategy : Strategy {
     private lateinit var me: Unit
     private lateinit var game: Game
 
+    private var end: Long = 0L
+    private var start: Long = 0L
+
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
+        start = System.currentTimeMillis()
         this.me = me
         this.game = game
         this.debug = debug
+
         val action = smartGuy(debug, game, me)
+
+        end = System.currentTimeMillis()
         printAction(action)
+        printMap()
         return action
     }
 
     private inline fun printAction(action: UnitAction) {
-        myPrint { "action:$action" }
+        myPrint { "action:$action took ${end - start}ms" }
     }
 
     private inline fun myPrint(function: () -> String) {
@@ -81,7 +89,9 @@ class MyStrategy : Strategy {
 
     private fun drawAimStuff(aim: Point2D) {
         val center = me.center()
-        debug.line(center, center.copy() + aim, ColorFloat.AIM)
+
+        d { debug.line(center, center.copy() + aim, ColorFloat.AIM) }
+
         me.weapon?.let {
             val aimAngle = aim.angle()
             val upAimAngle = aimAngle + it.spread
@@ -117,6 +127,21 @@ class MyStrategy : Strategy {
     private fun Point2D.distMe(): Double {
         return this.distance(me.position)
     }
+
+    private fun printMap() {
+        d {
+            val underMe = me.position.copy().applyDir(DOWN)
+            game.level.tiles.get(underMe)?.let {
+                debug.rect(underMe.roundX, underMe.roundY, Point2D(1, 1), ColorFloat.WALL_UNDER_ME)
+            }
+            game.level.tiles.fori { x, y, t ->
+                (t == Tile.WALL).then {
+
+                }
+            }
+        }
+    }
+
 }
 
 

@@ -1,0 +1,11 @@
+{
+    "options_preset": "Round1",
+    "players": [
+        "Keyboard",
+        {
+            "Tcp": {
+                "port": 31001
+            }
+        }
+    ]
+}
