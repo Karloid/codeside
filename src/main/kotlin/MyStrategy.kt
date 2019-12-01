@@ -34,7 +34,7 @@ class MyStrategy : Strategy {
     }
 
     private inline fun printAction(action: UnitAction) {
-        myPrint { "action:$action took ${end - start}ms" }
+        myPrint { "onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
     }
 
     private inline fun myPrint(function: () -> String) {
@@ -100,7 +100,7 @@ class MyStrategy : Strategy {
         if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
             jump = true
         }
-        if (me.jumpState.canJump.not()) {
+        if (me.jumpState.canJump.not() && me.onLadder.not()) {
             jump = false
         }
         if (!jump && prevActions.isNotEmpty()) {
