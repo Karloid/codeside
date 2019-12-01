@@ -107,7 +107,7 @@ class MyStrategy : Strategy {
             action.velocity = travelDistX * 10000
         }
         action.jump = jump
-        action.jumpDown = targetPos.y - me.position.y < -0.5f
+        action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
         action.plantMine = false
 
         //debug.circle(me.position, 4.0, ColorFloat.RAY_DIST_CHECK)
@@ -195,7 +195,7 @@ class MyStrategy : Strategy {
             if (isRocketLauncher) {
                 it.hitTargetPercent > 0.3f && it.hitTargetPercent >= it.hitMePercent
             } else {
-                it.hitTargetPercent > 0.4f
+                it.hitTargetPercent > 0.1f
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
