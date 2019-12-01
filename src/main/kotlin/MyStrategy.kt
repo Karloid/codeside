@@ -8,6 +8,7 @@ import kotlin.reflect.KClass
 
 class MyStrategy : Strategy {
 
+    private val prevActions = mutableListOf<UnitAction>()
     private lateinit var debug: Debug
     private lateinit var me: Unit
     private lateinit var game: Game
@@ -27,6 +28,8 @@ class MyStrategy : Strategy {
         printAction(action)
         printMap()
         debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
+
+        prevActions.add(action)
         return action
     }
 
@@ -97,6 +100,17 @@ class MyStrategy : Strategy {
         if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
             jump = true
         }
+        if (me.jumpState.canJump.not()) {
+            jump = false
+        }
+        if (!jump && prevActions.isNotEmpty()) {
+            val lastWasJump = prevActions.last().jump
+            if (!me.onLadder && !me.onGround && lastWasJump) {
+                myPrint { "force finish jump" }
+                jump = true
+            }
+        }
+
         myPrint { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
         val travelDistX = targetPos.x - me.position.x
         val travelDistY = targetPos.y - me.position.y
@@ -110,7 +124,7 @@ class MyStrategy : Strategy {
         action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
         action.plantMine = false
 
-        //debug.circle(me.position, 4.0, ColorFloat.RAY_DIST_CHECK)
+        debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
         return action
     }
 

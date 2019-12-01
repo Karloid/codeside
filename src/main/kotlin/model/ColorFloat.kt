@@ -19,6 +19,7 @@ class ColorFloat {
 
     companion object {
 
+        val TARGET_POS: ColorFloat = ColorFloat(Color.pink)
         val POINT_TO_CHECK = ColorFloat(0f, 0f, 1f, 1f)
         val WALL: ColorFloat = ColorFloat(Color.LIGHT_GRAY)
         val WALL_UNDER_ME: ColorFloat = ColorFloat(Color.DARK_GRAY)
