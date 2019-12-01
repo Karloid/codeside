@@ -100,4 +100,31 @@ class Game {
         val newPos = position.copy().applyDir(dir)
         return level.tiles.get(newPos)
     }
+
+    fun copy(): Game {
+        return Game().let {
+            it.players = Array(players.size) { ind ->
+                val unit = players[ind]
+                unit.copy()
+            }
+
+            it.units = Array(units.size) { ind ->
+                val unit = units[ind]
+                val robotEntity = unit.copy()
+                robotEntity
+            }
+
+            it.bullets = Array(bullets.size) { ind ->
+                val unit = bullets[ind]
+                val bulletNew = unit.copy()
+                bulletNew
+            }
+
+            it.level = level
+            it.currentTick = currentTick
+            it.properties = properties
+
+            it
+        }
+    }
 }

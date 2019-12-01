@@ -63,4 +63,18 @@ class Bullet {
             explosionParams.writeTo(stream)
         }
     }
+
+    fun copy(): Bullet {
+        return Bullet().let {
+            it.weaponType = weaponType
+            it.unitId = unitId
+            it.playerId = playerId
+            it.position = position.copy()
+            it.velocity = velocity.copy()
+            it.damage = damage
+            it.size = size
+            it.explosionParams = explosionParams
+            it
+        }
+    }
 }

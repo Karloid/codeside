@@ -1,92 +1,17 @@
-
-import Direction.*
 import model.*
 import model.Unit
-import java.util.*
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
-class MyStrategy : AbstractStrategy() {
+class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
 
-    private var end: Long = 0L
-    private var start: Long = 0L
-
-    override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
+    override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(me, game, debug)
-        start = System.currentTimeMillis()
 
-        val action = doSmartGuy(debug, game, me)
-
-        end = System.currentTimeMillis()
-
-        printAction(action)
-        printMap()
-        debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
-
-        prevActions.add(action)
-        return action
+        return smartGuy(debug, game, me)
     }
 
-    private fun pickBestStrat(strats: MutableList<StrategyAdvCombined>, tickK: Double): Strategy {
-        val evalAndSims = ArrayList<EvalAndSim>()
-
-        var i = 0
-        var goals = 0
-        while (!strats.isEmpty()) {
-            val strat = strats[0]
-
-            val evalAndSim = eval(startSimulator(ProxyStrat(strat), colors[i % colors.size], tickK, i == 0), strat)
-
-            strats.removeAt(0)
-
-            //checking actual path
-            evalAndSims.add(evalAndSim)
-
-            if (evalAndSim.score > 1000) {
-                goals++
-                if (goals >= 3) {
-                    break
-                }
-            }
-
-            i++
-        }
-
-        //TODO stop if found good enough, add more strats if want better ones
-        //TODO compare calculated and actual time touch, if actual time too differs then calc backward moves
-        //TODO check movement directly to real point of touch
-
-        var best = evalAndSims.maxBy { it.score }!!
-
-
-        //logAndDebugViewStrats(evalAndSims, best)
-
-        return best.strat
-    }
-
-    private fun eval(simulator: Simulator, strat: StrategyAdvCombined): EvalAndSim {
-
-        var score = 0.0
-
-
-        //score -= simulator.ball.position.x
-
-
-        return EvalAndSim(score, simulator, strat).apply {
-            createdAtTick = game.currentTick
-        }
-    }
-
-
-    private inline fun printAction(action: UnitAction) {
-        log { "onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
-    }
-
-    private inline fun log(function: () -> String) {
-        MainKt.log { game.currentTick.toString() + ": " + function() }
-    }
-
-    private fun doSmartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
+    private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
         val action = UnitAction()
 
         val nearestEnemy: Unit? = getClosestEnemy()
@@ -103,24 +28,24 @@ class MyStrategy : AbstractStrategy() {
         }
 
         if (me.weapon == null && nearestWeapon != null) {
-            log { "go pick weapon ${nearestWeapon.posInfo()}" }
+            myPrint { "go pick weapon ${nearestWeapon.posInfo()}" }
 
             targetPos = nearestWeapon.position
         } else if (nearestHealth != null) {
-            log { "go pick ${nearestHealth.posInfo()}" }
+            myPrint { "go pick ${nearestHealth.posInfo()}" }
 
             targetPos = nearestHealth.position
         } else if (wantSwapToRocketLauncher) {
             val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)!!
-            log { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
+            myPrint { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
             targetPos = rocket.position
             action.swapWeapon = isClose(targetPos)
         } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
-            log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
+            myPrint { "go pick ${nearestWeapon.posInfo()} instead pistol " }
             targetPos = nearestWeapon.position
             action.swapWeapon = isClose(targetPos)
         } else if (nearestEnemy != null) {
-            log { "go to enemy" }
+            myPrint { "go to enemy" }
             val mul = if (me.position.x - targetPos.x > 0) -1 else 1
             var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 6 } ?: 4
             targetPos = nearestEnemy.position.copy() + Point2D(distance * mul, 0)
@@ -139,10 +64,10 @@ class MyStrategy : AbstractStrategy() {
             }
         }
         var jump = targetPos.y > me.position.y;
-        if (targetPos.x > me.position.x && game.getTile(me.position, RIGHT) == Tile.WALL) {
+        if (targetPos.x > me.position.x && game.getTile(me.position, Direction.RIGHT) == Tile.WALL) {
             jump = true
         }
-        if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
+        if (targetPos.x < me.position.x && game.getTile(me.position, Direction.LEFT) == Tile.WALL) {
             jump = true
         }
         if (me.jumpState.canJump.not() && me.onLadder.not()) {
@@ -151,12 +76,12 @@ class MyStrategy : AbstractStrategy() {
         if (!jump && prevActions.isNotEmpty()) {
             val lastWasJump = prevActions.last().jump
             if (!me.onLadder && !me.onGround && lastWasJump) {
-                log { "force finish jump" }
+                myPrint { "force finish jump" }
                 jump = true
             }
         }
 
-        log { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
+        myPrint { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
         val travelDistX = targetPos.x - me.position.x
         val travelDistY = targetPos.y - me.position.y
 
@@ -171,16 +96,6 @@ class MyStrategy : AbstractStrategy() {
 
         debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
         return action
-    }
-
-    private fun wantSwapToRocketLauncher(me: Unit): Boolean {
-        val b = me.weapon?.typ != WeaponType.ROCKET_LAUNCHER
-        if (!b) {
-            return false
-        }
-        val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER) ?: return false
-
-        return rocket.position.distance(me.position) < getClosestEnemy()?.position?.distance(me.position) ?: 10.0
     }
 
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {
@@ -259,67 +174,19 @@ class MyStrategy : AbstractStrategy() {
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
                 val angleDiff = lastWeaponAngle - it.aim.angle()
-                log { "aim angle diff ${angleDiff.f()}" }
+                myPrint { "aim angle diff ${angleDiff.f()}" }
                 if (abs(angleDiff) < 0.05) {
-                    log { "keep old angle" }
+                    myPrint { "keep old angle" }
                     action.aim = Point2D(lastWeaponAngle).length(2.0)
                 } else {
                     action.aim = it.aim
                 }
                 canShootOnce = true
-                log { "fire at $it" }
+                myPrint { "fire at $it" }
             }
 
         return canShootOnce
     }
-
-    private fun startSimulator(
-        myStrat: Strategy,
-        color: ColorFloat,
-        tickK: Double,
-        calcActualPath: Boolean
-    ): Simulator {
-
-        val sim = Simulator(game.copy(), this)
-        val enStrat = SmartGuy(this)
-        // val enStrat = SmartGuySimple()
-
-        var stopDueTooManyTouchesTick = -1
-        var forcedMicroTicks = -1
-        //forcedMicroTicks = 2
-
-        val simTickCount = (60 * tickK).toInt()
-        for (tick in 0..simTickCount) {
-            predictStratMoves(myStrat, sim, tick, true)
-            predictStratMoves(enStrat, sim, tick, false)
-
-            sim.microTicks = 100
-
-            sim.tick()
-
-            val resultGoal = sim.resultGoal
-            if (resultGoal != null) {
-                break
-            }
-        }
-
-        return sim
-    }
-
-    private fun predictStratMoves(strat: Strategy, sim: Simulator, tick: Int, isMe: Boolean) {
-        game.units.forEach { unit ->
-            if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
-                val unitcopy = unit.copy()
-            }
-        }
-
-        game.units.forEach { unit ->
-            if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
-                start
-            }
-        }
-    }
-
 
     //TODO refactor
     private fun didStuckWithSomething(
@@ -399,10 +266,10 @@ class MyStrategy : AbstractStrategy() {
         return weGetWalls
     }
 
-    private fun drawAimStuff(aim: Point2D) {
-        val center = me.center()
-
-        // d { debug.line(center, center.copy() + aim, ColorFloat.AIM) }
+    private inline fun myPrint(function: () -> String) {
+        if (false) {
+            MainKt.myLog(function())
+        }
     }
 
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1
@@ -411,29 +278,15 @@ class MyStrategy : AbstractStrategy() {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
     }
 
-    private fun printMap() {
-        d {
-            val underMe = me.position.copy().applyDir(DOWN)
-            game.level.tiles.get(underMe)?.let {
-                debug.rect(underMe.roundX, underMe.roundY, Point2D(1, 1), ColorFloat.WALL_UNDER_ME)
-            }
-            game.level.tiles.fori { x, y, t ->
-                (t == Tile.WALL).then {
 
-                }
-            }
+    private fun wantSwapToRocketLauncher(me: Unit): Boolean {
+        val b = me.weapon?.typ != WeaponType.ROCKET_LAUNCHER
+        if (!b) {
+            return false
         }
+        val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER) ?: return false
+
+        return rocket.position.distance(me.position) < getClosestEnemy()?.position?.distance(me.position) ?: 10.0
     }
 
-    private val colors = arrayOf(
-        ColorFloat(1f, 0f, 0f, 0.5f),
-        ColorFloat(0f, 1f, 0f, 0.5f),
-        ColorFloat(0f, 0f, 1f, 0.5f),
-        ColorFloat(0f, 1f, 1f, 0.5f),
-        ColorFloat(1f, 1f, 0f, 0.5f),
-        ColorFloat(0.1f, 0.1f, 0.8f, 0.5f)
-    )
-
 }
-
-

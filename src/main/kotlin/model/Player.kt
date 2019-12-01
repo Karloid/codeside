@@ -5,11 +5,13 @@ import util.StreamUtil
 class Player {
     var id: Int = 0
     var score: Int = 0
+
     constructor() {}
     constructor(id: Int, score: Int) {
         this.id = id
         this.score = score
     }
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Player {
@@ -23,5 +25,13 @@ class Player {
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, id)
         StreamUtil.writeInt(stream, score)
+    }
+
+    fun copy(): Player {
+        return Player().let {
+            it.id = id
+            it.score = score
+            it
+        }
     }
 }

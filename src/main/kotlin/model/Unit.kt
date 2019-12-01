@@ -97,4 +97,22 @@ class Unit {
     fun top(): Point2D {
         return position.copy().plus(0.0, size.y)
     }
+
+    fun copy(): Unit {
+        val result = Unit()
+        result.playerId = playerId
+        result.id = id
+        result.health = health
+        result.position = position
+        result.size = size
+        result.jumpState = jumpState
+        result.walkedRight = walkedRight
+        result.stand = stand
+        result.onGround = onGround
+        result.onLadder = onLadder
+        result.mines = mines
+        result.weapon = weapon?.copy()
+
+        return result
+    }
 }

@@ -11,8 +11,18 @@ class Weapon {
     var fireTimer: Double? = null
     var lastAngle: Double? = null
     var lastFireTick: Int? = null
+
     constructor() {}
-    constructor(typ: WeaponType, params: WeaponParams, magazine: Int, wasShooting: Boolean, spread: Double, fireTimer: Double?, lastAngle: Double?, lastFireTick: Int?) {
+    constructor(
+        typ: WeaponType,
+        params: WeaponParams,
+        magazine: Int,
+        wasShooting: Boolean,
+        spread: Double,
+        fireTimer: Double?,
+        lastAngle: Double?,
+        lastFireTick: Int?
+    ) {
         this.typ = typ
         this.params = params
         this.magazine = magazine
@@ -22,15 +32,16 @@ class Weapon {
         this.lastAngle = lastAngle
         this.lastFireTick = lastFireTick
     }
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Weapon {
             val result = Weapon()
             when (StreamUtil.readInt(stream)) {
-            0 ->result.typ = WeaponType.PISTOL
-            1 ->result.typ = WeaponType.ASSAULT_RIFLE
-            2 ->result.typ = WeaponType.ROCKET_LAUNCHER
-            else -> throw java.io.IOException("Unexpected discriminant value")
+                0 -> result.typ = WeaponType.PISTOL
+                1 -> result.typ = WeaponType.ASSAULT_RIFLE
+                2 -> result.typ = WeaponType.ROCKET_LAUNCHER
+                else -> throw java.io.IOException("Unexpected discriminant value")
             }
             result.params = WeaponParams.readFrom(stream)
             result.magazine = StreamUtil.readInt(stream)
@@ -81,6 +92,21 @@ class Weapon {
         } else {
             StreamUtil.writeBoolean(stream, true)
             StreamUtil.writeInt(stream, lastFireTick)
+        }
+    }
+
+    fun copy(): Weapon? {
+        return Weapon().let {
+            it.typ = typ
+            it.params = params
+            it.magazine = magazine
+            it.wasShooting = wasShooting
+            it.spread = spread
+            it.fireTimer = fireTimer
+            it.lastAngle = lastAngle
+            it.lastFireTick = lastFireTick
+
+            it
         }
     }
 }

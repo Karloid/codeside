@@ -12,7 +12,7 @@ class MainKt {
             enabledLog.then { println(s) }
         }
 
-        inline fun myLog(s: () -> String) {
+        inline fun log(s: () -> String) {
             enabledLog.then { println(s()) }
         }
 
