@@ -98,7 +98,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             }
 
             if (!unit.jumpState.canJump && !unit.onGround && !unit.onLadder) {
-                if (isCollideVerticallyBot(delta_time, unit)) {
+                if (isCollideVerticallyBot(delta_time, unit, action.jumpDown)) {
                     unit.onGround = true
                     unit.jumpState.canJump = true
                     unit.jumpState.maxTime = game.properties.unitJumpTime
@@ -116,7 +116,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         val jumpSpeed = game.properties.unitJumpSpeed * delta_time
         val newPos = unit.position.copy().plus(0.0, jumpSpeed)
 
-        if (!isVerticalCollideLevel(newPos, unit, true)) {
+        if (!isVerticalCollideLevel(newPos, unit, true, false)) {
             if (noCollideWithOtherUnitsVertically(unit, newPos, true)) {
                 unit.position = newPos
                 return false
@@ -125,11 +125,11 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         return true
     }
 
-    private fun isCollideVerticallyBot(delta_time: Double, unit: Unit): Boolean {
+    private fun isCollideVerticallyBot(delta_time: Double, unit: Unit, jumpDown: Boolean): Boolean {
         val jumpSpeed = game.properties.unitFallSpeed * delta_time
         val newPos = unit.position.copy().minus(0.0, jumpSpeed)
 
-        if (!isVerticalCollideLevel(newPos, unit, false)) {
+        if (!isVerticalCollideLevel(newPos, unit, false, jumpDown)) {
             if (noCollideWithOtherUnitsVertically(unit, newPos, false)) {
                 unit.position = newPos
                 return false
@@ -142,7 +142,12 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         return true //TODO
     }
 
-    private fun isVerticalCollideLevel(newPosition: Point2D, unit: Unit, isTopCheck: Boolean): Boolean {
+    private fun isVerticalCollideLevel(
+        newPosition: Point2D,
+        unit: Unit,
+        isTopCheck: Boolean,
+        jumpDown: Boolean
+    ): Boolean {
         val yBot = newPosition.y.toInt()
         val yTop = (newPosition.y + unit.size.y).toInt()
 
@@ -150,15 +155,26 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         val unitHalfXSize = unit.size.x / 2f
 
         val yCheck = isTopCheck.then { yTop } ?: yBot
-        return checkVertical(newPosition, unitHalfXSize, yCheck)
+
+        val respectNotOnlyWalls = !jumpDown && !isTopCheck
+        return checkVerticalWalls(newPosition, unitHalfXSize, yCheck, respectNotOnlyWalls)
     }
 
-    private fun checkVertical(newPosition: Point2D, unitHalfXSize: Double, yToCheck: Int): Boolean {
+    private fun checkVerticalWalls(
+        newPosition: Point2D,
+        unitHalfXSize: Double,
+        yToCheck: Int,
+        respectNotOnlyWalls: Boolean
+    ): Boolean {
         val xLeft = (newPosition.x - unitHalfXSize).toInt()
         val xRight = (newPosition.x + unitHalfXSize).toInt()
         for (xToCheck in xLeft..xRight) {
             val tile = game.level.tiles.getFast(xToCheck, yToCheck)
             if (tile == Tile.WALL) {
+                return true
+            }
+            
+            if (respectNotOnlyWalls && (tile == Tile.PLATFORM || tile == Tile.LADDER)) {
                 return true
             }
         }
