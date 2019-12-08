@@ -90,14 +90,28 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                     }
                 }
             }
+            updateUnitLadder(unit)
 
-            // vertical movement UP
+            //check we still on ground
+            if (!unit.simAction.jump && unit.onGround && !unit.onLadder) {
+                if (!isVerticalCollideLevel(unit.position, unit, false, false)) {
+                    if (noCollideWithOtherUnitsVertically(unit, unit.position, false)) {
+                        unit.onGround = false
+                    }
+                }
+            }
+
+            // hmm something
             if (!action.jump && unit.jumpState.canJump) {
                 unit.jumpState.canJump = false
                 unit.jumpState.maxTime = 0.0
             }
 
-            if (!unit.jumpState.canJump && !unit.onGround && !unit.onLadder) {
+            //failing bottom
+            val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder
+            val isOnLadderDown = unit.simAction.jumpDown && unit.onLadder
+            val isJumpDownFromPlatform = unit.simAction.jumpDown && unit.onGround
+            if (isFailing || isOnLadderDown || isJumpDownFromPlatform ) {
                 if (isCollideVerticallyBot(delta_time, unit, action.jumpDown)) {
                     unit.onGround = true
                     unit.jumpState.canJump = true
@@ -106,17 +120,23 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 }
             }
 
-            unit.onLadder = isUnitOnLadder(unit.position, unit.size)
-            if (unit.onLadder) {
-                unit.onGround = false
-                unit.jumpState.canJump = true
-                unit.jumpState.maxTime = game.properties.unitJumpTime
-            }
+            //check ladder
+            updateUnitLadder(unit)
             //TODO jump pad
 
 
             //TODO fighting
             val x = 10
+        }
+    }
+
+    private fun updateUnitLadder(unit: Unit) {
+        //check ladder
+        unit.onLadder = isUnitOnLadder(unit.position, unit.size)
+        if (unit.onLadder) {
+            unit.onGround = false
+            unit.jumpState.canJump = true
+            unit.jumpState.maxTime = game.properties.unitJumpTime
         }
     }
 

@@ -14,8 +14,11 @@ class ToEnemyAndJumpStrat : StrategyAdvCombined {
         } else {
             act.velocity = -99999.0
         }
-        act.jump = true
-
+        if (game.currentTick % 50 > 10) {
+            act.jump = true
+        } else {
+            act.jumpDown = true
+        }
         return act
     }
 
