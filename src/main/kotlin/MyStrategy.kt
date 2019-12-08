@@ -10,6 +10,8 @@ class MyStrategy : AbstractStrategy() {
     private var end: Long = 0L
     private var start: Long = 0L
 
+    private var firstDebugSimulator: Simulator? = null
+
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(me, game, debug)
         start = System.currentTimeMillis()
@@ -26,7 +28,25 @@ class MyStrategy : AbstractStrategy() {
 
         //TODO 
         action.shoot = false
+
+        drawDebugSimulator()
         return action
+    }
+
+    private fun drawDebugSimulator() {
+        var colorIndex = 0
+
+        firstDebugSimulator?.let { sim ->
+            val size = Point2D(1 / 10f, 1 / 10f)
+
+            for (entry in sim.metainfo.movements.entries) {
+                val myColor = colors[colorIndex % colors.size]
+                entry.value.fori {
+                    debug.rect(it, size, myColor)
+                }
+                colorIndex++
+            }
+        }
     }
 
     private fun doSimMove(): UnitAction {
@@ -46,6 +66,10 @@ class MyStrategy : AbstractStrategy() {
             val evalAndSim = eval(startSimulator(ProxyStrat1(strat), colors[i % colors.size], tickK, i == 0), strat)
 
             strats.removeAt(0)
+
+            if (firstDebugSimulator == null) {
+                firstDebugSimulator = evalAndSim.simulator
+            }
 
             //checking actual path
             evalAndSims.add(evalAndSim)
@@ -305,7 +329,12 @@ class MyStrategy : AbstractStrategy() {
 
             sim.tick()
 
-            val resultGoal = sim.resultGoal
+            for (unit in game.units) {
+                val positions = sim.metainfo.movements.getOrPut(unit.id) { mutableListOf() }
+                positions.add(unit.position.copy())
+            }
+
+            val resultGoal = sim.resultKill
             if (resultGoal != null) {
                 break
             }

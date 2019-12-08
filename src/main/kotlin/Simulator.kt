@@ -16,7 +16,7 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
     @JvmField
     var robotBallTouches = IntArray(8)
 
-    var resultGoal: Boolean? = null
+    var resultKill: Boolean? = null
 
     @JvmField
     var microTicks: Int = 10

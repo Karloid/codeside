@@ -44,6 +44,11 @@ class Point2D {
         this.y = y
     }
 
+    internal constructor(x: Float, y: Float) {
+        this.x = x.toDouble()
+        this.y = y.toDouble()
+    }
+
     fun getDistanceTo(x: Double, y: Double): Double {
         return getDistance(this.x, this.y, x, y)
     }
