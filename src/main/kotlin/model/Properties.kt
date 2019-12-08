@@ -8,7 +8,7 @@ class Properties {
     var ticksPerSecond: Double = 0.0
     var updatesPerTick: Int = 0
     lateinit var lootBoxSize: Point2D
-    lateinit var unitSize: Point2D
+    lateinit var    unitSize: Point2D
     var unitMaxHorizontalSpeed: Double = 0.0
     var unitFallSpeed: Double = 0.0
     var unitJumpTime: Double = 0.0

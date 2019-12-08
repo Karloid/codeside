@@ -199,14 +199,15 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         val yCheck = isTopCheck.then { yTop } ?: yBot
 
         val respectNotOnlyWalls = !jumpDown && !isTopCheck
-        return checkVerticalWalls(newPosition, unitHalfXSize, yCheck, respectNotOnlyWalls)
+        return checkVerticalWalls(newPosition, unitHalfXSize, yCheck, respectNotOnlyWalls, unit)
     }
 
     private fun checkVerticalWalls(
         newPosition: Point2D,
         unitHalfXSize: Double,
         yToCheck: Int,
-        respectNotOnlyWalls: Boolean
+        respectNotOnlyWalls: Boolean,
+        unit: Unit
     ): Boolean {
         val xLeft = (newPosition.x - unitHalfXSize).toInt()
         val xRight = (newPosition.x + unitHalfXSize).toInt()
@@ -223,7 +224,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 return true
             }
 
-            if (respectNotOnlyWalls && (tile == Tile.PLATFORM)) {
+            if (respectNotOnlyWalls && (tile == Tile.PLATFORM) && yToCheck != unit.position.intY) {
                 return true
             }
         }

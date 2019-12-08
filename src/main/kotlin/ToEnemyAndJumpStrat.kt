@@ -14,10 +14,18 @@ class ToEnemyAndJumpStrat : StrategyAdvCombined {
         } else {
             act.velocity = -99999.0
         }
-        if (game.currentTick % 50 > 10) {
-            act.jump = true
+        if (deltaX < 4) {
+            if (game.currentTick % 50 < 10) {
+                act.jump = true
+            } else {
+                act.jumpDown = true
+            }
         } else {
-            act.jumpDown = true
+            if (game.currentTick % 50 > 10) {
+                act.jump = true
+            } else {
+                act.jumpDown = true
+            }
         }
 
         if (game.currentTick % 35 < 13) {
