@@ -59,7 +59,9 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
                 nearestEnemy.center() - me.center()
             )
 
-            if (canShot(nearestEnemy, aims, action)) {
+            //val canShot = canShot(nearestEnemy, aims, action)
+            val canShot = true
+            if (canShot) {
                 action.shoot = true
             }
         }

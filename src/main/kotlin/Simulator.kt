@@ -64,19 +64,108 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             velocity = maxOf(-maxSpeed, velocity)
             velocity = minOf(maxSpeed, velocity)
             velocity *= delta_time
-            val newPosition = unit.position.copy().plus(velocity, 0.0)
+            val newPosHor = unit.position.copy().plus(velocity, 0.0)
 
             //check horizontal collide with walls
-            if (!isHorizontalCollideLevel(newPosition, unit)) {
-                if (noCollideWithOtherUnits(unit, newPosition))
-                    unit.position = newPosition
+            if (!isHorizontalCollideLevel(newPosHor, unit)) {
+                if (noCollideWithOtherUnitsHorizontally(unit, newPosHor))
+                    unit.position = newPosHor
             }
 
-            // vertical movement
+            // vertical movement UP
+            if (action.jump && unit.jumpState.canJump) {
+                unit.onGround = false
+                unit.jumpState.maxTime = unit.jumpState.maxTime - delta_time
+                if (unit.jumpState.maxTime <= 0) {
+                    unit.jumpState.maxTime = 0.0
+                    unit.jumpState.canJump = false;
+                }
+
+                if (unit.jumpState.canJump) {
+                    if (isCollideVerticallyTop(delta_time, unit)) {
+
+                        unit.jumpState.canJump = false
+                        unit.jumpState.maxTime = 0.0
+                        //we are failing after stuck
+                    }
+                }
+            }
+
+            // vertical movement UP
+            if (!action.jump && unit.jumpState.canJump) {
+                unit.jumpState.canJump = false
+                unit.jumpState.maxTime = 0.0
+            }
+
+            if (!unit.jumpState.canJump && !unit.onGround && !unit.onLadder) {
+                if (isCollideVerticallyBot(delta_time, unit)) {
+                    unit.onGround = true
+                    unit.jumpState.canJump = true
+                    unit.jumpState.maxTime = game.properties.unitJumpTime
+                    //we are failing after stuck
+                }
+            }
+            //TODO ladders
+            //TODO jump pad
+
+            val x = 10
         }
     }
 
-    private fun noCollideWithOtherUnits(myUnit: Unit, newPosition: Point2D) =
+    private fun isCollideVerticallyTop(delta_time: Double, unit: Unit): Boolean {
+        val jumpSpeed = game.properties.unitJumpSpeed * delta_time
+        val newPos = unit.position.copy().plus(0.0, jumpSpeed)
+
+        if (!isVerticalCollideLevel(newPos, unit, true)) {
+            if (noCollideWithOtherUnitsVertically(unit, newPos, true)) {
+                unit.position = newPos
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun isCollideVerticallyBot(delta_time: Double, unit: Unit): Boolean {
+        val jumpSpeed = game.properties.unitFallSpeed * delta_time
+        val newPos = unit.position.copy().minus(0.0, jumpSpeed)
+
+        if (!isVerticalCollideLevel(newPos, unit, false)) {
+            if (noCollideWithOtherUnitsVertically(unit, newPos, false)) {
+                unit.position = newPos
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun noCollideWithOtherUnitsVertically(unit: Unit, newPosHor: Point2D, checkTop: Boolean): Boolean {
+        return true //TODO
+    }
+
+    private fun isVerticalCollideLevel(newPosition: Point2D, unit: Unit, isTopCheck: Boolean): Boolean {
+        val yBot = newPosition.y.toInt()
+        val yTop = (newPosition.y + unit.size.y).toInt()
+
+
+        val unitHalfXSize = unit.size.x / 2f
+
+        val yCheck = isTopCheck.then { yTop } ?: yBot
+        return checkVertical(newPosition, unitHalfXSize, yCheck)
+    }
+
+    private fun checkVertical(newPosition: Point2D, unitHalfXSize: Double, yToCheck: Int): Boolean {
+        val xLeft = (newPosition.x - unitHalfXSize).toInt()
+        val xRight = (newPosition.x + unitHalfXSize).toInt()
+        for (xToCheck in xLeft..xRight) {
+            val tile = game.level.tiles.getFast(xToCheck, yToCheck)
+            if (tile == Tile.WALL) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun noCollideWithOtherUnitsHorizontally(myUnit: Unit, newPosition: Point2D) =
         game.units.none { it != myUnit && abs(it.position.y - newPosition.y) < myUnit.size.y && abs(it.position.x - newPosition.x) < myUnit.size.x }
 
     private fun isHorizontalCollideLevel(newPosition: Point2D, unit: Unit): Boolean {
@@ -89,9 +178,11 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             val xLeft = (newPosition.x - unitHalfXSize).toInt()
             val xRight = (newPosition.x + unitHalfXSize).toInt()
             for (xToCheck in xLeft..xRight) {
-                val tile = game.level.tiles.getFast(xToCheck, yToCheck)
-                if (tile == Tile.WALL) {
-                    return true
+                if (xToCheck == xLeft || xToCheck == xRight) {
+                    val tile = game.level.tiles.getFast(xToCheck, yToCheck)
+                    if (tile == Tile.WALL) {
+                        return true
+                    }
                 }
             }
         }

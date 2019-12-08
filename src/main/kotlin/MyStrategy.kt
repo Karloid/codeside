@@ -7,6 +7,8 @@ import kotlin.reflect.KClass
 
 class MyStrategy : AbstractStrategy() {
 
+    private var prevGame: Game? = null
+
     private var end: Long = 0L
     private var start: Long = 0L
 
@@ -14,6 +16,9 @@ class MyStrategy : AbstractStrategy() {
 
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(me, game, debug)
+        checkPrevGame()
+
+        log { "jumpInfo=${me.jumpState.description()}" }
         start = System.currentTimeMillis()
 
         val action = doSimMove()
@@ -33,6 +38,21 @@ class MyStrategy : AbstractStrategy() {
         return action
     }
 
+    private fun checkPrevGame() {
+        prevGame?.let {
+            for (oldUnit in it.units) {
+                game.units.firstOrNull { it.id == oldUnit.id }
+                    ?.let { newUnit ->
+                        if (newUnit.stand) {
+
+                        }
+                    }
+            }
+        }
+        prevGame = game
+
+    }
+
     private fun drawDebugSimulator() {
         var colorIndex = 0
 
@@ -50,7 +70,7 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun doSimMove(): UnitAction {
-        val strat = pickBestStrat(mutableListOf(ToEnemyAndJumpStrat()), 1.0)
+        val strat = pickBestStrat(mutableListOf(ToEnemyAndJumpStrat()), 5.0)
 
         return strat.getAction(me, game, debug)
     }
@@ -70,6 +90,7 @@ class MyStrategy : AbstractStrategy() {
             if (firstDebugSimulator == null) {
                 firstDebugSimulator = evalAndSim.simulator
             }
+            firstDebugSimulator = evalAndSim.simulator
 
             //checking actual path
             evalAndSims.add(evalAndSim)
