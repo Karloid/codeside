@@ -105,11 +105,28 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                     //we are failing after stuck
                 }
             }
-            //TODO ladders
+
+            unit.onLadder = isUnitOnLadder(unit.position, unit.size)
+            if (unit.onLadder) {
+                unit.onGround = false
+                unit.jumpState.canJump = true
+                unit.jumpState.maxTime = game.properties.unitJumpTime
+            }
             //TODO jump pad
 
+
+            //TODO fighting
             val x = 10
         }
+    }
+
+    private fun isUnitOnLadder(position: Point2D, unitSize: Point2D): Boolean {
+        val x = position.intX
+        val botY = position.intY
+
+        val topY = (position.y + unitSize.y / 2.0).toInt()
+
+        return game.level.tiles.getFast(x, botY) == Tile.LADDER || game.level.tiles.getFast(x, topY) == Tile.LADDER
     }
 
     private fun isCollideVerticallyTop(delta_time: Double, unit: Unit): Boolean {
@@ -173,13 +190,20 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
     ): Boolean {
         val xLeft = (newPosition.x - unitHalfXSize).toInt()
         val xRight = (newPosition.x + unitHalfXSize).toInt()
+
+        if (respectNotOnlyWalls) {
+            if (isUnitOnLadder(newPosition, game.properties.unitSize)) {
+                return true
+            }
+        }
+
         for (xToCheck in xLeft..xRight) {
             val tile = game.level.tiles.getFast(xToCheck, yToCheck)
             if (tile == Tile.WALL) {
                 return true
             }
 
-            if (respectNotOnlyWalls && (tile == Tile.PLATFORM || tile == Tile.LADDER)) {
+            if (respectNotOnlyWalls && (tile == Tile.PLATFORM)) {
                 return true
             }
         }

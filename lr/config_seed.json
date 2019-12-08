@@ -4,7 +4,7 @@
     "Custom": {
       "level": {
         "LoadFrom": {
-          "path": "level_test.txt"
+          "path": "level_test_tower.txt"
         }
       },
       "properties": null
