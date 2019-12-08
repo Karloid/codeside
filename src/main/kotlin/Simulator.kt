@@ -138,8 +138,13 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         return true
     }
 
-    private fun noCollideWithOtherUnitsVertically(unit: Unit, newPosHor: Point2D, checkTop: Boolean): Boolean {
-        return true //TODO
+    private fun noCollideWithOtherUnitsVertically(myUnit: Unit, newPosition: Point2D, checkTop: Boolean): Boolean {
+        return game.units.none {
+            it != myUnit &&
+                    (checkTop.then { it.position.y > newPosition.y } ?: run { it.position.y < newPosition.y }) &&
+                    abs(it.position.y - newPosition.y) < myUnit.size.y &&
+                    abs(it.position.x - newPosition.x) < myUnit.size.x
+        }
     }
 
     private fun isVerticalCollideLevel(
@@ -173,7 +178,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             if (tile == Tile.WALL) {
                 return true
             }
-            
+
             if (respectNotOnlyWalls && (tile == Tile.PLATFORM || tile == Tile.LADDER)) {
                 return true
             }

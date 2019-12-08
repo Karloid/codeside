@@ -335,7 +335,7 @@ class MyStrategy : AbstractStrategy() {
 
         val simGame = game.copy()
         val sim = Simulator(simGame, this)
-        val enStrat = SmartGuy(this)
+        val enStrat = EmptyStrat(this)
         // val enStrat = SmartGuySimple()
 
         var stopDueTooManyTouchesTick = -1

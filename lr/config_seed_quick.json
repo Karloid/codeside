@@ -1,0 +1,25 @@
+{
+  "seed": 3,
+  "options_preset": {
+    "Custom": {
+      "level": {
+        "LoadFrom": {
+          "path": "level_test.txt"
+        }
+      },
+      "properties": null
+    }
+  },
+  "players": [
+    "Quickstart",
+    {
+      "Tcp": {
+        "host": null,
+        "port": 31001,
+        "accept_timeout": null,
+        "timeout": null,
+        "token": null
+      }
+    }
+  ]
+}
