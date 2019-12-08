@@ -1,6 +1,7 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
 import model.Game
+import model.Point2D
 import model.Unit
 
 
@@ -28,10 +29,10 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
 
 
     fun move(e: Unit, delta_time: Float) {
-        e.velocity = e.velocity.clamp(copyRules.MAX_ENTITY_SPEED)
+       /* e.velocity = e.velocity.clamp(copyRules.MAX_ENTITY_SPEED)
         e.position += e.velocity * delta_time
         e.position.y -= copyRules.GRAVITY * delta_time * delta_time / 2
-        e.velocity.y -= copyRules.GRAVITY * delta_time
+        e.velocity.y -= copyRules.GRAVITY * delta_time*/
     }
 
 
@@ -45,13 +46,14 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
         }
     }
 
-    private fun update(delta_time: Double): Unit {                     //TODO optimzie
+    private fun update(delta_time: Double) {                     //TODO optimzie
      /*   if (fullRobotSim) {
             val j = random.nextInt(4)
             val a = units[0]
             units[0] = units[j]
             units[j] = a
         }*/
+/*
 
         game.units.forEach {  robot ->
             if (fullRobotSim) {
@@ -110,9 +112,11 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
         if (Math.abs(ball.position.z) > Arena.depth / 2 + ball.radius) {
             resultGoal = ball.position.z > 0
         }
+*/
 
     }
 
+/*
     fun collideEntities(a: Entity, b: Entity) {
         val deltaPosition = b.position - a.position
         val distance = deltaPosition.length()
@@ -136,7 +140,9 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
             }
         }
     }
+*/
 
+/*
     fun collide_with_arena(e: Entity): Point3D? {
         val dan = dan_to_arena(e.position, e.radius) ?: return null
 
@@ -153,6 +159,7 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
         }
         return null
     }
+*/
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun clamp(x: Double, min: Double, max: Double): Double {
@@ -173,7 +180,7 @@ class Simulator(val game: Game, val mStrt : MyStrategy) {
     }
 }
 
-class Dan(@JvmField var distance: Double, @JvmField var normal: Point3D) {
+class Dan(@JvmField var distance: Double, @JvmField var normal: Point2D) {
     operator fun component1() = distance
     operator fun component2() = normal
 }
