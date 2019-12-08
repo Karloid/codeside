@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
-        super.getAction(me, game, debug)
+        super.getAction(unit, game, debug)
 
         return smartGuy(debug, game, me)
     }
@@ -94,7 +94,7 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
         action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
         action.plantMine = false
 
-        debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
+        //debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
         return action
     }
 
@@ -115,7 +115,7 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
             me.weapon?.let { weapon ->
                 val aimAngle = aim.angle()
 
-                val rayCountOneSide = 6
+                val rayCountOneSide = 1  //TODO fix performance somehow
                 val stepAngle = weapon.spread / rayCountOneSide
 
                 var stuckCount = 0
@@ -253,16 +253,16 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
             //d { debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK) }
         }
 
-        d {
+     /*       d {
             val endFinal = hitPoint.ref ?: to
-
-            val color =
-                hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
-                ?: ColorFloat.AIM_RAY_MILK
+                
+                    val color =
+                        hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
+                        ?: ColorFloat.AIM_RAY_MILK
 
             debug.rect(endFinal, Point2D(0.1, 0.1), color)
-            debug.line(from, endFinal, color)
-        }
+                debug.line(from, endFinal, color)
+            }*/
         return weGetWalls
     }
 

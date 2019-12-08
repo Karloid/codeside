@@ -7,8 +7,8 @@ class Properties {
     var teamSize: Int = 0
     var ticksPerSecond: Double = 0.0
     var updatesPerTick: Int = 0
-    lateinit var lootBoxSize: model.Point2D
-    lateinit var unitSize: model.Point2D
+    lateinit var lootBoxSize: Point2D
+    lateinit var unitSize: Point2D
     var unitMaxHorizontalSpeed: Double = 0.0
     var unitFallSpeed: Double = 0.0
     var unitJumpTime: Double = 0.0
@@ -18,14 +18,14 @@ class Properties {
     var unitMaxHealth: Int = 0
     var healthPackHealth: Int = 0
     lateinit var weaponParams: MutableMap<model.WeaponType, model.WeaponParams>
-    lateinit var mineSize: model.Point2D
+    lateinit var mineSize: Point2D
     lateinit var mineExplosionParams: model.ExplosionParams
     var minePrepareTime: Double = 0.0
     var mineTriggerTime: Double = 0.0
     var mineTriggerRadius: Double = 0.0
     var killScore: Int = 0
     constructor() {}
-    constructor(maxTickCount: Int, teamSize: Int, ticksPerSecond: Double, updatesPerTick: Int, lootBoxSize: model.Point2D, unitSize: model.Point2D, unitMaxHorizontalSpeed: Double, unitFallSpeed: Double, unitJumpTime: Double, unitJumpSpeed: Double, jumpPadJumpTime: Double, jumpPadJumpSpeed: Double, unitMaxHealth: Int, healthPackHealth: Int, weaponParams: MutableMap<model.WeaponType, model.WeaponParams>, mineSize: model.Point2D, mineExplosionParams: model.ExplosionParams, minePrepareTime: Double, mineTriggerTime: Double, mineTriggerRadius: Double, killScore: Int) {
+    constructor(maxTickCount: Int, teamSize: Int, ticksPerSecond: Double, updatesPerTick: Int, lootBoxSize: Point2D, unitSize: Point2D, unitMaxHorizontalSpeed: Double, unitFallSpeed: Double, unitJumpTime: Double, unitJumpSpeed: Double, jumpPadJumpTime: Double, jumpPadJumpSpeed: Double, unitMaxHealth: Int, healthPackHealth: Int, weaponParams: MutableMap<model.WeaponType, model.WeaponParams>, mineSize: Point2D, mineExplosionParams: model.ExplosionParams, minePrepareTime: Double, mineTriggerTime: Double, mineTriggerRadius: Double, killScore: Int) {
         this.maxTickCount = maxTickCount
         this.teamSize = teamSize
         this.ticksPerSecond = ticksPerSecond
@@ -56,8 +56,8 @@ class Properties {
             result.teamSize = StreamUtil.readInt(stream)
             result.ticksPerSecond = StreamUtil.readDouble(stream)
             result.updatesPerTick = StreamUtil.readInt(stream)
-            result.lootBoxSize = model.Point2D.readFrom(stream)
-            result.unitSize = model.Point2D.readFrom(stream)
+            result.lootBoxSize = Point2D.readFrom(stream)
+            result.unitSize = Point2D.readFrom(stream)
             result.unitMaxHorizontalSpeed = StreamUtil.readDouble(stream)
             result.unitFallSpeed = StreamUtil.readDouble(stream)
             result.unitJumpTime = StreamUtil.readDouble(stream)
@@ -80,7 +80,7 @@ class Properties {
                 weaponParamsValue = model.WeaponParams.readFrom(stream)
                 result.weaponParams.put(weaponParamsKey, weaponParamsValue)
             }
-            result.mineSize = model.Point2D.readFrom(stream)
+            result.mineSize = Point2D.readFrom(stream)
             result.mineExplosionParams = model.ExplosionParams.readFrom(stream)
             result.minePrepareTime = StreamUtil.readDouble(stream)
             result.mineTriggerTime = StreamUtil.readDouble(stream)

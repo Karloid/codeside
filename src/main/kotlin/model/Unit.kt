@@ -3,6 +3,7 @@ package model
 import util.StreamUtil
 
 class Unit {
+    lateinit var simAction: UnitAction
     var playerId: Int = 0
     var id: Int = 0
     var health: Int = 0

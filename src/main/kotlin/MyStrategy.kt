@@ -312,7 +312,8 @@ class MyStrategy : AbstractStrategy() {
         calcActualPath: Boolean
     ): Simulator {
 
-        val sim = Simulator(game.copy(), this)
+        val simGame = game.copy()
+        val sim = Simulator(simGame, this)
         val enStrat = SmartGuy(this)
         // val enStrat = SmartGuySimple()
 
@@ -322,37 +323,38 @@ class MyStrategy : AbstractStrategy() {
 
         val simTickCount = (60 * tickK).toInt()
         for (tick in 0..simTickCount) {
-            predictStratMoves(myStrat, sim, tick, true)
-            predictStratMoves(enStrat, sim, tick, false)
+            predictStratMoves(myStrat, sim, tick, true, simGame)
+            predictStratMoves(enStrat, sim, tick, false, simGame)
 
-            sim.microTicks = 100
+            sim.microTicks = game.properties.updatesPerTick
 
             sim.tick()
 
-            for (unit in game.units) {
-                val positions = sim.metainfo.movements.getOrPut(unit.id) { mutableListOf() }
-                positions.add(unit.position.copy())
-            }
+            simGame.currentTick++
 
             val resultGoal = sim.resultKill
             if (resultGoal != null) {
                 break
             }
         }
+        log { "sim ticks calced ${sim.ticksCacled}" }
 
         return sim
     }
 
-    private fun predictStratMoves(strat: Strategy, sim: Simulator, tick: Int, isMe: Boolean) {
-        game.units.forEach { unit ->
+    private fun predictStratMoves(
+        strat: Strategy,
+        sim: Simulator,
+        tick: Int,
+        isMe: Boolean,
+        simGame: Game
+    ) {
+        simGame.units.forEach { unit ->
             if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
-                val unitcopy = unit.copy()
-            }
-        }
+                //val unitcopy = unit.copy()
+                val action = strat.getAction(unit, simGame, debug)
 
-        game.units.forEach { unit ->
-            if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
-                start
+                unit.simAction = action
             }
         }
     }
