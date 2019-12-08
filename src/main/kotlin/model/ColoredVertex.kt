@@ -1,7 +1,5 @@
 package model
 
-import util.StreamUtil
-
 class ColoredVertex {
     lateinit var position: model.Vec2Float
     lateinit var color: model.ColorFloat

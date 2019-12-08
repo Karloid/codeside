@@ -35,7 +35,7 @@ class MyStrategy : AbstractStrategy() {
         while (!strats.isEmpty()) {
             val strat = strats[0]
 
-            val evalAndSim = eval(startSimulator(ProxyStrat(strat), colors[i % colors.size], tickK, i == 0), strat)
+            val evalAndSim = eval(startSimulator(ProxyStrat1(strat), colors[i % colors.size], tickK, i == 0), strat)
 
             strats.removeAt(0)
 

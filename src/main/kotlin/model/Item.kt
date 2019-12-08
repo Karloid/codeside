@@ -51,7 +51,7 @@ abstract class Item {
             fun readFrom(stream: java.io.InputStream): Weapon {
                 val result = Weapon()
                 when (StreamUtil.readInt(stream)) {
-                0 ->result.weaponType = WeaponType.PISTOL
+                0 ->result.weaponType = model.WeaponType.PISTOL
                 1 ->result.weaponType = model.WeaponType.ASSAULT_RIFLE
                 2 ->result.weaponType = model.WeaponType.ROCKET_LAUNCHER
                 else -> throw java.io.IOException("Unexpected discriminant value")
@@ -59,6 +59,7 @@ abstract class Item {
                 return result
             }
         }
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeInt(stream, weaponType.discriminant)

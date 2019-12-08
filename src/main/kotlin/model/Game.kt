@@ -6,13 +6,12 @@ import util.StreamUtil
 class Game {
     var currentTick: Int = 0
     lateinit var properties: model.Properties
-    lateinit var level: Level
+    lateinit var level: model.Level
     lateinit var players: Array<model.Player>
     lateinit var units: Array<model.Unit>
     lateinit var bullets: Array<model.Bullet>
     lateinit var mines: Array<model.Mine>
     lateinit var lootBoxes: Array<model.LootBox>
-
     constructor() {}
     constructor(
         currentTick: Int,
@@ -33,14 +32,13 @@ class Game {
         this.mines = mines
         this.lootBoxes = lootBoxes
     }
-
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Game {
             val result = Game()
             result.currentTick = StreamUtil.readInt(stream)
             result.properties = model.Properties.readFrom(stream)
-            result.level = Level.readFrom(stream)
+            result.level = model.Level.readFrom(stream)
             result.players = Array(StreamUtil.readInt(stream), {
                 var playersValue: model.Player
                 playersValue = model.Player.readFrom(stream)

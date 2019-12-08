@@ -139,12 +139,12 @@ abstract class CustomData {
 
     class PlacedText : CustomData {
         lateinit var text: String
-        lateinit var pos: Vec2Float
+        lateinit var pos: model.Vec2Float
         lateinit var alignment: model.TextAlignment
         var size: Float = 0.0f
         lateinit var color: model.ColorFloat
         constructor() {}
-        constructor(text: String, pos: Vec2Float, alignment: model.TextAlignment, size: Float, color: model.ColorFloat) {
+        constructor(text: String, pos: model.Vec2Float, alignment: model.TextAlignment, size: Float, color: model.ColorFloat) {
             this.text = text
             this.pos = pos
             this.alignment = alignment
@@ -157,7 +157,7 @@ abstract class CustomData {
             fun readFrom(stream: java.io.InputStream): PlacedText {
                 val result = PlacedText()
                 result.text = StreamUtil.readString(stream)
-                result.pos = Vec2Float.readFrom(stream)
+                result.pos = model.Vec2Float.readFrom(stream)
                 when (StreamUtil.readInt(stream)) {
                 0 ->result.alignment = model.TextAlignment.LEFT
                 1 ->result.alignment = model.TextAlignment.CENTER
