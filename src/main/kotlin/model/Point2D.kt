@@ -290,6 +290,7 @@ class Point2D {
             return result
         }
 
+        val ZERO = Point2D(0, 0)
         val UP = Point2D(0, 1)
         val RIGHT = Point2D(1, 0)
         val DOWN = Point2D(0, -1)

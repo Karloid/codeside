@@ -1,4 +1,3 @@
-
 import Direction.*
 import model.*
 import model.Unit
@@ -15,7 +14,7 @@ class MyStrategy : AbstractStrategy() {
         super.getAction(me, game, debug)
         start = System.currentTimeMillis()
 
-        val action = doSmartGuy(debug, game, me)
+        val action = doSimMove()
 
         end = System.currentTimeMillis()
 
@@ -24,7 +23,16 @@ class MyStrategy : AbstractStrategy() {
         debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
 
         prevActions.add(action)
+
+        //TODO 
+        action.shoot = false
         return action
+    }
+
+    private fun doSimMove(): UnitAction {
+        val strat = pickBestStrat(mutableListOf(ToEnemyAndJumpStrat()), 1.0)
+
+        return strat.getAction(me, game, debug)
     }
 
     private fun pickBestStrat(strats: MutableList<StrategyAdvCombined>, tickK: Double): Strategy {

@@ -7,7 +7,7 @@ class UnitAction {
     var velocity: Double = 0.0
     var jump: Boolean = false
     var jumpDown: Boolean = false
-    lateinit var aim: model.Point2D
+    var aim: model.Point2D = Point2D.ZERO
     var shoot: Boolean = false
     var reload: Boolean = false
     var swapWeapon: Boolean = false
