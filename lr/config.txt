@@ -1,4 +1,5 @@
 {
+    "seed": 13,
     "options_preset": "Round1",
     "players": [
         "Quickstart",

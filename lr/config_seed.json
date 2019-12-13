@@ -1,10 +1,10 @@
 {
-  "seed": 3,
+  "seed": 4,
   "options_preset": {
     "Custom": {
       "level": {
         "LoadFrom": {
-          "path": "level_test_tower.txt"
+          "path": "level_test_jump_down.txt"
         }
       },
       "properties": null

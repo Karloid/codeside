@@ -21,7 +21,8 @@ class MyStrategy : AbstractStrategy() {
         log { "jumpInfo=${me.jumpState.description()}" }
         start = System.currentTimeMillis()
 
-        val action = doSimMove()
+        //val action = doSimMove()
+        val action = doSmartGuy(debug, game, me)
 
         end = System.currentTimeMillis()
 
@@ -30,9 +31,6 @@ class MyStrategy : AbstractStrategy() {
         debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
 
         prevActions.add(action)
-
-        //TODO 
-        action.shoot = false
 
         drawDebugSimulator()
         return action
@@ -168,11 +166,11 @@ class MyStrategy : AbstractStrategy() {
             log { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
             targetPos = rocket.position
             action.swapWeapon = isClose(targetPos)
-        } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
+        } /*else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
             targetPos = nearestWeapon.position
             action.swapWeapon = isClose(targetPos)
-        } else if (nearestEnemy != null) {
+        }*/ else if (nearestEnemy != null) {
             log { "go to enemy" }
             val mul = if (me.position.x - targetPos.x > 0) -1 else 1
             var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 6 } ?: 4
@@ -192,10 +190,14 @@ class MyStrategy : AbstractStrategy() {
             }
         }
         var jump = targetPos.y > me.position.y;
-        if (targetPos.x > me.position.x && game.getTile(me.position, RIGHT) == Tile.WALL) {
+        if (targetPos.x > me.position.x &&
+            (game.getTile(me.position, RIGHT) == Tile.WALL  ||
+                    game.getTile(me.position.copy().applyDir(DOWN), RIGHT) == Tile.WALL)) {
             jump = true
         }
-        if (targetPos.x < me.position.x && game.getTile(me.position, LEFT) == Tile.WALL) {
+        if (targetPos.x < me.position.x &&
+            (game.getTile(me.position, LEFT) == Tile.WALL ||
+                    game.getTile(me.position.copy().applyDir(DOWN), LEFT) == Tile.WALL) ) {
             jump = true
         }
         if (me.jumpState.canJump.not() && me.onLadder.not()) {
@@ -208,6 +210,11 @@ class MyStrategy : AbstractStrategy() {
                 jump = true
             }
         }
+        val vectorMove = (me.position.copy() - targetPos).abs()
+
+        if (vectorMove.x < 1.2 && me.position.y > targetPos.y && vectorMove.y > 0.3) {
+            jump = false
+        }
 
         log { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
         val travelDistX = targetPos.x - me.position.x
@@ -219,7 +226,9 @@ class MyStrategy : AbstractStrategy() {
             action.velocity = travelDistX * 10000
         }
         action.jump = jump
-        action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+        if (vectorMove.x < 1) {
+            action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+        }
         action.plantMine = false
 
         debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
@@ -227,6 +236,9 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun wantSwapToRocketLauncher(me: Unit): Boolean {
+        if (true) {
+            return false
+        }
         val b = me.weapon?.typ != WeaponType.ROCKET_LAUNCHER
         if (!b) {
             return false
