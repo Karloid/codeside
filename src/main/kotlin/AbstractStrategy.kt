@@ -20,7 +20,7 @@ open class AbstractStrategy : Strategy {
         var minDist = Double.MAX_VALUE
 
         val wallSize = Point2D(0.5, 0.5)
-
+        //TODO optimizations based on square dist
         if (target != null) {
             minDist = signedDstToBox(pointToCheck.copy(), target.center(), target.size.copy().mul(0.5))
         } else {
