@@ -32,9 +32,13 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         var targetPos: Point2D = me.position
 
-        val wantSwapToRocketLauncher = wantSwapToRocketLauncher(me)
-        if (wantSwapToRocketLauncher) {
-            getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)?.let {
+        val wantSwapFromRocketLauncher = wantSwapFromRocketLauncher(me)
+
+        var preferredWeaponToPick: LootBox? = null
+
+        if (wantSwapFromRocketLauncher) {
+            getPrefferedWeapon(nearestEnemy)?.let {
+                preferredWeaponToPick = it
                 action.swapWeapon = isClose(it.position)
             }
         }
@@ -47,10 +51,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             log { "go pick ${nearestHealth.posInfo()}" }
 
             targetPos = nearestHealth.position
-        } else if (wantSwapToRocketLauncher) {
-            val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)!!
-            log { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
-            targetPos = rocket.position
+        } else if (preferredWeaponToPick != null) {
+            log { "go pick ${preferredWeaponToPick!!.posInfo()} instead because we don't want rocket launcher " }
+            targetPos = preferredWeaponToPick!!.position
             action.swapWeapon = isClose(targetPos)
         } /*else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
@@ -131,27 +134,30 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             .filter {
                 (it.item::class == Item.HealthPack::class).not().then { return@filter false }
 
-                if (en == null) {
-                    return@filter true
-                }
-                val vectorToEn = me.position.copy() - en.position
-                val vectorToHeath = me.position.copy() - it.position
-                //if x distance is smaller
-                if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
-
-                    //and it is same side
-                    //ignore health
-                    if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
-                        return@filter false
-                    }
-                    if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
-                        return@filter false
-                    }
-                }
-
-                return@filter true
+                return@filter !isEnemyCloser(en, it.position)
             }
             .minBy { it.position.distance(me.position) }
+    }
+
+    private fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
+        if (en == null) {
+            return false
+        }
+        val vectorToEn = me.position.copy() - en.position
+        val vectorToHeath = me.position.copy() - point
+        //if x distance is smaller
+        if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
+
+            //and it is same side
+            //ignore health
+            if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
+                return true
+            }
+            if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {
@@ -333,6 +339,28 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     private fun <T : Any> getClosestItem(type: KClass<T>): LootBox? {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
+    }
+
+    private fun wantSwapFromRocketLauncher(me: Unit): Boolean {
+        val isRocketLauncher = me.weapon?.typ == WeaponType.ROCKET_LAUNCHER
+        if (!isRocketLauncher) {
+            return false
+        }
+        val en = getClosestEnemy()
+
+        getPrefferedWeapon(en) ?: return false
+
+        return true
+    }
+
+    private fun getPrefferedWeapon(en: Unit?) =
+        getClosestWeaponItem(listOf(WeaponType.PISTOL, WeaponType.ASSAULT_RIFLE), en)
+
+    private fun getClosestWeaponItem(types: List<WeaponType>, en: Unit?): LootBox? {
+        return game.lootBoxes.filter {
+            val item = it.item
+            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position)
+        }.minBy { it.position.distance(me.position) }
     }
 
 

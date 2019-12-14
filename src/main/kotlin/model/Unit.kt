@@ -106,7 +106,7 @@ class Unit {
         result.health = health
         result.position = position
         result.size = size
-        result.jumpState = jumpState
+        result.jumpState = jumpState.copy()
         result.walkedRight = walkedRight
         result.stand = stand
         result.onGround = onGround

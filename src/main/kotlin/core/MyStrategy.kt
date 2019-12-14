@@ -6,6 +6,7 @@ import model.Unit
 import sim.EvalAndSim
 import sim.Simulator
 import strats.*
+import util.f
 import util.fori
 import util.then
 import java.awt.Color
@@ -208,8 +209,6 @@ class MyStrategy : AbstractStrategy() {
                 break
             }
         }
-        log { "sim ticks calced ${sim.ticksCacled}" }
-
         return sim
     }
 
@@ -252,7 +251,7 @@ class MyStrategy : AbstractStrategy() {
         if (!isReal) {
             return
         }
-        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
+        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump}-${me.jumpState.maxTime.f()} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
     }
 }
 

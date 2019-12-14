@@ -40,4 +40,13 @@ class JumpState {
     override fun toString(): String {
         return "JumpState(canJump=$canJump, speed=$speed, maxTime=$maxTime, canCancel=$canCancel)"
     }
+
+    fun copy(): JumpState {
+        return JumpState().also {
+            it.canJump = canJump
+            it.speed = speed
+            it.maxTime = maxTime
+            it.canCancel = canCancel
+        }
+    }
 }
