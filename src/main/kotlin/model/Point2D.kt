@@ -1,9 +1,9 @@
 package model
 
-import Direction
-import FastMath
+import util.Direction
+import util.FastMath
 import MainKt
-import f
+import util.f
 import util.StreamUtil
 import kotlin.math.round
 
@@ -56,7 +56,7 @@ class Point2D {
     /*   public static double getDistance(double x1, double y1, double x2, double y2) {
            double dx = x1 - x2;
            double dy = y1 - y2;
-           return FastMath.hypot(dx, dy);
+           return util.FastMath.hypot(dx, dy);
        }
    */
     fun getDistanceTo(point: Point2D): Double {
@@ -134,13 +134,13 @@ class Point2D {
         return FastMath.hypot(x - v.x, y - v.y)
     }
 
-    fun squareDistance(v: Point2D): Double {
+    fun sqDistance(v: Point2D): Double {
         val tx = x - v.x
         val ty = y - v.y
         return tx * tx + ty * ty
     }
 
-    fun squareDistance(x: Double, y: Double): Double {
+    fun sqDistance(x: Double, y: Double): Double {
         val tx = this.x - x
         val ty = this.y - y
         return tx * tx + ty * ty

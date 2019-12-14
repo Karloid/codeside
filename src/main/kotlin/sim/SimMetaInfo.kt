@@ -1,3 +1,5 @@
+package sim
+
 import model.Point2D
 
 class SimMetaInfo {

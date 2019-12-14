@@ -1,6 +1,18 @@
-import Direction.*
+package core
+
+import Debug
+import MainKt
+import d
 import model.*
 import model.Unit
+import sim.EvalAndSim
+import sim.Simulator
+import strats.*
+import util.Direction.*
+import util.Ref
+import util.f
+import util.fori
+import util.then
 import java.util.*
 import kotlin.math.abs
 import kotlin.reflect.KClass
@@ -68,7 +80,7 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun doSimMove(): UnitAction {
-        val strat = pickBestStrat(mutableListOf(ToEnemyAndJumpStrat()), 5.0)
+        val strat = pickBestStrat(mutableListOf(DebugAndJumpStrategy()), 5.0)
 
         return strat.getAction(me, game, debug)
     }
@@ -81,7 +93,7 @@ class MyStrategy : AbstractStrategy() {
         while (!strats.isEmpty()) {
             val strat = strats[0]
 
-            val evalAndSim = eval(startSimulator(ProxyStrat1(strat), colors[i % colors.size], tickK, i == 0), strat)
+            val evalAndSim = eval(startSimulator(ProxyStrategy(strat), colors[i % colors.size], tickK, i == 0), strat)
 
             strats.removeAt(0)
 
@@ -347,7 +359,7 @@ class MyStrategy : AbstractStrategy() {
 
         val simGame = game.copy()
         val sim = Simulator(simGame, this)
-        val enStrat = EmptyStrat(this)
+        val enStrat = EmptyStrategy(this)
         // val enStrat = SmartGuySimple()
 
         var stopDueTooManyTouchesTick = -1
@@ -432,7 +444,8 @@ class MyStrategy : AbstractStrategy() {
             if (distance < epsilon) {
                 rocketLauncher.then {
                     val explosionRadius = weapon.params.explosion!!.radius
-                    val targetAffected = isRocketAffected(target, pointToCheck, explosionRadius)
+                    val targetAffected =
+                        isRocketAffected(target, pointToCheck, explosionRadius)
                     val meAffected = isRocketAffected(me, pointToCheck, explosionRadius)
                     if (targetAffected) {
                         isTargetClosest = true

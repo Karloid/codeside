@@ -1,6 +1,6 @@
 package model
 
-import Direction
+import util.Direction
 import util.StreamUtil
 
 class Game {

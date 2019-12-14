@@ -1,6 +1,6 @@
 package model
 
-import PlainArray
+import util.PlainArray
 import util.StreamUtil
 
 class Level {

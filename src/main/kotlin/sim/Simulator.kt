@@ -1,9 +1,13 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
+package sim
+
+import core.MyStrategy
 import model.Game
 import model.Point2D
 import model.Tile
 import model.Unit
+import util.then
 import kotlin.math.abs
 
 

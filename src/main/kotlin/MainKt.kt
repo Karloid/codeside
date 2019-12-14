@@ -1,3 +1,5 @@
+import util.then
+
 fun d(function: () -> kotlin.Unit) {
     if (MainKt.enabledLog) {
         function()

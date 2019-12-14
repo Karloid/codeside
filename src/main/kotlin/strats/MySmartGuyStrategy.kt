@@ -1,9 +1,21 @@
+package strats
+
+import Debug
+import MainKt
+import core.AimScore
+import core.MyStrategy
 import model.*
 import model.Unit
+import util.Direction
+import util.Ref
+import util.f
+import util.then
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
-class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
+class MySmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
+
+    var disableShooting: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
@@ -52,15 +64,17 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
 
         action.aim = Point2D(0.0, 0.0)
-        if (nearestEnemy != null) {
-            val aims = listOf(
-                //    nearestEnemy.top() - me.center(),
-                //  nearestEnemy.position.copy() - me.center(),
-                nearestEnemy.center() - me.center()
-            )
 
-            //val canShot = canShot(nearestEnemy, aims, action)
-            val canShot = true
+        if (nearestEnemy != null) {
+            val canShot: Boolean
+            if (disableShooting) {
+                canShot = false
+            } else {
+                val aims = listOf(
+                    nearestEnemy.center() - me.center()
+                )
+                canShot = canShot(nearestEnemy, aims, action)
+            }
             if (canShot) {
                 action.shoot = true
             }
@@ -229,7 +243,8 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (distance < epsilon) {
                 rocketLauncher.then {
                     val explosionRadius = weapon.params.explosion!!.radius
-                    val targetAffected = isRocketAffected(target, pointToCheck, explosionRadius)
+                    val targetAffected =
+                        isRocketAffected(target, pointToCheck, explosionRadius)
                     val meAffected = isRocketAffected(me, pointToCheck, explosionRadius)
                     if (targetAffected) {
                         isTargetClosest = true
@@ -255,16 +270,16 @@ class SmartGuy(myStrategy: MyStrategy) : AbstractStrategy() {
             //d { debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK) }
         }
 
-     /*       d {
-            val endFinal = hitPoint.ref ?: to
-                
-                    val color =
-                        hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
-                        ?: ColorFloat.AIM_RAY_MILK
+        /*       d {
+               val endFinal = hitPoint.ref ?: to
 
-            debug.rect(endFinal, Point2D(0.1, 0.1), color)
-                debug.line(from, endFinal, color)
-            }*/
+                       val color =
+                           hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
+                           ?: ColorFloat.AIM_RAY_MILK
+
+               debug.rect(endFinal, Point2D(0.1, 0.1), color)
+                   debug.line(from, endFinal, color)
+               }*/
         return weGetWalls
     }
 

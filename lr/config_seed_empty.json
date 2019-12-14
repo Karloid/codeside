@@ -1,0 +1,25 @@
+{
+  "seed": 77,
+  "options_preset": {
+    "Custom": {
+      "level": {
+        "LoadFrom": {
+          "path": "level_empty.txt"
+        }
+      },
+      "properties": null
+    }
+  },
+  "players": [
+    "Keyboard",
+    {
+      "Tcp": {
+        "host": null,
+        "port": 31001,
+        "accept_timeout": null,
+        "timeout": null,
+        "token": null
+      }
+    }
+  ]
+}

@@ -1,3 +1,7 @@
+package util
+
+import MainKt
+
 enum class Direction {
     LEFT,
     UP,

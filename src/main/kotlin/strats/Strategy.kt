@@ -1,3 +1,6 @@
+package strats
+
+import Debug
 import model.Game
 import model.Unit
 import model.UnitAction

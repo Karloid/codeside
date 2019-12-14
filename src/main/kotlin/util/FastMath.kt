@@ -1,3 +1,5 @@
+package util
+
 object FastMath {
     private val TWO_POW_450 = java.lang.Double.longBitsToDouble(0x5C10000000000000L)
     private val TWO_POW_N450 = java.lang.Double.longBitsToDouble(0x23D0000000000000L)
