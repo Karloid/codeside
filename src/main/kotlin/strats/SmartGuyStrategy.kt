@@ -58,9 +58,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             action.swapWeapon = isClose(targetPos)
         }*/ else if (nearestEnemy != null) {
             log { "go to enemy" }
-            val mul = if (me.position.x - targetPos.x > 0) -1 else 1
-            var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 6 } ?: 4
-            targetPos = nearestEnemy.position.copy() + Point2D(distance * mul, 0)
+            targetPos = nearestEnemy.position.copy()
+            val mul = if (me.position.x - targetPos.x < 0) -1 else 1
+            var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
+            targetPos = targetPos.copy() + Point2D(distance * mul, 0)
         }
 
         action.aim = Point2D(0.0, 0.0)

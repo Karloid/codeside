@@ -18,8 +18,6 @@ class MyStrategy : AbstractStrategy() {
     private var end: Long = 0L
     private var start: Long = 0L
 
-    private var firstDebugSimulator: Simulator? = null
-
     private var shootingStart = SmartGuyStrategy(this).apply {
         disableShooting = false
     }
@@ -38,8 +36,8 @@ class MyStrategy : AbstractStrategy() {
         val action = doSimMove()
 
         val shootAction = shootingStart.getAction(me, game, debug)
-        
-        action.shoot = shootAction.shoot
+
+        //action.shoot = shootAction.shoot  //TODO enable
         action.aim = shootAction.aim
         action.reload = shootAction.reload
 
@@ -47,11 +45,11 @@ class MyStrategy : AbstractStrategy() {
 
         printAction(action)
         printMap()
-        debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}"))
+
+        d { debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}")) }
 
         prevActions.add(action)
 
-        drawDebugSimulator()
         return action
     }
 
@@ -70,14 +68,19 @@ class MyStrategy : AbstractStrategy() {
 
     }
 
-    private fun drawDebugSimulator() {
+    private fun drawDebugSimulator(evalAndSims: ArrayList<EvalAndSim>, best: EvalAndSim) {
         var colorIndex = 0
+        val size = Point2D(1 / 10f, 1 / 10f)
 
-        firstDebugSimulator?.let { sim ->
-            val size = Point2D(1 / 10f, 1 / 10f)
+        evalAndSims.forEach { evalAndSim ->
+            var myColor = simColors[colorIndex % simColors.size]
+            if (best == evalAndSim) {
+                myColor = myColor.copy(a = 1f)
+            }
+
+            val sim = evalAndSim.simulator
 
             for (entry in sim.metainfo.movements.entries) {
-                val myColor = colors[colorIndex % colors.size]
                 entry.value.fori {
                     debug.rect(it, size, myColor)
                 }
@@ -91,9 +94,14 @@ class MyStrategy : AbstractStrategy() {
         val smartGuy = SmartGuyStrategy(this)
         smartGuy.disableShooting = true
         variants.add(smartGuy)
-        variants.add(SimpleMoveStrategy())
+        MoveLeftRight.cValues.forEach { leftRight ->
+            MoveUpDown.cValues.forEach { upDown ->
+                variants.add(MoveStrategy(leftRight, upDown))
+            }
+        }
 
-        val strat = pickBestStrat(variants, 5.0)
+        val strat = pickBestStrat(variants, getMaxJumpTicks() / 2)
+
         strat.isReal = true
         return strat.getAction(me, game, debug)
     }
@@ -106,16 +114,12 @@ class MyStrategy : AbstractStrategy() {
         while (!strats.isEmpty()) {
             val strat = strats[0]
 
-            val evalAndSim = eval(startSimulator(ProxyStrategy(strat), colors[i % colors.size], tickK, i == 0), strat)
+            val simulator = startSimulator(ProxyStrategy(strat), simColors[i % simColors.size], tickK, i == 0)
+
+            val evalAndSim = eval(simulator, strat)
 
             strats.removeAt(0)
 
-            if (firstDebugSimulator == null) {
-                firstDebugSimulator = evalAndSim.simulator
-            }
-            firstDebugSimulator = evalAndSim.simulator
-
-            //checking actual path
             evalAndSims.add(evalAndSim)
 
             if (evalAndSim.score > 1000) {
@@ -135,7 +139,7 @@ class MyStrategy : AbstractStrategy() {
         var best = evalAndSims.maxBy { it.score }!!
 
 
-        //logAndDebugViewStrats(evalAndSims, best)
+        drawDebugSimulator(evalAndSims, best)
 
         return best.strat
     }
@@ -166,7 +170,7 @@ class MyStrategy : AbstractStrategy() {
         var forcedMicroTicks = -1
         //forcedMicroTicks = 2
 
-        val simTickCount = (60 * tickK).toInt()
+        val simTickCount = (1 * tickK).toInt()
         for (tick in 0..simTickCount) {
             predictStratMoves(myStrat, sim, tick, true, simGame)
             predictStratMoves(enStrat, sim, tick, false, simGame)
@@ -219,13 +223,12 @@ class MyStrategy : AbstractStrategy() {
         }
     }
 
-    private val colors = arrayOf(
-        ColorFloat(1f, 0f, 0f, 0.5f),
-        ColorFloat(0f, 1f, 0f, 0.5f),
-        ColorFloat(0f, 0f, 1f, 0.5f),
-        ColorFloat(0f, 1f, 1f, 0.5f),
-        ColorFloat(1f, 1f, 0f, 0.5f),
-        ColorFloat(0.1f, 0.1f, 0.8f, 0.5f)
+    private val simColors = arrayOf(
+        ColorFloat(1f, 0.4f, 0.4f, 0.4f),
+        ColorFloat(0.4f, 1f, 0.4f, 0.4f),
+        ColorFloat(0.4f, 0.4f, 1f, 0.4f),
+        ColorFloat(0.4f, 1f, 1f, 0.4f),
+        ColorFloat(1f, 1f, 0.4f, 0.4f)
     )
 
     private inline fun printAction(action: UnitAction) {

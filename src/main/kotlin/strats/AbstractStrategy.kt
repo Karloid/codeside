@@ -19,11 +19,16 @@ open class AbstractStrategy : StrategyAdvCombined {
     override var isReal: Boolean = false
 
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
+
         this.me = me
         this.game = game
         this.debug = debug
 
         return UnitAction()
+    }
+
+    fun getMaxJumpTicks(): Double {
+        return game.properties.unitJumpTime * game.properties.ticksPerSecond
     }
 
     fun signedDist(pointToCheck: Point2D, target: Unit?): Double {

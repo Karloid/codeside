@@ -3,19 +3,12 @@ package model
 import util.StreamUtil
 import java.awt.Color
 
-class ColorFloat {
-    var r: Float = 0.0f
-    var g: Float = 0.0f
-    var b: Float = 0.0f
+data class ColorFloat(
+    var r: Float = 0.0f,
+    var g: Float = 0.0f,
+    var b: Float = 0.0f,
     var a: Float = 0.0f
-
-    constructor() {}
-    constructor(r: Float, g: Float, b: Float, a: Float) {
-        this.r = r
-        this.g = g
-        this.b = b
-        this.a = a
-    }
+) {
 
     companion object {
 
