@@ -6,7 +6,6 @@ import model.Unit
 import sim.EvalAndSim
 import sim.Simulator
 import strats.*
-import util.Direction.DOWN
 import util.fori
 import util.then
 import java.awt.Color
@@ -234,13 +233,8 @@ class MyStrategy : AbstractStrategy() {
 
     private fun printMap() {
         d {
-            val underMe = me.position.copy().applyDir(DOWN)
-            game.level.tiles.get(underMe)?.let {
-                debug.rect(underMe.roundX, underMe.roundY, Point2D(1, 1), ColorFloat.WALL_UNDER_ME)
-            }
             game.level.tiles.fori { x, y, t ->
                 (t == Tile.WALL).then {
-
                 }
             }
         }

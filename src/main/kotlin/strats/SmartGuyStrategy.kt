@@ -28,7 +28,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         val nearestEnemy: Unit? = getClosestEnemy()
         val nearestWeapon = getClosestItem(Item.Weapon::class)
-        val nearestHealth = getClosestItem(Item.HealthPack::class)
+        val nearestHealth = getHealthPack()
 
         var targetPos: Point2D = me.position
 
@@ -123,6 +123,35 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
 
         return action
+    }
+
+    private fun getHealthPack(): LootBox? {
+        val en = getClosestEnemy()
+        return game.lootBoxes
+            .filter {
+                (it.item::class == Item.HealthPack::class).not().then { return@filter false }
+
+                if (en == null) {
+                    return@filter true
+                }
+                val vectorToEn = me.position.copy() - en.position
+                val vectorToHeath = me.position.copy() - it.position
+                //if x distance is smaller
+                if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
+
+                    //and it is same side
+                    //ignore health
+                    if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
+                        return@filter false
+                    }
+                    if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
+                        return@filter false
+                    }
+                }
+
+                return@filter true
+            }
+            .minBy { it.position.distance(me.position) }
     }
 
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {

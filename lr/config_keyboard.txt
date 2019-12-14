@@ -1,4 +1,5 @@
 {
+    "seed" : 12322,
     "options_preset": "Round1",
     "players": [
         "Keyboard",
