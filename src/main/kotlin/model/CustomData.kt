@@ -46,8 +46,8 @@ abstract class CustomData {
         lateinit var size: Vec2Float
         lateinit var color: model.ColorFloat
         constructor() {}
-        constructor(pos: Vec2Float, size: Vec2Float, color: model.ColorFloat) {
-            this.pos = pos
+        constructor(leftBotPos: Vec2Float, size: Vec2Float, color: model.ColorFloat) {
+            this.pos = leftBotPos
             this.size = size
             this.color = color
         }

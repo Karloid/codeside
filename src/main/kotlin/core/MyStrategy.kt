@@ -86,6 +86,11 @@ class MyStrategy : AbstractStrategy() {
                 }
                 colorIndex++
             }
+
+            for (bullet in sim.metainfo.bulletsHistory) {
+                val bulletSize = Point2D(bullet.size, bullet.size)
+                debug.rect(bullet.position, bulletSize, myColor)
+            }
         }
     }
 

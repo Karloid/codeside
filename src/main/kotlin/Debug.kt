@@ -30,7 +30,7 @@ class Debug(private val stream: OutputStream) {
     }
 
     fun rect(center: Point2D, size: Point2D, color: ColorFloat) {
-        draw(CustomData.Rect(center.toFloat(), size.toFloat(), color))
+        draw(CustomData.Rect(center.copy().plus(-size.x / 2, -size.y / 2).toFloat(), size.toFloat(), color))
     }
 
     fun circle(center: Point2D, radius: Double, color: ColorFloat) {

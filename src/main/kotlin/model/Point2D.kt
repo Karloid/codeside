@@ -86,7 +86,9 @@ class Point2D {
 
 
     inline fun plus(x: Double, y: Double): Point2D {
-        return Point2D(this.x + x, this.y + y)
+        this.x += x
+        this.y += y
+        return this
     }
 
     constructor() {

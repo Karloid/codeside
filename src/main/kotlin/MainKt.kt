@@ -1,6 +1,6 @@
 import util.then
 
-inline fun enabledLog(function: () -> Unit) {
+inline fun ifEnabledLog(function: () -> Unit) {
     if (MainKt.enabledLog) {
         function()
     }

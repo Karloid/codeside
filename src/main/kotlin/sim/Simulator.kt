@@ -3,9 +3,8 @@
 package sim
 
 import core.MyStrategy
-import model.Game
-import model.Point2D
-import model.Tile
+import ifEnabledLog
+import model.*
 import model.Unit
 import util.then
 import kotlin.math.abs
@@ -52,13 +51,21 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         }
 
 
-        for (unit in game.units) {
-            val positions = metainfo.movements.getOrPut(unit.id) { mutableListOf() }
-            positions.add(unit.position.copy())
+        ifEnabledLog {
+            for (unit in game.units) {
+                val positions = metainfo.movements.getOrPut(unit.id) { mutableListOf() }
+                positions.add(unit.position.copy())
+            }
+
+            for (bullet in game.bullets) {
+                metainfo.bulletsHistory.add(bullet.copy())
+            }
         }
     }
 
     private fun update(delta_time: Double) {
+
+        //move units
         for (unit in game.units) {
             val action = unit.simAction
 
@@ -132,6 +139,38 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             //TODO fighting
             val x = 10
         }
+
+
+        var bulletsToRemove = ArrayList<Bullet>(0)
+        game.bullets.forEach { bullet ->
+            val oldPos = bullet.position.copy()
+            bullet.position.plus(bullet.velocity.x * delta_time, bullet.velocity.y * delta_time)
+
+            for (unit in game.units) {
+                isCollide(bullet, unit).then {
+                    unit.health -= bullet.damage
+                    bullet.explosionParams?.damage?.let {
+                        unit.health -= it
+                    }
+                    bulletsToRemove.add(bullet)
+                    return@forEach
+                }
+            }
+
+            isCollideWalls(bullet)
+        }
+    }
+
+    private fun isCollideWalls(bullet: Bullet): Boolean {
+        return false
+    }
+
+    private fun isCollide(bullet: Bullet, unit: Unit): Boolean {
+        if (unit.id == bullet.unitId) {
+            return false
+        }
+        return abs(bullet.position.x - unit.position.x) < bullet.size / 2 + unit.size.fx / 2 &&
+                abs(bullet.position.y - unit.position.y + unit.size.fy / 2) < bullet.size / 2 + unit.size.fy / 2
     }
 
     private fun updateUnitLadder(unit: Unit) {

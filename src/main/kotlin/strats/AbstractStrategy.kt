@@ -2,7 +2,7 @@ package strats
 
 import Debug
 import MainKt
-import enabledLog
+import ifEnabledLog
 import model.*
 import model.Unit
 import util.fori
@@ -89,7 +89,7 @@ open class AbstractStrategy : StrategyAdvCombined {
 
     inline fun d(function: () -> kotlin.Unit) {
         if (isReal) {
-            enabledLog(function)
+            ifEnabledLog(function)
         }
     }
 }
