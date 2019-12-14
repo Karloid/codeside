@@ -143,9 +143,9 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
 
         var bulletsToRemove = ArrayList<Bullet>(0)
         game.bullets.forEach { bullet ->
-            val oldPos = bullet.position.copy()
             bullet.position.plus(bullet.velocity.x * delta_time, bullet.velocity.y * delta_time)
 
+            //check unit collide
             for (unit in game.units) {
                 isCollide(bullet, unit).then {
                     unit.health -= bullet.damage
@@ -153,11 +153,19 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                         unit.health -= it
                     }
                     bulletsToRemove.add(bullet)
+                    metainfo.unitHitRegs.add(bullet.position.copy())
                     return@forEach
                 }
             }
 
-            isCollideWalls(bullet)
+            isCollideWalls(bullet).then {
+                //TODO explosion damage
+                bulletsToRemove.add(bullet)
+            }
+        }
+
+        bulletsToRemove.isNotEmpty().then {
+            game.bullets = game.bullets.filter { !bulletsToRemove.contains(it) }.toTypedArray()
         }
     }
 
@@ -169,8 +177,8 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         if (unit.id == bullet.unitId) {
             return false
         }
-        return abs(bullet.position.x - unit.position.x) < bullet.size / 2 + unit.size.fx / 2 &&
-                abs(bullet.position.y - unit.position.y + unit.size.fy / 2) < bullet.size / 2 + unit.size.fy / 2
+        return abs(bullet.position.x - unit.position.x) < bullet.size / 2 + unit.size.x / 2 &&
+                abs(bullet.position.y - (unit.position.y + unit.size.y / 2)) < bullet.size / 2 + unit.size.y / 2
     }
 
     private fun updateUnitLadder(unit: Unit) {

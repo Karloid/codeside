@@ -9,6 +9,7 @@ import strats.*
 import util.Direction.DOWN
 import util.fori
 import util.then
+import java.awt.Color
 import java.util.*
 
 class MyStrategy : AbstractStrategy() {
@@ -33,14 +34,18 @@ class MyStrategy : AbstractStrategy() {
         log { "jumpInfo=${me.jumpState.description()}" }
         start = System.currentTimeMillis()
 
-        val action = doSimMove()
+        val action: UnitAction
+        if (me.weapon == null) {
+            action = shootingStart.getAction(me, game, debug)
+        } else {
+            action = doSimMove()
 
-        val shootAction = shootingStart.getAction(me, game, debug)
+            val shootAction = shootingStart.getAction(me, game, debug)
 
-        //action.shoot = shootAction.shoot  //TODO enable
-        action.aim = shootAction.aim
-        action.reload = shootAction.reload
-
+            action.shoot = shootAction.shoot  //TODO enable
+            action.aim = shootAction.aim
+            action.reload = shootAction.reload
+        }
         end = System.currentTimeMillis()
 
         printAction(action)
@@ -70,12 +75,16 @@ class MyStrategy : AbstractStrategy() {
 
     private fun drawDebugSimulator(evalAndSims: ArrayList<EvalAndSim>, best: EvalAndSim) {
         var colorIndex = 0
-        val size = Point2D(1 / 10f, 1 / 10f)
+        val smallSize = Point2D(1 / 10f, 1 / 10f)
+        val bigSize = smallSize.copy().mul(2.0)
 
         evalAndSims.forEach { evalAndSim ->
             var myColor = simColors[colorIndex % simColors.size]
-            if (best == evalAndSim) {
+            var size = smallSize
+            val isBest = best == evalAndSim
+            if (isBest) {
                 myColor = myColor.copy(a = 1f)
+                size = bigSize
             }
 
             val sim = evalAndSim.simulator
@@ -87,9 +96,16 @@ class MyStrategy : AbstractStrategy() {
                 colorIndex++
             }
 
-            for (bullet in sim.metainfo.bulletsHistory) {
-                val bulletSize = Point2D(bullet.size, bullet.size)
-                debug.rect(bullet.position, bulletSize, myColor)
+            if (isBest) {
+                for (bullet in sim.metainfo.bulletsHistory) {
+                    val bulletSize = Point2D(bullet.size, bullet.size)
+                    debug.rect(bullet.position, bulletSize, myColor)
+                }
+
+                for (hit in sim.metainfo.unitHitRegs) {
+                    val size = game.properties.mineSize
+                    debug.rect(hit, size, ColorFloat(Color.RED))
+                }
             }
         }
     }
@@ -104,6 +120,9 @@ class MyStrategy : AbstractStrategy() {
                 variants.add(MoveStrategy(leftRight, upDown))
             }
         }
+
+        //   variants.clear()
+        //   variants.add(EmptyStrategy(this))
 
         val strat = pickBestStrat(variants, getMaxJumpTicks() / 2)
 
@@ -153,6 +172,10 @@ class MyStrategy : AbstractStrategy() {
 
         var score = 0.0
 
+        val remainingTeamHealth = simulator.game.units.filter { it.playerId == me.playerId }.sumBy { it.health }
+
+        score = remainingTeamHealth.toDouble()
+
         return EvalAndSim(score, simulator, strat).apply {
             createdAtTick = game.currentTick
         }
@@ -169,11 +192,6 @@ class MyStrategy : AbstractStrategy() {
         val simGame = game.copy()
         val sim = Simulator(simGame, this)
         val enStrat = EmptyStrategy(this)
-        // val enStrat = SmartGuySimple()
-
-        var stopDueTooManyTouchesTick = -1
-        var forcedMicroTicks = -1
-        //forcedMicroTicks = 2
 
         val simTickCount = (1 * tickK).toInt()
         for (tick in 0..simTickCount) {

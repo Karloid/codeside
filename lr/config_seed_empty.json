@@ -1,5 +1,5 @@
 {
-  "seed": 7711,
+  "seed": 7712132,
   "options_preset": {
     "Custom": {
       "level": {
@@ -11,7 +11,7 @@
     }
   },
   "players": [
-    "Keyboard",
+    "Quickstart",
     {
       "Tcp": {
         "host": null,
