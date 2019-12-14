@@ -28,7 +28,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         val nearestEnemy: Unit? = getClosestEnemy()
         val nearestWeapon = getClosestItem(Item.Weapon::class)
-        val nearestHealth = getHealthPack()
+        var nearestHealth = getHealthPack()
+
+        if (me.health == game.properties.unitMaxHealth && game.currentTick > 1300 && nearestHealth != null) {
+            nearestHealth = null
+            log { "ignore health" }
+        }
 
         var targetPos: Point2D = me.position
 
@@ -61,9 +66,13 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             action.swapWeapon = isClose(targetPos)
         }*/ else if (nearestEnemy != null) {
             log { "go to enemy" }
+            //TODO go out from enemy pos, use micro sims?
             targetPos = nearestEnemy.position.copy()
             val mul = if (me.position.x - targetPos.x < 0) -1 else 1
             var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
+            if (game.currentTick > 2400) {
+                distance = 0
+            }
             targetPos = targetPos.copy() + Point2D(distance * mul, 0)
         }
 
