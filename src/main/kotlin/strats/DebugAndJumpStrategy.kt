@@ -5,7 +5,7 @@ import model.Game
 import model.Unit
 import model.UnitAction
 
-class DebugAndJumpStrategy : StrategyAdvCombined {
+class DebugAndJumpStrategy : AbstractStrategy() {
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         val act = UnitAction()
 

@@ -1,10 +1,12 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package model
 
+import MainKt
 import util.Direction
 import util.FastMath
-import MainKt
-import util.f
 import util.StreamUtil
+import util.f
 import kotlin.math.round
 
 class Point2D {
@@ -39,7 +41,7 @@ class Point2D {
                 ", y=" + y.f()
     }
 
-    internal constructor(x: Double, y: Double) {
+    constructor(x: Double, y: Double) {
         this.x = x
         this.y = y
     }
@@ -83,7 +85,7 @@ class Point2D {
     }
 
 
-    fun plus(x: Double, y: Double): Point2D {
+    inline fun plus(x: Double, y: Double): Point2D {
         return Point2D(this.x + x, this.y + y)
     }
 
@@ -115,46 +117,48 @@ class Point2D {
         return Point2D(x - v.x, y - v.y)
     }
 
-    fun minus(dx: Double, dy: Double): Point2D {
-        return Point2D(x - dx, y - dy)
+    inline fun minus(dx: Double, dy: Double): Point2D {
+        x -= dx
+        y -= dy
+        return this
     }
 
-    fun mul(f: Double): Point2D {
+    inline fun mul(f: Double): Point2D {
         return Point2D(x * f, y * f)
     }
 
-    fun length(): Double {
+    inline fun length(): Double {
         //        return hypot(x, y);
         return FastMath.hypot(x, y)
     }
 
-    fun distance(v: Point2D): Double {
+    inline fun distance(v: Point2D): Double {
 
         //        return hypot(x - v.x, y - v.y);
         return FastMath.hypot(x - v.x, y - v.y)
     }
 
-    fun sqDistance(v: Point2D): Double {
+    inline fun sqDistance(v: Point2D): Double {
         val tx = x - v.x
         val ty = y - v.y
         return tx * tx + ty * ty
     }
 
-    fun sqDistance(x: Double, y: Double): Double {
+    inline fun sqDistance(x: Double, y: Double): Double {
         val tx = this.x - x
         val ty = this.y - y
         return tx * tx + ty * ty
     }
 
-    fun squareLength(): Double {
+    inline  fun squareLength(): Double {
         return x * x + y * y
     }
 
-    fun reverse(): Point2D {
+    inline fun reverse(): Point2D {
         return Point2D(-x, -y)
     }
 
-    fun normalize(): Point2D {
+    inline fun normalize(): Point2D {
         val length = this.length()
         return if (length == 0.0) {
             Point2D(0.0, 0.0)
@@ -163,7 +167,7 @@ class Point2D {
         }
     }
 
-    fun length(length: Double): Point2D {
+    inline fun length(length: Double): Point2D {
         val currentLength = this.length()
         return if (currentLength == 0.0) {
             this
@@ -172,49 +176,49 @@ class Point2D {
         }
     }
 
-    fun leftPerpendicular(): Point2D {
+    inline fun leftPerpendicular(): Point2D {
         return Point2D(y, -x)
     }
 
-    fun rightPerpendicular(): Point2D {
+    inline fun rightPerpendicular(): Point2D {
         return Point2D(-y, x)
     }
 
-    fun dotProduct(vector: Point2D): Double {
+    inline  fun dotProduct(vector: Point2D): Double {
         return x * vector.x + y * vector.y
     }
 
-    fun angle(): Float {
+    inline fun angle(): Float {
         //return Math.atan2(y, x);
         return FastMath.atan2(y.toFloat(), x.toFloat())
     }
 
-    fun nearlyEqual(potentialIntersectionPoint: Point2D, epsilon: Double): Boolean {
+    inline  fun nearlyEqual(potentialIntersectionPoint: Point2D, epsilon: Double): Boolean {
         return Math.abs(x - potentialIntersectionPoint.x) < epsilon && Math.abs(y - potentialIntersectionPoint.y) < epsilon
     }
 
-    fun rotate(angle: Point2D): Point2D {
+    inline  fun rotate(angle: Point2D): Point2D {
         val newX = angle.x * x - angle.y * y
         val newY = angle.y * x + angle.x * y
         return Point2D(newX, newY)
     }
 
-    fun rotateBack(angle: Point2D): Point2D {
+    inline   fun rotateBack(angle: Point2D): Point2D {
         val newX = angle.x * x + angle.y * y
         val newY = angle.x * y - angle.y * x
         return Point2D(newX, newY)
     }
 
-    operator fun div(f: Double): Point2D {
+    inline operator fun div(f: Double): Point2D {
         return Point2D(x / f, y / f)
     }
 
 
-    operator fun plus(point: Point2D): Point2D {
+    inline operator fun plus(point: Point2D): Point2D {
         return plus(point.x, point.y)
     }
 
-    fun rotate(angle: Double): Point2D {
+    inline fun rotate(angle: Double): Point2D {
 
         val x1 = (this.x * Math.cos(angle) - this.y * Math.sin(angle)).toFloat()
 
@@ -223,16 +227,16 @@ class Point2D {
         return Point2D(x1.toDouble(), y1.toDouble())
     }
 
-    fun writeTo(stream: java.io.OutputStream) {
+    inline fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeDouble(stream, x)
         StreamUtil.writeDouble(stream, y)
     }
 
-    fun toFloat(): Vec2Float {
+    inline fun toFloat(): Vec2Float {
         return Vec2Float(x.toFloat(), y.toFloat())
     }
 
-    fun dirTo(pos: Point2D): Direction {
+    inline fun dirTo(pos: Point2D): Direction {
         return when {
             pos.x - 1 == x -> Direction.RIGHT
             pos.x + 1 == x -> Direction.LEFT
@@ -245,7 +249,7 @@ class Point2D {
         }
     }
 
-    fun applyDir(direction: Direction): Point2D {
+    inline  fun applyDir(direction: Direction): Point2D {
         return this.plus(
             when (direction) {
                 Direction.LEFT -> LEFT
@@ -256,7 +260,7 @@ class Point2D {
         )
     }
 
-    fun abs(): Point2D {
+    inline  fun abs(): Point2D {
         if (x < 0) {
             x *= -1
         }
@@ -267,7 +271,7 @@ class Point2D {
         return this
     }
 
-    fun max(): Double {
+    inline fun max(): Double {
         return Math.max(x, y)
     }
 

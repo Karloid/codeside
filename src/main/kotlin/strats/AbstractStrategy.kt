@@ -1,16 +1,22 @@
 package strats
 
 import Debug
-import util.fori
+import MainKt
+import enabledLog
 import model.*
 import model.Unit
+import util.fori
 import kotlin.math.max
 
-open class AbstractStrategy : Strategy {
+val wallSize = Point2D(0.5, 0.5)
+
+open class AbstractStrategy : StrategyAdvCombined {
     val prevActions = mutableListOf<UnitAction>()
     lateinit var debug: Debug
     lateinit var me: Unit
     lateinit var game: Game
+
+    override var isReal: Boolean = false
 
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         this.me = me
@@ -23,7 +29,6 @@ open class AbstractStrategy : Strategy {
     fun signedDist(pointToCheck: Point2D, target: Unit?): Double {
         var minDist = Double.MAX_VALUE
 
-        val wallSize = Point2D(0.5, 0.5)
         //TODO optimizations based on square dist
         if (target != null) {
             minDist = signedDstToBox(pointToCheck.copy(), target.center(), target.size.copy().mul(0.5))
@@ -68,6 +73,19 @@ open class AbstractStrategy : Strategy {
 
     protected fun Point2D.distMe(): Double {
         return this.distance(me.position)
+    }
+
+    inline fun log(function: () -> String) {
+        if (!isReal) {
+            return
+        }
+        MainKt.log { game.currentTick.toString() + ": " + function() }
+    }
+
+    inline fun d(function: () -> kotlin.Unit) {
+        if (isReal) {
+            enabledLog(function)
+        }
     }
 }
 

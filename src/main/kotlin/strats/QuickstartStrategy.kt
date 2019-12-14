@@ -4,7 +4,7 @@ import Debug
 import core.MyStrategy
 import model.*
 
-class QuickstartStrategy(myStrategy: MyStrategy) : StrategyAdvCombined {
+class QuickstartStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     override fun getAction(unit: model.Unit, game: Game, debug: Debug): UnitAction {
         var nearestEnemy: model.Unit? = null

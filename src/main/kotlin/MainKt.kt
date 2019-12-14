@@ -1,6 +1,6 @@
 import util.then
 
-fun d(function: () -> kotlin.Unit) {
+inline fun enabledLog(function: () -> Unit) {
     if (MainKt.enabledLog) {
         function()
     }

@@ -1,9 +1,8 @@
 package sim
 
-import sim.Simulator
-import strats.Strategy
+import strats.StrategyAdvCombined
 
-class EvalAndSim(var score: Double, var simulator: Simulator, var strat: Strategy) {
+class EvalAndSim(var score: Double, var simulator: Simulator, var strat: StrategyAdvCombined) {
     var createdAtTick: Int = 0
 
     override fun toString(): String {

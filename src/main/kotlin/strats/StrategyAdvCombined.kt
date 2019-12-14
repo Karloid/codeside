@@ -1,7 +1,5 @@
 package strats
 
-import strats.Strategy
-
 interface StrategyAdvCombined : Strategy {
-
+    var isReal: Boolean
 }

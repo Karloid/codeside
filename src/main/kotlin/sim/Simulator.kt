@@ -115,7 +115,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder
             val isOnLadderDown = unit.simAction.jumpDown && unit.onLadder
             val isJumpDownFromPlatform = unit.simAction.jumpDown && unit.onGround
-            if (isFailing || isOnLadderDown || isJumpDownFromPlatform ) {
+            if (isFailing || isOnLadderDown || isJumpDownFromPlatform) {
                 if (isCollideVerticallyBot(delta_time, unit, action.jumpDown)) {
                     unit.onGround = true
                     unit.jumpState.canJump = true

@@ -6,7 +6,8 @@ import util.StreamUtil
 class Game {
     var currentTick: Int = 0
     lateinit var properties: Properties
-    lateinit var level: Level
+    @JvmField
+    var level: Level = Level()
     lateinit var players: Array<Player>
     lateinit var units: Array<Unit>
     lateinit var bullets: Array<Bullet>

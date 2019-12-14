@@ -13,17 +13,17 @@ import util.then
 import kotlin.math.abs
 import kotlin.reflect.KClass
 
-class MySmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
+class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     var disableShooting: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
 
-        return smartGuy(debug, game, me)
+        return doSmartGuy()
     }
 
-    private fun smartGuy(debug: Debug, game: Game, me: Unit): UnitAction {
+    private fun doSmartGuy(): UnitAction {
         val action = UnitAction()
 
         val nearestEnemy: Unit? = getClosestEnemy()
@@ -40,50 +40,52 @@ class MySmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
 
         if (me.weapon == null && nearestWeapon != null) {
-            myPrint { "go pick weapon ${nearestWeapon.posInfo()}" }
+            log { "go pick weapon ${nearestWeapon.posInfo()}" }
 
             targetPos = nearestWeapon.position
         } else if (nearestHealth != null) {
-            myPrint { "go pick ${nearestHealth.posInfo()}" }
+            log { "go pick ${nearestHealth.posInfo()}" }
 
             targetPos = nearestHealth.position
         } else if (wantSwapToRocketLauncher) {
             val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER)!!
-            myPrint { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
+            log { "go pick ${rocket.posInfo()} instead because we want rocket launcher " }
             targetPos = rocket.position
             action.swapWeapon = isClose(targetPos)
-        } else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
-            myPrint { "go pick ${nearestWeapon.posInfo()} instead pistol " }
+        } /*else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
+            log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
             targetPos = nearestWeapon.position
             action.swapWeapon = isClose(targetPos)
-        } else if (nearestEnemy != null) {
-            myPrint { "go to enemy" }
+        }*/ else if (nearestEnemy != null) {
+            log { "go to enemy" }
             val mul = if (me.position.x - targetPos.x > 0) -1 else 1
             var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 6 } ?: 4
             targetPos = nearestEnemy.position.copy() + Point2D(distance * mul, 0)
         }
 
         action.aim = Point2D(0.0, 0.0)
-
         if (nearestEnemy != null) {
-            val canShot: Boolean
             if (disableShooting) {
-                canShot = false
+                action.shoot = false
             } else {
-                val aims = listOf(
-                    nearestEnemy.center() - me.center()
-                )
-                canShot = canShot(nearestEnemy, aims, action)
-            }
-            if (canShot) {
-                action.shoot = true
+                val aims = listOf(nearestEnemy.center() - me.center())
+
+                if (canShot(nearestEnemy, aims, action)) {
+                    action.shoot = true
+                }
             }
         }
         var jump = targetPos.y > me.position.y;
-        if (targetPos.x > me.position.x && game.getTile(me.position, Direction.RIGHT) == Tile.WALL) {
+        if (targetPos.x > me.position.x &&
+            (game.getTile(me.position, Direction.RIGHT) == Tile.WALL ||
+                    game.getTile(me.position.copy().applyDir(Direction.DOWN), Direction.RIGHT) == Tile.WALL)
+        ) {
             jump = true
         }
-        if (targetPos.x < me.position.x && game.getTile(me.position, Direction.LEFT) == Tile.WALL) {
+        if (targetPos.x < me.position.x &&
+            (game.getTile(me.position, Direction.LEFT) == Tile.WALL ||
+                    game.getTile(me.position.copy().applyDir(Direction.DOWN), Direction.LEFT) == Tile.WALL)
+        ) {
             jump = true
         }
         if (me.jumpState.canJump.not() && me.onLadder.not()) {
@@ -92,12 +94,17 @@ class MySmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (!jump && prevActions.isNotEmpty()) {
             val lastWasJump = prevActions.last().jump
             if (!me.onLadder && !me.onGround && lastWasJump) {
-                myPrint { "force finish jump" }
+                log { "force finish jump" }
                 jump = true
             }
         }
+        val vectorMove = (me.position.copy() - targetPos).abs()
 
-        myPrint { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
+        if (vectorMove.x < 1.2 && me.position.y > targetPos.y && vectorMove.y > 0.3) {
+            jump = false
+        }
+
+        log { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
         val travelDistX = targetPos.x - me.position.x
         val travelDistY = targetPos.y - me.position.y
 
@@ -107,10 +114,13 @@ class MySmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             action.velocity = travelDistX * 10000
         }
         action.jump = jump
-        action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+        if (vectorMove.x < 1) {
+            action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+        }
         action.plantMine = false
 
-        //debug.line(me.position, targetPos, ColorFloat.TARGET_POS)
+        d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
+
         return action
     }
 
