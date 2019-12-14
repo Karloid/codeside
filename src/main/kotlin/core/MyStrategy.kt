@@ -20,6 +20,10 @@ class MyStrategy : AbstractStrategy() {
 
     private var firstDebugSimulator: Simulator? = null
 
+    private var shootingStart = SmartGuyStrategy(this).apply {
+        disableShooting = false
+    }
+
     init {
         isReal = true
     }
@@ -32,6 +36,12 @@ class MyStrategy : AbstractStrategy() {
         start = System.currentTimeMillis()
 
         val action = doSimMove()
+
+        val shootAction = shootingStart.getAction(me, game, debug)
+        
+        action.shoot = shootAction.shoot
+        action.aim = shootAction.aim
+        action.reload = shootAction.reload
 
         end = System.currentTimeMillis()
 
@@ -222,7 +232,7 @@ class MyStrategy : AbstractStrategy() {
         if (!isReal) {
             return
         }
-        log { "onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
+        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
     }
 }
 
