@@ -72,7 +72,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         return game.units.filter { it.isMy().not() }.minBy { it.position.distance(me.position) }
     }
 
-    private fun Unit.isMy(): Boolean {
+    fun Unit.isMy(): Boolean {
         return me.playerId == playerId
     }
 

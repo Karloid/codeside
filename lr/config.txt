@@ -1,6 +1,6 @@
 {
-    "seed": 22133,
-    "options_preset": "Round1",
+    "seed": 21533162,
+    "options_preset": "Round2",
     "players": [
         "Quickstart",
         {

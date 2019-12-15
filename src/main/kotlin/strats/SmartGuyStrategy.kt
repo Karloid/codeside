@@ -240,7 +240,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (isRocketLauncher) {
                 it.hitTargetPercent > 0.3f && it.hitTargetPercent >= it.hitMePercent
             } else {
-                it.hitTargetPercent > 0.1f
+                it.hitTargetPercent > 0.1f && it.hitTargetPercent >= it.hitMePercent
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
@@ -282,12 +282,23 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }
 
 
-            val distanceTarget = signedDist(pointToCheck, target)
+            var distanceTarget = 1000.0
+            var closestUnit = target
+            for (unit in game.units) {
+                if (unit != me) {
+                    val dist = signedDist(pointToCheck, unit)
+                    if (dist < distanceTarget) {
+                        distanceTarget = dist
+                        closestUnit = unit
+                    }
+                }
+            }
+
             val distanceWalls = signedDist(pointToCheck, null)
 
-            var isTargetClosest = distanceTarget < distanceWalls
+            var isTargetCloser = distanceTarget < distanceWalls
 
-            var distance = if (isTargetClosest) {
+            var distance = if (isTargetCloser) {
                 distanceTarget
             } else {
                 distanceWalls
@@ -296,18 +307,23 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             distance -= pointSize
 
             if (distance < epsilon) {
+                var targetAffected = false
+                var myAffected = false
                 rocketLauncher.then {
                     val explosionRadius = weapon.params.explosion!!.radius
-                    val targetAffected =
-                        isRocketAffected(target, pointToCheck, explosionRadius)
-                    val meAffected = isRocketAffected(me, pointToCheck, explosionRadius)
-                    if (targetAffected) {
-                        isTargetClosest = true
+                    targetAffected = isRocketAffected(target, pointToCheck, explosionRadius)
+
+
+                    myAffected = isRocketAffected(me, pointToCheck, explosionRadius)
+                    //TODO koeff instead of boolean
+                    if (!myAffected) {
+                        myAffected =
+                            getAnotherMe()?.let { isRocketAffected(it, pointToCheck, explosionRadius) } ?: false
                     }
-                    hitMe.ref = meAffected
                 }
-                weGetWalls = !isTargetClosest
-                hitTarget.ref = isTargetClosest
+                weGetWalls = !isTargetCloser
+                hitTarget.ref = targetAffected || (isTargetCloser && !closestUnit.isMy())
+                hitMe.ref = myAffected || (isTargetCloser && !closestUnit.isMy())
                 hitPoint.ref = (pointToCheck.copy())
                 break
             }
@@ -336,6 +352,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                    debug.line(from, endFinal, color)
                }*/
         return weGetWalls
+    }
+
+    private fun getAnotherMe(): Unit? {
+        return game.units.firstOrNull { it.id != me.id && it.playerId == me.playerId }
     }
 
     private inline fun myPrint(function: () -> String) {
