@@ -39,7 +39,7 @@ application {
 }
 
 task doZip(type: Exec) {
-
+    //TODO delete archive
     commandLine 'sh', '-c', '' +
             ' zip -r -X "lastSources.zip" ./src/ -x LibGdxPainter.java -x "*.DS_Store"; ' +
             ' zip -r -X "lastSources.zip" ./pom.xml; '
