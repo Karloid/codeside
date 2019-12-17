@@ -20,6 +20,7 @@ class MyStrategy : AbstractStrategy() {
     private var start: Long = 0L
 
     private var shootingStart = SmartGuyStrategy(this).apply {
+        isReal = true
         disableShooting = false
     }
 
@@ -35,7 +36,7 @@ class MyStrategy : AbstractStrategy() {
         start = System.currentTimeMillis()
 
         val action: UnitAction
-        if (me.weapon == null) {
+        if (game.bullets.isEmpty()) {
             action = shootingStart.getAction(me, game, debug)
         } else {
             action = doSimMove()
@@ -105,6 +106,14 @@ class MyStrategy : AbstractStrategy() {
                     val size = game.properties.mineSize
                     debug.rect(hit, size, ColorFloat(Color.RED))
                 }
+
+                for (exp in sim.metainfo.explosions) {
+
+                    debug.rect(exp.point, Point2D(exp.radius * 2, exp.radius * 2), ColorFloat.EXPLOSION)
+                    for (affectedUnit in exp.affectedUnits) {
+                        debug.rect(affectedUnit, game.properties.unitSize, ColorFloat.EXPLOSION_UNIT)
+                    }
+                }
             }
         }
     }
@@ -123,7 +132,7 @@ class MyStrategy : AbstractStrategy() {
         //   variants.clear()
         //   variants.add(EmptyStrategy(this))
 
-        val strat = pickBestStrat(variants, getMaxJumpTicks() / 2)
+        val strat = pickBestStrat(variants, getMaxJumpTicks() / 3 * 2)
 
         strat.isReal = true
         return strat.getAction(me, game, debug)
@@ -197,7 +206,7 @@ class MyStrategy : AbstractStrategy() {
             predictStratMoves(myStrat, sim, tick, true, simGame)
             predictStratMoves(enStrat, sim, tick, false, simGame)
 
-            sim.microTicks = game.properties.updatesPerTick
+            sim.microTicks = game.properties.updatesPerTick / 2
 
             sim.tick()
 

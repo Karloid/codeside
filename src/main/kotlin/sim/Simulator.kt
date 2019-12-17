@@ -149,18 +149,20 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             for (unit in game.units) {
                 isCollide(bullet, unit).then {
                     unit.health -= bullet.damage
-                    bullet.explosionParams?.damage?.let {
-                        unit.health -= it
-                    }
+
+                    onBulletCollide(bullet, unit)
+
                     bulletsToRemove.add(bullet)
                     metainfo.unitHitRegs.add(bullet.position.copy())
                     return@forEach
                 }
             }
 
-            isCollideWalls(bullet).then {
-                //TODO explosion damage
-                bulletsToRemove.add(bullet)
+            if (!bulletsToRemove.contains(bullet)) {
+                isCollideWalls(bullet).then {
+                    onBulletCollide(bullet, null)
+                    bulletsToRemove.add(bullet)
+                }
             }
         }
 
@@ -169,7 +171,51 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         }
     }
 
+    private fun onBulletCollide(bullet: Bullet, unitThatCollide: Unit?) {
+        bullet.explosionParams?.damage?.let { damage ->
+            val affectedUnits = mutableListOf<Point2D>()
+            for (unit in game.units) {
+                val distToBullet = (unit.position.copy().plus(0.0, unit.size.y / 2) - bullet.position).abs()
+                val radius = bullet.explosionParams!!.radius * 1.1f
+                if (distToBullet.x <= radius && distToBullet.y <= radius) {
+                    unit.health -= damage
+                    affectedUnits.add(unit.position.copy().plus(0.0, unit.size.y / 2))
+                }
+            }
+
+            val explosion = Explosion(bullet.position.copy(), affectedUnits, bullet.explosionParams!!.radius)
+            metainfo.explosions.add(explosion)
+        }
+    }
+
     private fun isCollideWalls(bullet: Bullet): Boolean {
+        val tiles = game.level.tiles
+        val halfSize = bullet.size / 2
+
+        var x = (bullet.position.x - halfSize).toInt()
+        var y = (bullet.position.y - halfSize).toInt()
+        tiles.getFast(x, y).equals(Tile.WALL).then {
+            return true
+        }
+
+        x = (bullet.position.x - halfSize).toInt()
+        y = (bullet.position.y + halfSize).toInt()
+        tiles.getFast(x, y).equals(Tile.WALL).then {
+            return true
+        }
+
+        x = (bullet.position.x + halfSize).toInt()
+        y = (bullet.position.y + halfSize).toInt()
+        tiles.getFast(x, y).equals(Tile.WALL).then {
+            return true
+        }
+
+        x = (bullet.position.x + halfSize).toInt()
+        y = (bullet.position.y - halfSize).toInt()
+        tiles.getFast(x, y).equals(Tile.WALL).then {
+            return true
+        }
+
         return false
     }
 

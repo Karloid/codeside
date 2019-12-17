@@ -84,7 +84,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         if (!isReal) {
             return
         }
-        MainKt.log { game.currentTick.toString() + ": " + function() }
+        MainKt.log { game.currentTick.toString() + ": " + me.id + ">" + function() }
     }
 
     inline fun d(function: () -> kotlin.Unit) {

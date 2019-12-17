@@ -12,6 +12,8 @@ data class ColorFloat(
 
     companion object {
 
+        val EXPLOSION: ColorFloat = ColorFloat(1f, 0.1f, 0f, 0.4f)
+        val EXPLOSION_UNIT: ColorFloat = ColorFloat(1f, 0.9f, 0f, 0.4f)
         val TARGET_POS: ColorFloat = ColorFloat(Color.pink)
         val POINT_TO_CHECK = ColorFloat(0f, 0f, 1f, 1f)
         val WALL: ColorFloat = ColorFloat(Color.LIGHT_GRAY)
