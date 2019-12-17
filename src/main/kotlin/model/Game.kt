@@ -13,6 +13,7 @@ class Game {
     lateinit var bullets: Array<Bullet>
     lateinit var mines: Array<Mine>
     lateinit var lootBoxes: Array<LootBox>
+
     constructor() {}
     constructor(
         currentTick: Int,
@@ -33,6 +34,7 @@ class Game {
         this.mines = mines
         this.lootBoxes = lootBoxes
     }
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Game {
@@ -95,9 +97,9 @@ class Game {
         }
     }
 
-    fun getTile(position: Point2D, dir: Direction): Tile? {
-        val newPos = position.copy().applyDir(dir)
-        return level.tiles.get(newPos)
+    fun getTile(unitPos: Point2D, dir: Direction, unitSize: Point2D): Tile? {
+        val newPointToCheck = unitPos.copy().plus(Point2D.getPointByDir(dir).copy().length(unitSize.x))
+        return level.tiles.get(newPointToCheck)
     }
 
     fun copy(): Game {

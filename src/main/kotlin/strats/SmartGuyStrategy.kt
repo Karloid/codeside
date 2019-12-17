@@ -142,9 +142,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return action
     }
 
+    //TODO rework
     private fun isObstacleAtDirection(dir: Direction): Boolean {
-        val walls = game.getTile(me.position, dir) == Tile.WALL ||
-                game.getTile(me.position.copy().applyDir(dir), Direction.LEFT) == Tile.WALL
+        val walls = game.getTile(me.position, dir, me.size) == Tile.WALL ||
+                game.getTile(me.position.copy().plus(0.0, me.size.y), dir, me.size) == Tile.WALL
         walls.then { return true }
 
         val newPos = me.position.copy().applyDir(dir)
@@ -428,6 +429,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         val rocket = getClosestWeaponItem(WeaponType.ROCKET_LAUNCHER) ?: return false
 
         return rocket.position.distance(me.position) < getClosestEnemy()?.position?.distance(me.position) ?: 10.0
+    }
+
+    override fun toString(): String {
+        return "SmartGuyStrategy(disableShooting=$disableShooting)"
     }
 
 }

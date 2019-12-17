@@ -8,7 +8,6 @@ import sim.Simulator
 import strats.*
 import util.f
 import util.fori
-import util.then
 import java.awt.Color
 import java.util.*
 
@@ -170,7 +169,7 @@ class MyStrategy : AbstractStrategy() {
 
         var best = evalAndSims.maxBy { it.score }!!
 
-
+        log { "picked strat=${best.strat} score=${best.score}" }
         drawDebugSimulator(evalAndSims, best)
 
         return best.strat
@@ -240,9 +239,8 @@ class MyStrategy : AbstractStrategy() {
 
     private fun printMap() {
         d {
-            game.level.tiles.fori { x, y, t ->
-                (t == Tile.WALL).then {
-                }
+            for (unit in game.units) {
+                debug.text(unit.id.toString(), unit.position, ColorFloat.TEXT_ID)
             }
         }
     }

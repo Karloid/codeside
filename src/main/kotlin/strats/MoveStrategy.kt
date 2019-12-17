@@ -26,6 +26,11 @@ class MoveStrategy(val leftRight: MoveLeftRight, val moveUpDown: MoveUpDown) : S
 
         return unitAction
     }
+
+    override fun toString(): String {
+        return "MoveStrategy($leftRight, $moveUpDown, $isReal)"
+    }
+
 }
 
 enum class MoveLeftRight() {

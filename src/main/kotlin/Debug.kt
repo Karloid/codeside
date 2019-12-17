@@ -41,4 +41,14 @@ class Debug(private val stream: OutputStream) {
             ColoredVertex(point, color)
         }))
     }
+
+    fun text(
+        msg: String,
+        position: Point2D,
+        colorFloat: ColorFloat,
+        size: Float = 20f,
+        alignment: TextAlignment = TextAlignment.CENTER
+    ) {
+        draw(CustomData.PlacedText(msg, position.toFloat(), alignment, size, colorFloat))
+    }
 }

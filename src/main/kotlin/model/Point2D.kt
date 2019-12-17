@@ -152,7 +152,7 @@ class Point2D {
         return tx * tx + ty * ty
     }
 
-    inline  fun squareLength(): Double {
+    inline fun squareLength(): Double {
         return x * x + y * y
     }
 
@@ -186,7 +186,7 @@ class Point2D {
         return Point2D(-y, x)
     }
 
-    inline  fun dotProduct(vector: Point2D): Double {
+    inline fun dotProduct(vector: Point2D): Double {
         return x * vector.x + y * vector.y
     }
 
@@ -195,17 +195,17 @@ class Point2D {
         return FastMath.atan2(y.toFloat(), x.toFloat())
     }
 
-    inline  fun nearlyEqual(potentialIntersectionPoint: Point2D, epsilon: Double): Boolean {
+    inline fun nearlyEqual(potentialIntersectionPoint: Point2D, epsilon: Double): Boolean {
         return Math.abs(x - potentialIntersectionPoint.x) < epsilon && Math.abs(y - potentialIntersectionPoint.y) < epsilon
     }
 
-    inline  fun rotate(angle: Point2D): Point2D {
+    inline fun rotate(angle: Point2D): Point2D {
         val newX = angle.x * x - angle.y * y
         val newY = angle.y * x + angle.x * y
         return Point2D(newX, newY)
     }
 
-    inline   fun rotateBack(angle: Point2D): Point2D {
+    inline fun rotateBack(angle: Point2D): Point2D {
         val newX = angle.x * x + angle.y * y
         val newY = angle.x * y - angle.y * x
         return Point2D(newX, newY)
@@ -251,18 +251,11 @@ class Point2D {
         }
     }
 
-    inline  fun applyDir(direction: Direction): Point2D {
-        return this.plus(
-            when (direction) {
-                Direction.LEFT -> LEFT
-                Direction.UP -> UP
-                Direction.RIGHT -> RIGHT
-                Direction.DOWN -> DOWN
-            }
-        )
+    inline fun applyDir(direction: Direction): Point2D {
+        return this.plus(getPointByDir(direction))
     }
 
-    inline  fun abs(): Point2D {
+    inline fun abs(): Point2D {
         if (x < 0) {
             x *= -1
         }
@@ -278,6 +271,15 @@ class Point2D {
     }
 
     companion object {
+        inline fun getPointByDir(direction: Direction): Point2D {
+            return when (direction) {
+                Direction.LEFT -> LEFT
+                Direction.UP -> UP
+                Direction.RIGHT -> RIGHT
+                Direction.DOWN -> DOWN
+            }
+        }
+
 
         fun angle(x: Double, y: Double): Float {
             return FastMath.atan2(y.toFloat(), x.toFloat())
