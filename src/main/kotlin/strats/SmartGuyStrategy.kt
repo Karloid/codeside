@@ -90,14 +90,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
         var jump = targetPos.y > me.position.y;
         if (targetPos.x > me.position.x &&
-            (game.getTile(me.position, Direction.RIGHT) == Tile.WALL ||
-                    game.getTile(me.position.copy().applyDir(Direction.DOWN), Direction.RIGHT) == Tile.WALL)
+            isObstacleAtDirection(Direction.RIGHT)
         ) {
             jump = true
         }
         if (targetPos.x < me.position.x &&
-            (game.getTile(me.position, Direction.LEFT) == Tile.WALL ||
-                    game.getTile(me.position.copy().applyDir(Direction.DOWN), Direction.LEFT) == Tile.WALL)
+            isObstacleAtDirection(Direction.LEFT)
         ) {
             jump = true
         }
@@ -129,12 +127,41 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         action.jump = jump
         if (vectorMove.x < 1) {
             action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+            if (action.jumpDown && isObstacleAtDirection(Direction.DOWN)) {
+                if (!isObstacleAtDirection(Direction.LEFT)) {
+                    action.velocity = -9999.0;
+                } else if (!isObstacleAtDirection(Direction.RIGHT)) {
+                    action.velocity = 9999.0;
+                }
+            }
         }
         action.plantMine = false
 
         d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
 
         return action
+    }
+
+    private fun isObstacleAtDirection(dir: Direction): Boolean {
+        val walls = game.getTile(me.position, dir) == Tile.WALL ||
+                game.getTile(me.position.copy().applyDir(dir), Direction.LEFT) == Tile.WALL
+        walls.then { return true }
+
+        val newPos = me.position.copy().applyDir(dir)
+        for (unit in game.units) {
+            if (unit != me && unitsCollide(newPos, unit)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun unitsCollide(newPos: Point2D, unit: Unit): Boolean {
+        val distance = newPos.copy().minus(unit.position).abs()
+        if (distance.x <= unit.size.x && distance.y <= unit.size.y) {
+            return true
+        }
+        return false
     }
 
     private fun getHealthPack(): LootBox? {

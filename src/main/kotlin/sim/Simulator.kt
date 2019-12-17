@@ -176,7 +176,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             val affectedUnits = mutableListOf<Point2D>()
             for (unit in game.units) {
                 val distToBullet = (unit.position.copy().plus(0.0, unit.size.y / 2) - bullet.position).abs()
-                val radius = bullet.explosionParams!!.radius * 1.1f
+                val radius = bullet.explosionParams!!.radius * 1.2f
                 if (distToBullet.x <= radius && distToBullet.y <= radius) {
                     unit.health -= damage
                     affectedUnits.add(unit.position.copy().plus(0.0, unit.size.y / 2))
