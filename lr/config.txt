@@ -1,8 +1,12 @@
 {
-    "seed": 21533162,
+    "seed": 2111,
     "options_preset": "Round2",
     "players": [
-        "Quickstart",
+         {
+           "Tcp": {
+               "port": 31002
+            }
+          },
         {
             "Tcp": {
                 "port": 31001
