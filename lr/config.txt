@@ -1,15 +1,15 @@
 {
-    "seed": 21111300005,
+    "seed": 2111130333,
     "options_preset": "Round2",
     "players": [
          {
            "Tcp": {
-               "port": 31002
+               "port": 31001
             }
           },
         {
             "Tcp": {
-                "port": 31001
+                "port": 31002
             }
         }
     ]

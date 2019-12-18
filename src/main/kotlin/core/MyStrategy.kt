@@ -10,6 +10,7 @@ import util.f
 import util.fori
 import java.awt.Color
 import java.util.*
+
 //TODO calc two sims at once
 //TODO Handle two units at once
 //TODO highier score to keep jumping
@@ -196,8 +197,14 @@ class MyStrategy : AbstractStrategy() {
     private fun eval(simulator: Simulator, strat: StrategyAdvCombined): EvalAndSim {
 
         var score = 0.0
+        val myUnits = game.units.filter { it.isMy() }
 
-        val remainingTeamHealth = simulator.game.units.filter { it.playerId == me.playerId }.sumBy { it.health }
+        val myUnitsSim = simulator.game.units.filter { it.playerId == me.playerId }
+
+        val remainingTeamHealth = myUnitsSim.sumBy { it.health } * 100
+
+        val diff = myUnitsSim.size - myUnits.size
+        score -= diff * 1000
 
         score = remainingTeamHealth.toDouble()
 
