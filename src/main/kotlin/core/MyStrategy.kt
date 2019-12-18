@@ -14,6 +14,7 @@ import java.util.*
 //TODO Handle two units at once
 //TODO highier score to keep jumping
 //TODO calc trampline
+//TODO better resource management, keep to center of the map
 class MyStrategy : AbstractStrategy() {
 
     private var prevGame: Game? = null
