@@ -6,6 +6,7 @@ import core.MyStrategy
 import ifEnabledLog
 import model.*
 import model.Unit
+import util.fori
 import util.then
 import kotlin.math.abs
 
@@ -169,6 +170,25 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         bulletsToRemove.isNotEmpty().then {
             game.bullets = game.bullets.filter { !bulletsToRemove.contains(it) }.toTypedArray()
         }
+
+        var deadUnits: MutableList<Unit>? = null
+        game.units.forEach {
+            it.health = maxOf(it.health, 0)
+            if (it.health == 0) {
+                deadUnits = deadUnits ?: mutableListOf()
+                deadUnits!!.add(it)
+            }
+        }
+
+        if (deadUnits != null) {
+            ifEnabledLog {
+                deadUnits!!.fori {
+                    metainfo.deadUnits.add(it.position.copy())
+                }
+
+            }
+            game.units = game.units.filter { !deadUnits!!.contains(it) }.toTypedArray()
+        }
     }
 
     private fun onBulletCollide(bullet: Bullet, unitThatCollide: Unit?) {
@@ -179,12 +199,14 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 val radius = bullet.explosionParams!!.radius * 1.2f
                 if (distToBullet.x <= radius && distToBullet.y <= radius) {
                     unit.health -= damage
-                    affectedUnits.add(unit.position.copy().plus(0.0, unit.size.y / 2))
+                    affectedUnits.add(unit.position.copy())
                 }
             }
 
-            val explosion = Explosion(bullet.position.copy(), affectedUnits, bullet.explosionParams!!.radius)
-            metainfo.explosions.add(explosion)
+            ifEnabledLog {
+                val explosion = Explosion(bullet.position.copy(), affectedUnits, bullet.explosionParams!!.radius)
+                metainfo.explosions.add(explosion)
+            }
         }
     }
 

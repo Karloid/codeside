@@ -111,11 +111,25 @@ class MyStrategy : AbstractStrategy() {
                 }
 
                 for (exp in sim.metainfo.explosions) {
-
                     debug.rect(exp.point, Point2D(exp.radius * 2, exp.radius * 2), ColorFloat.EXPLOSION)
                     for (affectedUnit in exp.affectedUnits) {
-                        debug.rect(affectedUnit, game.properties.unitSize, ColorFloat.EXPLOSION_UNIT)
+                        val unitSize = game.properties.unitSize
+                        debug.rect(
+                            affectedUnit.copy().plus(0.0, unitSize.y / 2), unitSize,
+                            ColorFloat.EXPLOSION_UNIT
+                        )
                     }
+                }
+
+                for (deadUnit in sim.metainfo.deadUnits) {
+                    val unitSize = game.properties.unitSize
+                    val center = deadUnit.toUnitCenter()
+                    debug.rect(
+                        center, unitSize,
+                        ColorFloat.DEAD_SIM_UNIT
+                    )
+
+                    debug.text("X_X", center, ColorFloat.RED)
                 }
             }
         }
@@ -263,6 +277,11 @@ class MyStrategy : AbstractStrategy() {
         }
         log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump}-${me.jumpState.maxTime.f()} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
     }
+
+    fun Point2D.toUnitCenter(): Point2D {
+        return copy().plus(0.0, game.properties.unitSize.y / 2)
+    }
 }
+
 
 
