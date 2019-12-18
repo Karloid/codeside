@@ -10,7 +10,10 @@ import util.f
 import util.fori
 import java.awt.Color
 import java.util.*
-
+//TODO calc two sims at once
+//TODO Handle two units at once
+//TODO highier score to keep jumping
+//TODO calc trampline
 class MyStrategy : AbstractStrategy() {
 
     private var prevGame: Game? = null
