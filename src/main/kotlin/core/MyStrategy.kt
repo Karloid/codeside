@@ -20,7 +20,7 @@ import java.util.*
 //TODO draw reload
 //TODO reload time in eval
 
-//TODO stay away from rocket launcher
+//TODO stay away from rocket launcher  (check space around)
 class MyStrategy : AbstractStrategy() {
 
     private var simTill: Int = 0
@@ -351,6 +351,13 @@ class MyStrategy : AbstractStrategy() {
                     msg += action.shoot.then { "*" } ?: ""
                 }
                 debug.text(msg, unit.position, ColorFloat.TEXT_ID)
+
+                unit.weapon?.fireTimer?.let {
+                    debug.text(it.f(), unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
+                    val x = unit.position.x - unit.size.x / 2
+                    val y = unit.position.y - 1
+                    debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD )
+                }
             }
         }
     }

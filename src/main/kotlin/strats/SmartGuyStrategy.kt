@@ -1,7 +1,6 @@
 package strats
 
 import Debug
-import MainKt
 import core.AimScore
 import core.MyStrategy
 import model.*
@@ -248,8 +247,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     val rayIndex = i - rayCountOneSide
                     val ray = Point2D(aimAngle + rayIndex * stepAngle).length(40 * 1.5)
 
-                    val hitTargetRef = Ref(0)
-                    val hitMeDamageRef = Ref(0)
+                    val hitTargetRef = Ref(0.0)
+                    val hitMeDamageRef = Ref(0.0)
                     val hitPoint = Ref<Point2D?>(null)
 
                     val stuckWall =
@@ -280,11 +279,14 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
             AimScore(aim, wallHitPercent, hitTargetDamage, hitMeDamage)
         }.filter {
+            if (it.hitTargetDamage <= 0) {
+                return false
+            }
             if (isRocketLauncher) {
                 //game.properties.weaponParams[WeaponType.ROCKET_LAUNCHER]!!.explosion.
-                it.hitTargetDamage > it.hitMeDamage
+                it.hitTargetDamage > it.hitMeDamage * 1.6
             } else {
-                it.hitTargetDamage > it.hitMeDamage
+                it.hitTargetDamage > it.hitMeDamage * 1.6
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
@@ -307,8 +309,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private fun didStuckWithSomething(
         from: Point2D,
         to: Point2D,
-        hitTarget: Ref<Int>,
-        hitMe: Ref<Int>,
+        hitTarget: Ref<Double>,
+        hitMe: Ref<Double>,
         target: Unit,
         pointSize: Double,
         hitPoint: Ref<Point2D?>,
@@ -366,10 +368,13 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     val damage = weapon.params.explosion!!.damage
                     game.units.forEach { unit ->
                         Simulator.unitAffectedByExplosion(unit, explosionRadius, pointToCheck).then {
+                            val distToUnit = unit.position.distance(pointToCheck)
                             if (unit.isMy()) {
                                 hitMe.ref += damage;
+                                hitMe.ref -= distToUnit / 3f
                             } else {
                                 hitTarget.ref += damage;
+                                hitMe.ref -= distToUnit / 3f
                             }
                         }
                     }
@@ -411,9 +416,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     }
 
     private inline fun myPrint(function: () -> String) {
-        if (false) {
-            MainKt.myLog(function())
-        }
+        log { function() }
     }
 
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1

@@ -51,4 +51,8 @@ class Debug(private val stream: OutputStream) {
     ) {
         draw(CustomData.PlacedText(msg, position.toFloat(), alignment, size, colorFloat))
     }
+
+    fun rect(x: Double, y: Double, x2: Double, y2: Double, colorFloat: ColorFloat) {
+        rect(x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(), colorFloat)
+    }
 }
