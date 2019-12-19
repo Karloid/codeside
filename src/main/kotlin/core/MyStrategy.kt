@@ -16,6 +16,8 @@ import java.util.*
 //TODO highier score to keep jumping
 //TODO calc trampline
 //TODO better resource management, keep to center of the map
+//TODO draw reload
+//TODO reload time in eval
 
 //TODO stay away from rocket launcher
 class MyStrategy : AbstractStrategy() {
