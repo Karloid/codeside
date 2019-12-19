@@ -10,6 +10,7 @@ import util.f
 import util.fori
 import util.then
 import java.awt.Color
+import java.lang.Math.abs
 import java.util.*
 
 //TODO calc two sims at once
@@ -57,13 +58,19 @@ class MyStrategy : AbstractStrategy() {
             simTill = game.currentTick + 60
         }
 
-        val isDoSim = simTill >= game.currentTick && me.weapon != null
+        val shootAction = shootingStart.getAction(me, game, debug)
+
+        val noWeapon = me.weapon != null 
+        var isDoSim = simTill >= game.currentTick && noWeapon
+
+        if (!shootAction.shoot && game.bullets.isEmpty()) {
+            isDoSim = false
+        }
+
         if (!isDoSim) {
-            action = shootingStart.getAction(me, game, debug)
+            action = shootAction
         } else {
             action = doSimMove()
-
-            val shootAction = shootingStart.getAction(me, game, debug)
 
             action.shoot = shootAction.shoot  //TODO enable
             action.aim = shootAction.aim
@@ -81,6 +88,10 @@ class MyStrategy : AbstractStrategy() {
         calcStats()
 
         return action
+    }
+
+    private fun bulletsNear(): Boolean {
+        return game.bullets.any { bullet -> bullet.playerId != me.playerId && bullet.position.distance(me.position) < 9 }
     }
 
     private fun calcStats() {
@@ -177,11 +188,11 @@ class MyStrategy : AbstractStrategy() {
                 variants.add(MoveStrategy(leftRight, upDown))
             }
         }
-        var tickK = getMaxJumpTicks() / 3 * 2
+        var tickK = getMaxJumpTicks() / 3 * 3
 
-      //  variants.clear()
-      //  variants.add(DebugAndJumpStrategy())
-      //  tickK = getMaxJumpTicks() * 20
+        //  variants.clear()
+        //  variants.add(DebugAndJumpStrategy())
+        //  tickK = getMaxJumpTicks() * 20
 
         val strat = pickBestStrat(variants, tickK)
 
@@ -272,6 +283,14 @@ class MyStrategy : AbstractStrategy() {
             //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
+        val distToCenter = abs(me.position.x - game.level.tiles.cellsWidth)
+        if (distToCenter > game.level.tiles.cellsWidth / 3) {
+            //keep center
+            simulator.game.getUnitPosNullable(me.id)?.let { mySimPos ->
+                score -= (abs(mySimPos.x - game.level.tiles.cellsWidth)) / 100
+            }
+        }
+
         if (me.health != game.properties.unitMaxHealth) {
             score -= getMinDistToHealth(simulator.game, me) * 10
         }
@@ -311,7 +330,7 @@ class MyStrategy : AbstractStrategy() {
             predictStratMoves(myStrat, sim, tick, true, simGame)
             predictStratMoves(enStrat, sim, tick, false, simGame)
 
-            sim.microTicks = game.properties.updatesPerTick / 2
+            sim.microTicks = game.properties.updatesPerTick / 3
 
             sim.tick()
 

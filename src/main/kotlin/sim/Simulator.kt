@@ -182,6 +182,10 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 isCollideWalls(bullet).then {
                     onBulletCollide(bullet)
                     bulletsToRemove.add(bullet)
+
+                    if (bullet.explosionParams != null) {
+                        metainfo.unitHitRegs.add(bullet.position.copy())
+                    }
                 }
             }
         }

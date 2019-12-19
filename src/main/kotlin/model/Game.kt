@@ -148,7 +148,8 @@ class Game {
         return minDistanceToEnemy
     }
 
-    private fun getUnitPos(id: Int) = units.firstOrNull { it.id == id }?.position ?: Point2D(0, 0)
+    fun getUnitPos(id: Int) = units.firstOrNull { it.id == id }?.position ?: Point2D(0, 0)
+    fun getUnitPosNullable(id: Int) = units.firstOrNull { it.id == id }?.position
 
     fun getDist(me: Unit, another: Unit): Double {
         return getUnitPos(me.id).distance(getUnitPos(another.id))
