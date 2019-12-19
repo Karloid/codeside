@@ -84,28 +84,44 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                     unit.position = newPosHor
             }
 
-            // vertical movement UP
-            if (action.jump && unit.jumpState.canJump) {
+            if (isCollideWithTramp(unit)) {
+                unit.jumpState.canCancel = false
+                unit.jumpState.canJump = true // ?
+                unit.jumpState.maxTime = game.properties.jumpPadJumpTime
+                unit.jumpState.speed = game.properties.jumpPadJumpSpeed
+            }
+
+            // vertical movement UP jump
+            if ((action.jump && unit.jumpState.canJump) || unit.isJumpPadJump()) {
+                if (!unit.isJumpPadJump()) {
+                    unit.jumpState.canCancel = true
+                    unit.jumpState.speed = game.properties.unitJumpSpeed
+                }
                 unit.onGround = false
                 unit.jumpState.maxTime = unit.jumpState.maxTime - delta_time
                 if (unit.jumpState.maxTime <= 0) {
+                    unit.jumpState.speed = 0.0
                     unit.jumpState.maxTime = 0.0
                     unit.jumpState.canJump = false;
+                    unit.jumpState.canCancel = false;
                 }
 
-                if (unit.jumpState.canJump) {
+                if (unit.jumpState.canJump || unit.isJumpPadJump()) {
                     if (isCollideVerticallyTop(delta_time, unit)) {
 
                         unit.jumpState.canJump = false
                         unit.jumpState.maxTime = 0.0
+                        unit.jumpState.speed = 0.0
                         //we are failing after stuck
+                    } else {
+                        //TODO
                     }
                 }
             }
             updateUnitLadder(unit)
 
             //check we still on ground
-            if (!unit.simAction.jump && unit.onGround && !unit.onLadder) {
+            if (!action.jump && unit.onGround && !unit.onLadder) {
                 if (!isVerticalCollideLevel(unit.position, unit, false, false)) {
                     if (noCollideWithOtherUnitsVertically(unit, unit.position, false)) {
                         unit.onGround = false
@@ -113,10 +129,11 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 }
             }
 
-            // hmm something
-            if (!action.jump && unit.jumpState.canJump) {
+            // hmm something  // canceling jump?
+            if (!action.jump && unit.jumpState.canCancel) {
                 unit.jumpState.canJump = false
                 unit.jumpState.maxTime = 0.0
+                unit.jumpState.speed = 0.0
             }
 
             //failing bottom
@@ -128,6 +145,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                     unit.onGround = true
                     unit.jumpState.canJump = true
                     unit.jumpState.maxTime = game.properties.unitJumpTime
+                    unit.jumpState.canCancel = false
                     //we are failing after stuck
                 }
             }
@@ -189,6 +207,25 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             }
             game.units = game.units.filter { !deadUnits!!.contains(it) }.toTypedArray()
         }
+    }
+
+    private fun isCollideWithTramp(unit: Unit): Boolean {
+        val unitHalfXSize = unit.size.x / 2
+        val newPosition = unit.position
+
+        val yToCheck = unit.position.y.toInt()
+
+        val xLeft = (newPosition.x - unitHalfXSize).toInt()
+        val xRight = (newPosition.x + unitHalfXSize).toInt()
+        for (xToCheck in xLeft..xRight) {
+            if (xToCheck == xLeft || xToCheck == xRight) {
+                val tile = game.level.tiles.getFast(xToCheck, yToCheck)
+                if (tile == Tile.JUMP_PAD) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     private fun onBulletCollide(bullet: Bullet) {
@@ -268,7 +305,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
     }
 
     private fun isCollideVerticallyTop(delta_time: Double, unit: Unit): Boolean {
-        val jumpSpeed = game.properties.unitJumpSpeed * delta_time
+        val jumpSpeed = unit.jumpState.speed * delta_time
         val newPos = unit.position.copy().plus(0.0, jumpSpeed)
 
         if (!isVerticalCollideLevel(newPos, unit, true, false)) {
@@ -381,4 +418,9 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             return isAffected
         }
     }
+
+    private fun Unit.isJumpPadJump(): Boolean {
+        return jumpState.speed == game.properties.jumpPadJumpSpeed && jumpState.maxTime > 0.0
+    }
 }
+

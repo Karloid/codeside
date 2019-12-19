@@ -135,7 +135,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         val travelDistX = targetPos.x - me.position.x
         val travelDistY = targetPos.y - me.position.y
 
-        if (Math.abs(travelDistX) < 0.49 && abs(travelDistY) < 0.2) {
+        if (Math.abs(travelDistX) < 0.19 && abs(travelDistY) < 0.2) {
             action.velocity = 0.0
         } else {
             action.velocity = travelDistX * 10000
@@ -144,10 +144,21 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (vectorMove.x < 1) {
             action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
             if (action.jumpDown && isObstacleAtDirection(Direction.DOWN)) {
-                if (!isObstacleAtDirection(Direction.LEFT)) {
-                    action.velocity = -9999.0;
-                } else if (!isObstacleAtDirection(Direction.RIGHT)) {
-                    action.velocity = 9999.0;
+                val noLeftObstacle = !isObstacleAtDirection(Direction.LEFT)
+                val noRightObstacle = !isObstacleAtDirection(Direction.RIGHT)
+
+                if (travelDistX > 0) {
+                    if (noRightObstacle) {
+                        action.velocity = 9999.0;
+                    } else if (noLeftObstacle) {
+                        action.velocity = -9999.0;
+                    }
+                } else {
+                    if (noLeftObstacle) {
+                        action.velocity = -9999.0;
+                    } else if (noRightObstacle) {
+                        action.velocity = 9999.0;
+                    }
                 }
             }
         }
@@ -160,6 +171,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     private fun wantToPickRocketLauncher(): Boolean {
         val anotherMe = getAnotherMe() ?: return false
+
+        if (anotherMe.weapon == null) {
+            return false
+        }
 
         return me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && anotherMe.weapon?.typ != WeaponType.ROCKET_LAUNCHER
     }
@@ -426,6 +441,11 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     }
 
     private fun wantSwapFromRocketLauncher(me: Unit): Boolean {
+        getAnotherMe()?.let {
+            if (it.weapon == null) {
+                return false
+            }
+        }
         val isRocketLauncher = me.weapon?.typ == WeaponType.ROCKET_LAUNCHER
         if (!isRocketLauncher) {
             return false

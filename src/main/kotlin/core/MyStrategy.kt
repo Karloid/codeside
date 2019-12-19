@@ -56,8 +56,8 @@ class MyStrategy : AbstractStrategy() {
             simTill = game.currentTick + 60
         }
 
-        val isDoSim = simTill >= game.currentTick
-        if (!isDoSim && false) { //TODO remove
+        val isDoSim = simTill >= game.currentTick && me.weapon != null
+        if (!isDoSim) {
             action = shootingStart.getAction(me, game, debug)
         } else {
             action = doSimMove()
@@ -176,11 +176,13 @@ class MyStrategy : AbstractStrategy() {
                 variants.add(MoveStrategy(leftRight, upDown))
             }
         }
+        var tickK = getMaxJumpTicks() / 3 * 2
 
-        //   variants.clear()
-        //   variants.add(EmptyStrategy(this))
+      //  variants.clear()
+      //  variants.add(DebugAndJumpStrategy())
+      //  tickK = getMaxJumpTicks() * 20
 
-        val strat = pickBestStrat(variants, getMaxJumpTicks() / 3 * 2)
+        val strat = pickBestStrat(variants, tickK)
 
         strat.isReal = true
         return strat.getAction(me, game, debug)
@@ -356,7 +358,7 @@ class MyStrategy : AbstractStrategy() {
                     debug.text(it.f(), unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
                     val x = unit.position.x - unit.size.x / 2
                     val y = unit.position.y - 1
-                    debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD )
+                    debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)
                 }
             }
         }
