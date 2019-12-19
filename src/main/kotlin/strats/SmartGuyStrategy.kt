@@ -6,6 +6,7 @@ import core.AimScore
 import core.MyStrategy
 import model.*
 import model.Unit
+import sim.Simulator
 import util.Direction
 import util.Ref
 import util.f
@@ -230,18 +231,16 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         aims.map { aim ->
             var wallHitPercent = 0.0
-            var targetHitPercent = 0.0
-            var meHitPercent = 0.0
+            var hitTargetDamage = 0.0
+            var hitMeDamage = 0.0
 
             me.weapon?.let { weapon ->
                 val aimAngle = aim.angle()
 
-                val rayCountOneSide = 1  //TODO fix performance somehow
+                val rayCountOneSide = 2  //TODO fix performance somehow
                 val stepAngle = weapon.spread / rayCountOneSide
 
                 var stuckCount = 0
-                var hitTargetCount = 0
-                var hitMeCount = 0
 
                 val totalRaysCount = rayCountOneSide * 2 + 1
 
@@ -249,16 +248,16 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     val rayIndex = i - rayCountOneSide
                     val ray = Point2D(aimAngle + rayIndex * stepAngle).length(40 * 1.5)
 
-                    val hitTarget = Ref(false)
-                    val hitMe = Ref(false)
+                    val hitTargetRef = Ref(0)
+                    val hitMeDamageRef = Ref(0)
                     val hitPoint = Ref<Point2D?>(null)
 
                     val stuckWall =
                         didStuckWithSomething(
                             center.copy(),
                             center.copy() + ray.copy(),
-                            hitTarget,
-                            hitMe,
+                            hitTargetRef,
+                            hitMeDamageRef,
                             target,
                             weapon.params.bullet.size,
                             hitPoint,
@@ -269,28 +268,23 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     if (stuckWall) {
                         stuckCount++
                     }
-                    if (hitTarget.ref) {
-                        hitTargetCount++
-                    }
-                    if (hitMe.ref) {
-                        hitMeCount++
-                    }
+                    hitTargetDamage += hitTargetRef.ref
+                    hitMeDamage += hitMeDamageRef.ref
 
                     //debug.line(center, center.copy() + ray, ColorFloat.AIM_RAY_FAILED)
                 }
 
 
                 wallHitPercent = stuckCount / totalRaysCount.toDouble()
-                targetHitPercent = hitTargetCount / totalRaysCount.toDouble()
-                meHitPercent = hitMeCount / totalRaysCount.toDouble()
             }
 
-            AimScore(aim, wallHitPercent, targetHitPercent, meHitPercent)
+            AimScore(aim, wallHitPercent, hitTargetDamage, hitMeDamage)
         }.filter {
             if (isRocketLauncher) {
-                it.hitTargetPercent > 0.3f && it.hitTargetPercent >= it.hitMePercent
+                //game.properties.weaponParams[WeaponType.ROCKET_LAUNCHER]!!.explosion.
+                it.hitTargetDamage > it.hitMeDamage
             } else {
-                it.hitTargetPercent > 0.1f && it.hitTargetPercent >= it.hitMePercent
+                it.hitTargetDamage > it.hitMeDamage
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
@@ -313,12 +307,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private fun didStuckWithSomething(
         from: Point2D,
         to: Point2D,
-        hitTarget: Ref<Boolean>,
-        hitMe: Ref<Boolean>,
+        hitTarget: Ref<Int>,
+        hitMe: Ref<Int>,
         target: Unit,
         pointSize: Double,
         hitPoint: Ref<Point2D?>,
-        rocketLauncher: Boolean,
+        isRocketLauncher: Boolean,
         weapon: Weapon
     ): Boolean {
         var pointToCheck = from.copy()
@@ -344,11 +338,14 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 }
             }
 
-            val distanceWalls = signedDist(pointToCheck, null)
+            var distanceWalls = signedDist(pointToCheck, null)
 
-            var isTargetCloser = distanceTarget < distanceWalls
+            distanceWalls -= weapon.params.bullet.size / 2
+            distanceTarget -= weapon.params.bullet.size / 2
 
-            var distance = if (isTargetCloser) {
+            val isUnitCloser = distanceTarget < distanceWalls
+
+            var distance = if (isUnitCloser) {
                 distanceTarget
             } else {
                 distanceWalls
@@ -357,24 +354,28 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             distance -= pointSize
 
             if (distance < epsilon) {
-                var targetAffected = false
-                var myAffected = false
-                rocketLauncher.then {
-                    val explosionRadius = weapon.params.explosion!!.radius
-                    targetAffected = isRocketAffected(target, pointToCheck, explosionRadius)
-
-
-                    myAffected = isRocketAffected(me, pointToCheck, explosionRadius)
-                    //TODO koeff instead of boolean
-                    if (!myAffected) {
-                        myAffected =
-                            getAnotherMe()?.let { isRocketAffected(it, pointToCheck, explosionRadius) } ?: false
+                if (isUnitCloser) {
+                    closestUnit.isMy().then {
+                        hitMe.ref += weapon.params.bullet.damage
+                    } ?: run {
+                        hitTarget.ref += weapon.params.bullet.damage
                     }
                 }
-                weGetWalls = !isTargetCloser
-                hitTarget.ref = targetAffected || (isTargetCloser && !closestUnit.isMy())
-                hitMe.ref = myAffected || (isTargetCloser && !closestUnit.isMy())
-                hitPoint.ref = (pointToCheck.copy())
+                isRocketLauncher.then {
+                    val explosionRadius = weapon.params.explosion!!.radius
+                    val damage = weapon.params.explosion!!.damage
+                    game.units.forEach { unit ->
+                        Simulator.unitAffectedByExplosion(unit, explosionRadius, pointToCheck).then {
+                            if (unit.isMy()) {
+                                hitMe.ref += damage;
+                            } else {
+                                hitTarget.ref += damage;
+                            }
+                        }
+                    }
+                }
+                weGetWalls = !isUnitCloser
+                hitPoint.ref = pointToCheck.copy()
                 break
             }
 
@@ -391,16 +392,17 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             //d { debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK) }
         }
 
-        /*       d {
-               val endFinal = hitPoint.ref ?: to
+        d {
+            val endFinal = hitPoint.ref ?: to
 
-                       val color =
-                           hitTarget.ref.then { ColorFloat.AIM_RAY_GOOD } ?: weGetWalls.then { ColorFloat.AIM_RAY_FAILED }
-                           ?: ColorFloat.AIM_RAY_MILK
+            val color =
+                (hitTarget.ref > hitMe.ref).then { ColorFloat.AIM_RAY_GOOD }
+                    ?: (hitTarget.ref < hitMe.ref).then { ColorFloat.AIM_RAY_BAD }
+                    ?: weGetWalls.then { ColorFloat.AIM_RAY_WALSS } ?: ColorFloat.AIM_RAY_UNKNOWN
 
-               debug.rect(endFinal, Point2D(0.1, 0.1), color)
-                   debug.line(from, endFinal, color)
-               }*/
+            debug.rect(endFinal, Point2D(0.1, 0.1), color)
+            debug.line(from, endFinal, color)
+        }
         return weGetWalls
     }
 

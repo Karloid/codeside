@@ -8,6 +8,7 @@ import sim.Simulator
 import strats.*
 import util.f
 import util.fori
+import util.then
 import java.awt.Color
 import java.util.*
 
@@ -47,7 +48,8 @@ class MyStrategy : AbstractStrategy() {
 
         val action: UnitAction
         if (game.bullets.isNotEmpty()) {
-            simTill = (game.currentTick + game.properties.weaponParams[WeaponType.PISTOL]!!.reloadTime * game.properties.ticksPerSecond).toInt()
+            simTill =
+                (game.currentTick + game.properties.weaponParams[WeaponType.PISTOL]!!.reloadTime * game.properties.ticksPerSecond).toInt()
         }
 
         if (game.currentTick - simTill > 400) {
@@ -69,7 +71,7 @@ class MyStrategy : AbstractStrategy() {
         timeEnd = System.currentTimeMillis()
 
         printAction(action)
-        printMap()
+        printMap(action)
 
         d { debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}")) }
 
@@ -338,10 +340,17 @@ class MyStrategy : AbstractStrategy() {
     }
 
 
-    private fun printMap() {
+    private fun printMap(action: UnitAction) {
         d {
             for (unit in game.units) {
-                debug.text(unit.id.toString(), unit.position, ColorFloat.TEXT_ID)
+                if (unit.isMy() && unit != me) {
+                    continue
+                }
+                var msg = unit.id.toString()
+                if (unit == me) {
+                    msg += action.shoot.then { "*" } ?: ""
+                }
+                debug.text(msg, unit.position, ColorFloat.TEXT_ID)
             }
         }
     }

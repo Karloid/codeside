@@ -104,11 +104,3 @@ open class AbstractStrategy : StrategyAdvCombined {
         return game.units.firstOrNull { it.isMy() && me.id != it.id }
     }
 }
-
-fun isRocketAffected(target: Unit, pointToCheck: Point2D, explosionRadius: Double): Boolean {
-    val center = target.center()
-    return (center - pointToCheck).abs().let {
-        it.x <= explosionRadius &&
-                it.y <= explosionRadius
-    }
-}

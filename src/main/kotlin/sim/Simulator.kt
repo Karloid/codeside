@@ -151,7 +151,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
                 isCollide(bullet, unit).then {
                     unit.health -= bullet.damage
 
-                    onBulletCollide(bullet, unit)
+                    onBulletCollide(bullet)
 
                     bulletsToRemove.add(bullet)
                     metainfo.unitHitRegs.add(bullet.position.copy())
@@ -161,7 +161,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
 
             if (!bulletsToRemove.contains(bullet)) {
                 isCollideWalls(bullet).then {
-                    onBulletCollide(bullet, null)
+                    onBulletCollide(bullet)
                     bulletsToRemove.add(bullet)
                 }
             }
@@ -191,13 +191,12 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         }
     }
 
-    private fun onBulletCollide(bullet: Bullet, unitThatCollide: Unit?) {
+    private fun onBulletCollide(bullet: Bullet) {
         bullet.explosionParams?.damage?.let { damage ->
             val affectedUnits = mutableListOf<Point2D>()
             for (unit in game.units) {
-                val distToBullet = (unit.position.copy().plus(0.0, unit.size.y / 2) - bullet.position).abs()
-                val radius = bullet.explosionParams!!.radius * 1.2f
-                if (distToBullet.x - unit.size.x / 2 <= radius && distToBullet.y - unit.size.y / 2 <= radius) {
+                val isAffected = unitAffectedByExplosion(unit, bullet.explosionParams!!.radius, bullet.position)
+                if (isAffected) {
                     unit.health -= damage
                     affectedUnits.add(unit.position.copy())
                 }
@@ -374,9 +373,12 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         return false
     }
 
-    class Dan(@JvmField var distance: Double, @JvmField var normal: Point2D) {
-        operator fun component1() = distance
-        operator fun component2() = normal
+    companion object {
+        fun unitAffectedByExplosion(unit: Unit, explosRadius: Double, bulletCenter: Point2D): Boolean {
+            val distToBullet = (unit.position.copy().plus(0.0, unit.size.y / 2) - bulletCenter).abs()
+            val radius = explosRadius * 1.2f
+            val isAffected = distToBullet.x - unit.size.x / 2 <= radius && distToBullet.y - unit.size.y / 2 <= radius
+            return isAffected
+        }
     }
-
 }

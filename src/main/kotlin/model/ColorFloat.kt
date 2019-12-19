@@ -24,9 +24,10 @@ data class ColorFloat(
 
         val AIM: ColorFloat = ColorFloat(1f, 0f, 0f, 1f)
         val AIM_SPREAD: ColorFloat = ColorFloat(1f, 0f, 0f, 0.6f)
-        val AIM_RAY_GOOD: ColorFloat = ColorFloat(0.1f, 0.7f, 0f, 0.6f)
-        val AIM_RAY_MILK: ColorFloat = ColorFloat(Color.WHITE)
-        val AIM_RAY_FAILED: ColorFloat = ColorFloat(1f, 0f, 1f, 0.6f)
+        val AIM_RAY_GOOD: ColorFloat = ColorFloat(Color.GREEN)
+        val AIM_RAY_BAD: ColorFloat = ColorFloat(Color.RED)
+        val AIM_RAY_UNKNOWN: ColorFloat = ColorFloat(Color.PINK)
+        val AIM_RAY_WALSS: ColorFloat = ColorFloat(1f, 0f, 1f, 0.6f)
         val RAY_DIST_CHECK: ColorFloat = ColorFloat(1f, 1f, 1f, 0.1f)
 
         fun readFrom(stream: java.io.InputStream): ColorFloat {
