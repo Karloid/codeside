@@ -137,7 +137,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             }
 
             //failing bottom
-            val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder
+            val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder && !isCollideWithTramp(unit)
             val isOnLadderDown = unit.simAction.jumpDown && unit.onLadder
             val isJumpDownFromPlatform = unit.simAction.jumpDown && unit.onGround
             if (isFailing || isOnLadderDown || isJumpDownFromPlatform) {
@@ -159,6 +159,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             val x = 10
         }
 
+        //BULLETS
 
         var bulletsToRemove = ArrayList<Bullet>(0)
         game.bullets.forEach { bullet ->

@@ -21,6 +21,7 @@ import java.util.*
 //TODO reload time in eval
 
 //TODO stay away from rocket launcher  (check space around)
+//TODO astar way search
 class MyStrategy : AbstractStrategy() {
 
     private var simTill: Int = 0
