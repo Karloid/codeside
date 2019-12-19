@@ -20,6 +20,7 @@ import java.util.*
 //TODO stay away from rocket launcher
 class MyStrategy : AbstractStrategy() {
 
+    private var simTill: Int = 0
     private var statBox = StatBox()
     private var prevGame: Game? = null
 
@@ -43,8 +44,16 @@ class MyStrategy : AbstractStrategy() {
         timeStart = System.currentTimeMillis()
 
         val action: UnitAction
-        val empty = game.bullets.isEmpty()
-        if (empty) {
+        if (game.bullets.isNotEmpty()) {
+            simTill = (game.currentTick + game.properties.weaponParams[WeaponType.PISTOL]!!.reloadTime * game.properties.ticksPerSecond).toInt()
+        }
+
+        if (game.currentTick - simTill > 400) {
+            simTill = game.currentTick + 60
+        }
+
+        val isDoSim = simTill >= game.currentTick
+        if (!isDoSim) {
             action = shootingStart.getAction(me, game, debug)
         } else {
             action = doSimMove()
