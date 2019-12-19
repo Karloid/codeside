@@ -57,7 +57,7 @@ class MyStrategy : AbstractStrategy() {
         }
 
         val isDoSim = simTill >= game.currentTick
-        if (!isDoSim) {
+        if (!isDoSim && false) { //TODO remove
             action = shootingStart.getAction(me, game, debug)
         } else {
             action = doSimMove()
