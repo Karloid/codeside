@@ -262,7 +262,7 @@ class MyStrategy : AbstractStrategy() {
             } else {
                 score += delta * 5
             }
-            log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
+            //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
         if (me.health != game.properties.unitMaxHealth) {

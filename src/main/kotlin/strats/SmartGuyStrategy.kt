@@ -51,7 +51,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
 
         if ((nearestWeapon?.item as? Item.Weapon?)?.weaponType == WeaponType.ROCKET_LAUNCHER
-            && wantToPickRocketLauncher() && isClose(nearestWeapon.position)) {
+            && wantToPickRocketLauncher() && isClose(nearestWeapon.position)
+        ) {
             action.swapWeapon = true
         }
 
@@ -88,7 +89,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (disableShooting) {
                 action.shoot = false
             } else {
-                val aims = listOf(nearestEnemy.center() - me.center())
+                var target = nearestEnemy.center() - me.center()
+                if (!nearestEnemy.onLadder && !nearestEnemy.onGround) {
+                    val jumpState = nearestEnemy.jumpState
+                    if (!jumpState.canCancel && jumpState.maxTime < 1) {
+                        target = nearestEnemy.center().minus(0.0, nearestEnemy.size.y / 4) - me.center()
+                        log { "aim lower due enemy is falling $nearestEnemy" }
+                    }
+                }
+                val aims = listOf(target)
 
                 if (canShot(nearestEnemy, aims, action)) {
                     action.shoot = true
