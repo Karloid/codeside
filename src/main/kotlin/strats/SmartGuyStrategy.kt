@@ -284,9 +284,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             }
             if (isRocketLauncher) {
                 //game.properties.weaponParams[WeaponType.ROCKET_LAUNCHER]!!.explosion.
-                it.hitTargetDamage > it.hitMeDamage * 1.6
+                it.hitTargetDamage > it.hitMeDamage * 1.4
             } else {
-                it.hitTargetDamage > it.hitMeDamage * 1.6
+                it.hitTargetDamage > it.hitMeDamage * 1.4
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
