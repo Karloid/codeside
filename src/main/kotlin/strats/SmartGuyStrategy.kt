@@ -50,6 +50,11 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             }
         }
 
+        if ((nearestWeapon?.item as? Item.Weapon?)?.weaponType == WeaponType.ROCKET_LAUNCHER
+            && wantToPickRocketLauncher() && isClose(nearestWeapon.position)) {
+            action.swapWeapon = true
+        }
+
         if (me.weapon == null && nearestWeapon != null) {
             log { "go pick weapon ${nearestWeapon.posInfo()}" }
 
@@ -142,6 +147,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
 
         return action
+    }
+
+    private fun wantToPickRocketLauncher(): Boolean {
+        val anotherMe = getAnotherMe() ?: return false
+
+        return me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && anotherMe.weapon?.typ != WeaponType.ROCKET_LAUNCHER
     }
 
     //TODO rework

@@ -16,6 +16,8 @@ import java.util.*
 //TODO highier score to keep jumping
 //TODO calc trampline
 //TODO better resource management, keep to center of the map
+
+//TODO stay away from rocket launcher
 class MyStrategy : AbstractStrategy() {
 
     private var statBox = StatBox()
@@ -41,7 +43,8 @@ class MyStrategy : AbstractStrategy() {
         timeStart = System.currentTimeMillis()
 
         val action: UnitAction
-        if (game.bullets.isEmpty()) {
+        val empty = game.bullets.isEmpty()
+        if (empty) {
             action = shootingStart.getAction(me, game, debug)
         } else {
             action = doSimMove()
@@ -208,6 +211,8 @@ class MyStrategy : AbstractStrategy() {
         val myUnitsSim = simulator.game.units.filter { it.playerId == me.playerId }
 
         val remainingTeamHealth = myUnitsSim.sumBy { it.health } * 100
+        val enHealth = simulator.game.units.filter { !it.isMy() }.sumBy { it.health } * 1
+        score -= enHealth
 
         val diff = myUnitsSim.size - myUnits.size
         score -= diff * 1000
@@ -227,7 +232,7 @@ class MyStrategy : AbstractStrategy() {
         }
         anotherUnit?.let { another ->
             val xDist = (another.position.copy() - me.position).abs().x
-            if (xDist > 6) {
+            if (xDist > 4) {
                 val distToAnother = simulator.game.getDist(me, another)
                 score -= distToAnother * 5
             }
@@ -237,10 +242,16 @@ class MyStrategy : AbstractStrategy() {
             val currentDistToEnemies = game.getMinDistToEnemies(me)
 
             val delta = simDistToEnemies - currentDistToEnemies
-            if (another.health > me.health || (another.health == me.health && another.id > me.id)) {
-                score += delta * 5
-            } else {
+            val sameHealthButIdLower =
+                another.health == me.health && another.id > me.id && another.weapon?.typ != WeaponType.ROCKET_LAUNCHER
+            val sameHealthButHasRocketLauncher = another.health == me.health &&
+                    me.weapon?.typ == WeaponType.ROCKET_LAUNCHER &&
+                    another.weapon?.typ != WeaponType.ROCKET_LAUNCHER
+
+            if (another.health < me.health || (sameHealthButIdLower || sameHealthButHasRocketLauncher)) {
                 score -= delta * 5
+            } else {
+                score += delta * 5
             }
             log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
@@ -248,6 +259,8 @@ class MyStrategy : AbstractStrategy() {
         if (me.health != game.properties.unitMaxHealth) {
             score -= getMinDistToHealth(simulator.game, me) * 10
         }
+
+        //TODO calc in game score
 
 
         return EvalAndSim(score, simulator, strat).apply {
