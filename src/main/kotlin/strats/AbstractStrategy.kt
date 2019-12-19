@@ -69,7 +69,14 @@ open class AbstractStrategy : StrategyAdvCombined {
     }
 
     protected fun getClosestEnemy(): Unit? {
-        return game.units.filter { it.isMy().not() }.minBy { it.position.distance(me.position) }
+        val anotherMe = getAnotherUnit()
+        return game.units.filter { it.isMy().not() }.minBy {
+            var dist = it.position.distance(me.position)
+            if (anotherMe != null) {
+                dist += it.position.distance(anotherMe.position)
+            }
+            dist
+        }
     }
 
     fun Unit.isMy(): Boolean {
@@ -91,6 +98,10 @@ open class AbstractStrategy : StrategyAdvCombined {
         if (isReal) {
             ifEnabledLog(function)
         }
+    }
+
+    fun getAnotherUnit(): Unit? {
+        return game.units.firstOrNull { it.isMy() && me.id != it.id }
     }
 }
 

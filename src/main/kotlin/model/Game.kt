@@ -134,4 +134,23 @@ class Game {
             it
         }
     }
+
+    fun getMinDistToEnemies(unit: Unit): Double {
+        val id = unit.id
+        val playerId = unit.playerId
+
+        val unitPosition = getUnitPos(id)
+
+        val minDistanceToEnemy = units
+            .filter { it.playerId != playerId }
+            .minBy { it.position.distance(unitPosition) }?.position?.distance(unitPosition) ?: 100.0
+
+        return minDistanceToEnemy
+    }
+
+    private fun getUnitPos(id: Int) = units.firstOrNull { it.id == id }?.position ?: Point2D(0, 0)
+
+    fun getDist(me: Unit, another: Unit): Double {
+        return getUnitPos(me.id).distance(getUnitPos(another.id))
+    }
 }

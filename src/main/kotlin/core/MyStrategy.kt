@@ -18,10 +18,11 @@ import java.util.*
 //TODO better resource management, keep to center of the map
 class MyStrategy : AbstractStrategy() {
 
+    private var statBox = StatBox()
     private var prevGame: Game? = null
 
-    private var end: Long = 0L
-    private var start: Long = 0L
+    private var timeEnd: Long = 0L
+    private var timeStart: Long = 0L
 
     private var shootingStart = SmartGuyStrategy(this).apply {
         isReal = true
@@ -37,7 +38,7 @@ class MyStrategy : AbstractStrategy() {
         checkPrevGame()
 
         log { "jumpInfo=${me.jumpState.description()}" }
-        start = System.currentTimeMillis()
+        timeStart = System.currentTimeMillis()
 
         val action: UnitAction
         if (game.bullets.isEmpty()) {
@@ -51,7 +52,7 @@ class MyStrategy : AbstractStrategy() {
             action.aim = shootAction.aim
             action.reload = shootAction.reload
         }
-        end = System.currentTimeMillis()
+        timeEnd = System.currentTimeMillis()
 
         printAction(action)
         printMap()
@@ -60,7 +61,20 @@ class MyStrategy : AbstractStrategy() {
 
         prevActions.add(action)
 
+        calcStats()
+
         return action
+    }
+
+    private fun calcStats() {
+        if (me.id != game.units.filter { it.isMy() }.minBy { it.id }!!.id) {
+            return
+        }
+        statBox.put(game)
+
+        if (game.currentTick % 200 == 0) {
+            statBox.print()
+        }
     }
 
     private fun checkPrevGame() {
@@ -160,7 +174,6 @@ class MyStrategy : AbstractStrategy() {
         val evalAndSims = ArrayList<EvalAndSim>()
 
         var i = 0
-        var goals = 0
         while (!strats.isEmpty()) {
             val strat = strats[0]
 
@@ -172,19 +185,11 @@ class MyStrategy : AbstractStrategy() {
 
             evalAndSims.add(evalAndSim)
 
-            if (evalAndSim.score > 1000) {
-                goals++
-                if (goals >= 3) {
-                    break
-                }
-            }
-
             i++
         }
 
         //TODO stop if found good enough, add more strats if want better ones
         //TODO compare calculated and actual time touch, if actual time too differs then calc backward moves
-        //TODO check movement directly to real point of touch
 
         var best = evalAndSims.maxBy { it.score }!!
 
@@ -199,6 +204,7 @@ class MyStrategy : AbstractStrategy() {
         var score = 0.0
         val myUnits = game.units.filter { it.isMy() }
 
+
         val myUnitsSim = simulator.game.units.filter { it.playerId == me.playerId }
 
         val remainingTeamHealth = myUnitsSim.sumBy { it.health } * 100
@@ -207,10 +213,56 @@ class MyStrategy : AbstractStrategy() {
         score -= diff * 1000
 
         score = remainingTeamHealth.toDouble()
+        val anotherUnit = getAnotherUnit()
+        if (strat is MoveStrategy) {
+            if (strat.moveUpDown == MoveUpDown.UP && !me.onGround && !me.onLadder && (anotherUnit?.id ?: 0) > me.id) {
+                score += 10
+            }
+        }
+
+
+        val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
+        if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
+            score -= simDistToEnemies
+        }
+        anotherUnit?.let { another ->
+            val xDist = (another.position.copy() - me.position).abs().x
+            if (xDist > 6) {
+                val distToAnother = simulator.game.getDist(me, another)
+                score -= distToAnother * 5
+            }
+            if (xDist > 2) {
+                return@let
+            }
+            val currentDistToEnemies = game.getMinDistToEnemies(me)
+
+            val delta = simDistToEnemies - currentDistToEnemies
+            if (another.health > me.health || (another.health == me.health && another.id > me.id)) {
+                score += delta * 5
+            } else {
+                score -= delta * 5
+            }
+            log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
+        }
+
+        if (me.health != game.properties.unitMaxHealth) {
+            score -= getMinDistToHealth(simulator.game, me) * 10
+        }
+
 
         return EvalAndSim(score, simulator, strat).apply {
             createdAtTick = game.currentTick
         }
+    }
+
+    private fun getMinDistToHealth(game: Game, unit: Unit): Double {
+        val actualUnit = game.units.firstOrNull { it.id == unit.id } ?: return 0.0
+
+        return game.lootBoxes
+            .filter { it.item is Item.HealthPack }
+            .minBy { it.position.distance(actualUnit.position) }
+            ?.position
+            ?.distance(actualUnit.position) ?: 0.0
     }
 
 
@@ -282,7 +334,7 @@ class MyStrategy : AbstractStrategy() {
         if (!isReal) {
             return
         }
-        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump}-${me.jumpState.maxTime.f()} canCancel=${me.jumpState.canCancel} \naction:$action took ${end - start}ms" }
+        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump}-${me.jumpState.maxTime.f()} canCancel=${me.jumpState.canCancel} \naction:$action took ${timeEnd - timeStart}ms" }
     }
 
     fun Point2D.toUnitCenter(): Point2D {

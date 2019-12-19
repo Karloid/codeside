@@ -13,7 +13,7 @@ data class ColorFloat(
     companion object {
 
         val RED: ColorFloat = ColorFloat(Color.RED)
-        val TEXT_ID = ColorFloat(Color.RED)
+        val TEXT_ID = ColorFloat(Color.BLACK)
         val EXPLOSION: ColorFloat = ColorFloat(Color.YELLOW).apply { a = 0.5f }
         val EXPLOSION_UNIT: ColorFloat = ColorFloat(1f, 0.9f, 0f, 0.4f)
         val DEAD_SIM_UNIT: ColorFloat = ColorFloat(Color.PINK).apply { a = 0.5f }

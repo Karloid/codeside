@@ -1,5 +1,5 @@
 (
-    view_speed: 1,
+    view_speed: 0.91171875,
     volume: 0.5,
     renderer: (
         mode: Schematic,

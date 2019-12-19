@@ -116,4 +116,9 @@ class Unit {
 
         return result
     }
+
+    override fun toString(): String {
+        return "Unit(playerId=$playerId, id=$id, position=$position)"
+    }
+
 }

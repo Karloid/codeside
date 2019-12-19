@@ -30,7 +30,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         val nearestWeapon = getClosestItem(Item.Weapon::class)
         var nearestHealth = getHealthPack()
 
-        if (me.health == game.properties.unitMaxHealth && game.currentTick > 1300 && nearestHealth != null) {
+        if (me.health == game.properties.unitMaxHealth || (getAnotherMe()?.health
+                ?: 100) < me.health /*&& game.currentTick > 1300*/ && nearestHealth != null
+        ) {
             nearestHealth = null
             log { "ignore health" }
         }
@@ -403,6 +405,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (!isRocketLauncher) {
             return false
         }
+        val anotherMe = getAnotherMe()
+
+        if (anotherMe?.weapon != null && anotherMe.weapon?.typ != WeaponType.ROCKET_LAUNCHER) {
+            return false
+        }
+
         val en = getClosestEnemy()
 
         getPrefferedWeapon(en) ?: return false
