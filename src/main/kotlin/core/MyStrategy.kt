@@ -346,6 +346,25 @@ class MyStrategy : AbstractStrategy() {
         simulator.game.getUnitNullable(me)?.onLadder?.then {
             score += 10
         }
+
+        anotherUnit?.let {
+            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
+                val mySimPos = simulator.game.getUnitPosNullable(me.id)
+                val anotherSimPos = simulator.game.getUnitPosNullable(anotherUnit.id)
+                val closestEnemy = getClosestEnemy()
+                val distToANother = me.position.distance(anotherUnit.position)
+                if (mySimPos != null && closestEnemy != null && distToANother < 4) {
+                    score += mySimPos.distance(anotherUnit.position) / 2
+                    score += mySimPos.distance(closestEnemy.position) / 2
+
+                    if (anotherUnit.position.distance(closestEnemy.position) < 5) {
+                        score += mySimPos.distance(anotherUnit.position) / 2
+                        score += mySimPos.distance(closestEnemy.position) / 2
+                    }
+                }
+            }
+        }
+        
         //TODO calc in game score
 
 

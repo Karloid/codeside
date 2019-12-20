@@ -8,7 +8,8 @@ import model.Unit
 import util.fori
 import util.then
 import kotlin.math.abs
-
+import kotlin.math.absoluteValue
+import kotlin.math.min
 
 
 class Simulator(val game: Game) {
@@ -103,8 +104,14 @@ class Simulator(val game: Game) {
             updateUnitLadder(unit)
 
             //check we still on ground
-            if (!action.jump  && !unit.onLadder && !(!unit.onGround && !unit.jumpState.canJump)) {
-                if (!isVerticalCollideLevel(unit.position, unit, false, false) || !isVerticalCollideLevel(unit.position.copy().minus(0.0, 0.1), unit, false, false) ) {
+            if (!action.jump && !unit.onLadder && !(!unit.onGround && !unit.jumpState.canJump)) {
+                if (!isVerticalCollideLevel(
+                        unit.position,
+                        unit,
+                        false,
+                        false
+                    ) || !isVerticalCollideLevel(unit.position.copy().minus(0.0, 0.1), unit, false, false)
+                ) {
                     if (noCollideWithOtherUnitsVertically(unit, unit.position, false)) {
                         unit.onGround = false
                         unit.jumpState.canJump = false
@@ -194,6 +201,35 @@ class Simulator(val game: Game) {
 
             }
             game.units = game.units.filter { !deadUnits!!.contains(it) }.toTypedArray()
+        }
+
+        //health
+
+        game.units.forEach { unit ->
+            if (unit.health != game.properties.unitMaxHealth) {
+                val health = getCollidedHealth(unit)
+                if (health != null) {
+                    unit.health += game.properties.healthPackHealth
+                    unit.health = min(unit.health, game.properties.unitMaxHealth)
+                    game.lootBoxes = game.lootBoxes.filter { it != health }.toTypedArray() //picked health
+                }
+            }
+        }
+    }
+
+    private fun getCollidedHealth(unit: Unit): LootBox? {
+        return game.lootBoxes.firstOrNull { lootbox ->
+            val item = lootbox.item
+            (item is Item.HealthPack).not().then { return@firstOrNull false }
+            val deltaX = (unit.position.x - lootbox.position.x).absoluteValue
+            val deltaY = ((unit.position.y + unit.size.y / 2) - (lootbox.position.y + lootbox.size.y / 2)).absoluteValue
+            if (deltaX < unit.size.x / 2 + lootbox.size.x / 2 &&
+                deltaY < unit.size.y / 2 + lootbox.size.y / 2
+            ) {
+                return@firstOrNull true
+            }
+
+            return@firstOrNull false
         }
     }
 
