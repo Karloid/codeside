@@ -77,7 +77,9 @@ class MyStrategy : AbstractStrategy() {
         if (!shootAction.shoot && game.bullets.isEmpty()) {
             isDoSim = false
         }
-        if (isDoSim && noShootTick() > 150) {
+        if (!isDoSim && noShootTick() > 150 && game.currentTick % 100 > 50) {
+            isDoSim = true
+        } else if (isDoSim && noShootTick() > 150) {
             isDoSim = false
         }
         if (game.currentTick < forceSimTill) {
@@ -93,6 +95,8 @@ class MyStrategy : AbstractStrategy() {
             action.aim = shootAction.aim
             action.reload = shootAction.reload
         }
+        fixStuck(action)
+
         timeEnd = System.currentTimeMillis()
 
         printAction(action)
@@ -100,17 +104,22 @@ class MyStrategy : AbstractStrategy() {
 
         d { debug.draw(CustomData.Log("shoot=${action.shoot} aim=${action.aim}")) }
 
-        prevActions.add(action)
+        prevActions.getOrPut(me.id) { mutableListOf() }.add(action)
 
         calcStats()
         myLastHp[me.id] = me.health
         return action
     }
 
+    private fun fixStuck(action: UnitAction) {
+
+    }
+
     private fun noShootTick(): Int {
         var count = 0
-        for (i in prevActions.size - 1 downTo 0) {
-            if (!prevActions[i].shoot) {
+        val actions = prevActions.getOrPut(me.id, { mutableListOf() })
+        for (i in actions.size - 1 downTo 0) {
+            if (!actions[i].shoot) {
                 count++
             } else {
                 return count

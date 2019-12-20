@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 
 class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
-    private var skippedHealth: Int =0
+    private var skippedHealth: Int = 0
     var disableShooting: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
@@ -47,10 +47,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                         log { "keep original health" }
                     }
                 }
-             //   skippedHealth = 0
+                //   skippedHealth = 0
             } else {
                 nearestHealth = null
-              //  skippedHealth++
+                //  skippedHealth++
             }
             log { "ignore health" }
         }
@@ -146,8 +146,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (me.jumpState.canJump.not() && me.onLadder.not()) {
             jump = false
         }
-        if (!jump && prevActions.isNotEmpty()) {
-            val lastWasJump = prevActions.last().jump
+        if (!jump && getMyActions().isNotEmpty()) {
+            val lastWasJump = getMyActions().last().jump
             if (!me.onLadder && !me.onGround && lastWasJump) {
                 log { "force finish jump" }
                 jump = true
@@ -198,6 +198,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         return action
     }
+
+    private fun getMyActions() = prevActions.getOrPut(me.id, { mutableListOf() })
 
     private fun wantToPickRocketLauncher(): Boolean {
         val anotherMe = getAnotherMe() ?: return false

@@ -12,7 +12,7 @@ import kotlin.math.max
 val wallSize = Point2D(0.5, 0.5)
 
 open class AbstractStrategy : StrategyAdvCombined {
-    val prevActions = mutableListOf<UnitAction>()
+    val prevActions = mutableMapOf<Int, MutableList<UnitAction>>()
     lateinit var debug: Debug
     lateinit var me: Unit
     lateinit var game: Game
