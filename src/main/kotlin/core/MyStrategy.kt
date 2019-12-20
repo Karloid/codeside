@@ -28,7 +28,7 @@ import kotlin.math.absoluteValue
 //TODO target unit with lowest health
 //TODO calc potential field of danger zones
 
-//TODO real distance calculation
+//TODO real distance calculation via paperio logic with precalculated arrays
 
 class MyStrategy : AbstractStrategy() {
 
