@@ -102,7 +102,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
                 val angleDiff = lastWeaponAngle - target.angle()
                 myPrint { "aim angle diff ${angleDiff.f()}" }
-                if (abs(angleDiff) < 0.25) {
+                if (abs(angleDiff) < 0.10) {
                     myPrint { "keep old angle" }
                     target = Point2D(lastWeaponAngle).length(2.0)
                 }
