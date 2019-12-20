@@ -63,7 +63,11 @@ class MyStrategy : AbstractStrategy() {
         val noWeapon = me.weapon != null
         var isDoSim = simTill >= game.currentTick && noWeapon
 
+
         if (!shootAction.shoot && game.bullets.isEmpty()) {
+            isDoSim = false
+        }
+        if (isDoSim && noShootTick() > 150) {
             isDoSim = false
         }
 
@@ -88,6 +92,18 @@ class MyStrategy : AbstractStrategy() {
         calcStats()
 
         return action
+    }
+
+    private fun noShootTick(): Int {
+        var count = 0
+        for (i in prevActions.size - 1 downTo 0) {
+            if (!prevActions[i].shoot) {
+                count++
+            } else {
+                return count
+            }
+        }
+        return count
     }
 
     private fun bulletsNear(): Boolean {
