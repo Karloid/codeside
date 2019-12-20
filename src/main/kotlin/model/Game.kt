@@ -158,4 +158,8 @@ class Game {
     fun getUnitNullable(me: Unit): Unit? {
         return units.firstOrNull { it.id == me.id }
     }
+
+    fun healthCount(): Int {
+        return lootBoxes.count { it.item is Item.HealthPack }
+    }
 }

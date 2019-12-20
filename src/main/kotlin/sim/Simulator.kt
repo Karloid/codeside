@@ -305,8 +305,9 @@ class Simulator(val game: Game) {
         if (unit.id == bullet.unitId) {
             return false
         }
-        return abs(bullet.position.x - unit.position.x) < bullet.size / 2 + unit.size.x / 2 &&
-                abs(bullet.position.y - (unit.position.y + unit.size.y / 2)) < bullet.size / 2 + unit.size.y / 2
+        val size = bullet.size * 1.05
+        return abs(bullet.position.x - unit.position.x) < size / 2 + unit.size.x / 2 &&
+                abs(bullet.position.y - (unit.position.y + unit.size.y / 2)) < size / 2 + unit.size.y / 2
     }
 
     private fun updateUnitLadder(unit: Unit) {

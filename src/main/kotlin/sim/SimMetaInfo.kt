@@ -8,5 +8,6 @@ class SimMetaInfo {
     val explosions = mutableListOf<Explosion>()
     val unitHitRegs = mutableListOf<Point2D>()
     val bulletsHistory = ArrayList<Bullet>()
+    //id to positions
     val movements = mutableMapOf<Int, MutableList<Point2D>>()
 }

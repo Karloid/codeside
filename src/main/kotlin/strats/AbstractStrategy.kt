@@ -74,14 +74,14 @@ open class AbstractStrategy : StrategyAdvCombined {
         val enemies = game.units.filter { it.isMy().not() }
         val closest = enemies.minBy {
             var dist = it.position.distance(me.position)
-            if (anotherMe != null) {
-                dist += it.position.distance(anotherMe.position)
-            }
+           // if (anotherMe != null) {
+           //     dist += it.position.distance(anotherMe.position)
+           // }
             dist
         } ?: return null
         
         enemies.firstOrNull { !it.isMy() && closest != it }?.let { lowHealth ->
-            if (lowHealth.health < closest.health && lowHealth.position.distance(closest.position) < 3) {
+            if (lowHealth.health < closest.health && lowHealth.position.distance(closest.position) < 4) {
                 return lowHealth
             }
 

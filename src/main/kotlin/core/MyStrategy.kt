@@ -3,7 +3,7 @@ package core
 import Debug
 import model.*
 import model.Unit
-import sim.EvalAndSim
+import sim.SimScore
 import sim.Simulator
 import strats.*
 import util.f
@@ -12,6 +12,7 @@ import util.then
 import java.awt.Color
 import java.lang.Math.abs
 import java.util.*
+import kotlin.math.absoluteValue
 
 //TODO calc two sims at once
 //TODO Handle two units at once
@@ -26,6 +27,8 @@ import java.util.*
 
 //TODO target unit with lowest health
 //TODO calc potential field of danger zones
+
+//TODO real distance calculation
 
 class MyStrategy : AbstractStrategy() {
 
@@ -74,6 +77,11 @@ class MyStrategy : AbstractStrategy() {
             forceSimTill = game.currentTick + 40
         }
 
+        if (isRocketBulletsNearBy()) {
+            //taking damage
+            forceSimTill = game.currentTick + 40
+        }
+
         if (!shootAction.shoot && game.bullets.isEmpty()) {
             isDoSim = false
         }
@@ -109,6 +117,10 @@ class MyStrategy : AbstractStrategy() {
         calcStats()
         myLastHp[me.id] = me.health
         return action
+    }
+
+    private fun isRocketBulletsNearBy(): Boolean {
+        return game.bullets.any { bullet -> bullet.explosionParams != null && me.position.distance(bullet.position) < 20 }
     }
 
     private fun fixStuck(action: UnitAction) {
@@ -157,12 +169,12 @@ class MyStrategy : AbstractStrategy() {
         prevGame = game
     }
 
-    private fun drawDebugSimulator(evalAndSims: ArrayList<EvalAndSim>, best: EvalAndSim) {
+    private fun drawDebugSimulator(simScores: ArrayList<SimScore>, best: SimScore) {
         var colorIndex = 0
         val smallSize = Point2D(1 / 10f, 1 / 10f)
         val bigSize = smallSize.copy().mul(2.0)
 
-        evalAndSims.forEach { evalAndSim ->
+        simScores.forEach { evalAndSim ->
             var myColor = simColors[colorIndex % simColors.size]
             var size = smallSize
             val isBest = best == evalAndSim
@@ -175,9 +187,14 @@ class MyStrategy : AbstractStrategy() {
 
             val anotherMeId = getAnotherUnit()?.id
             for (entry in sim.metainfo.movements) {
-                if (entry.key != anotherMeId) {
-                    entry.value.fori {
-                        debug.rect(it, size, myColor)
+                if (entry.key != anotherMeId && entry.value.isNotEmpty()) {
+                    val last = entry.value.last()
+                    entry.value.fori { movePoint ->
+                        debug.rect(movePoint, size, myColor)
+                        if (movePoint === last && me.id == entry.key) {
+                            debug.text("s${evalAndSim.score.f()}", movePoint, myColor)
+                            log{"draw score for sim ${evalAndSim.strat}"}
+                        }
                     }
                 }
                 colorIndex++
@@ -244,7 +261,7 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun pickBestStrat(strats: MutableList<StrategyAdvCombined>, tickK: Double): StrategyAdvCombined {
-        val evalAndSims = ArrayList<EvalAndSim>()
+        val evalAndSims = ArrayList<SimScore>()
 
         var i = 0
         while (!strats.isEmpty()) {
@@ -272,7 +289,7 @@ class MyStrategy : AbstractStrategy() {
         return best.strat
     }
 
-    private fun eval(simulator: Simulator, strat: StrategyAdvCombined): EvalAndSim {
+    private fun eval(simulator: Simulator, strat: StrategyAdvCombined): SimScore {
 
         var score = 0.0
         val myUnits = game.units.filter { it.isMy() }
@@ -333,13 +350,13 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
-        if (me.health < game.properties.unitMaxHealth * 0.9) {
+        if (me.health < game.properties.unitMaxHealth * 0.9 && simulator.game.healthCount() > 0) {
             score -= getMinDistToHealth(simulator.game, me) * 10
         }
 
         //keep away when reloading
-        if (currentDistToEnemies < 4) {
-            if (me.weapon?.fireTimer ?: 0.0 > 0.1) {
+        if (currentDistToEnemies < 5) {
+            if (me.weapon?.fireTimer ?: 0.0 > 0.15) {
                 score += simDistToEnemies / 2
             }
         }
@@ -350,22 +367,26 @@ class MyStrategy : AbstractStrategy() {
         val mySimPos = simulator.game.getUnitPosNullable(me.id)
 
         val closestEnemy = getClosestEnemy()
+        //keep away from rocket mans
         closestEnemy?.let {
-            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me?.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null) {
+            val distToClosest = me.position.distance(closestEnemy.position)
+            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null && distToClosest < 6) {
                 score += mySimPos.distance(closestEnemy.position) / 10
             }
         }
 
+        //keep back from our rocket man
         anotherUnit?.let {
-            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
-
-
+            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && closestEnemy != null && mySimPos != null) {
+                if (isBetween(closestEnemy.position, mySimPos, anotherUnit.position)) {
+                    return@let
+                }
                 val distToANother = me.position.distance(anotherUnit.position)
-                if (mySimPos != null && closestEnemy != null && distToANother < 4) {
+                if (distToANother < 4 && anotherUnit.position.distance(closestEnemy.position) < 4.5) {
                     score += mySimPos.distance(anotherUnit.position) / 2
                     score += mySimPos.distance(closestEnemy.position) / 2
 
-                    if (anotherUnit.position.distance(closestEnemy.position) < 5) {
+                    if (anotherUnit.position.distance(closestEnemy.position) < 2) {
                         score += mySimPos.distance(anotherUnit.position) / 2
                         score += mySimPos.distance(closestEnemy.position) / 2
                     }
@@ -376,9 +397,31 @@ class MyStrategy : AbstractStrategy() {
         //TODO calc in game score
 
 
-        return EvalAndSim(score, simulator, strat).apply {
+        return SimScore(score, simulator, strat).apply {
             createdAtTick = game.currentTick
         }
+    }
+
+    private fun isBetween(center: Point2D, side1: Point2D, side2: Point2D): Boolean {
+        val minX = minOf(side1.x, side2.x)
+        val maxX = maxOf(side1.x, side2.x)
+
+        val isBetween = center.x > minX && center.x < maxX
+        if (isBetween) {
+            return true
+        }
+        val deltaMin = (center.x - minX).absoluteValue
+        val deltaMax = (center.x - maxX).absoluteValue
+
+        val deltaX = minOf(deltaMax, deltaMin)
+        if (deltaX < 3) {
+            val minY = minOf(side1.y, side2.y)
+            val maxY = maxOf(side1.y, side2.y)
+            return center.y > minY && center.y < maxY
+        }
+
+        return isBetween
+
     }
 
     private fun getMinDistToHealth(game: Game, unit: Unit): Double {
