@@ -151,9 +151,12 @@ class MyStrategy : AbstractStrategy() {
 
             val sim = evalAndSim.simulator
 
-            for (entry in sim.metainfo.movements.entries) {
-                entry.value.fori {
-                    debug.rect(it, size, myColor)
+            val anotherMeId = getAnotherUnit()?.id
+            for (entry in sim.metainfo.movements) {
+                if (entry.key != anotherMeId) {
+                    entry.value.fori {
+                        debug.rect(it, size, myColor)
+                    }
                 }
                 colorIndex++
             }
