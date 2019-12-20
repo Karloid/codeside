@@ -70,7 +70,7 @@ class MyStrategy : AbstractStrategy() {
         if (isDoSim && noShootTick() > 150) {
             isDoSim = false
         }
-
+        //isDoSim = true //TODO remove
         if (!isDoSim) {
             action = shootAction
         } else {
@@ -209,9 +209,10 @@ class MyStrategy : AbstractStrategy() {
         }
         var tickK = getMaxJumpTicks() / 3 * 3
 
-        //  variants.clear()
-        //  variants.add(DebugAndJumpStrategy())
-        //  tickK = getMaxJumpTicks() * 20
+         // variants.clear()
+         // variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.STILL))
+         // //variants.add(DebugAndJumpStrategy())
+         // tickK = getMaxJumpTicks() * 20
 
         val strat = pickBestStrat(variants, tickK)
 

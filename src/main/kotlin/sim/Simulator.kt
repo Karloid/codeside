@@ -121,10 +121,11 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
             updateUnitLadder(unit)
 
             //check we still on ground
-            if (!action.jump && unit.onGround && !unit.onLadder) {
-                if (!isVerticalCollideLevel(unit.position, unit, false, false)) {
+            if (!action.jump  && !unit.onLadder && !(!unit.onGround && !unit.jumpState.canJump)) {
+                if (!isVerticalCollideLevel(unit.position, unit, false, false) || !isVerticalCollideLevel(unit.position.copy().minus(0.0, 0.1), unit, false, false) ) {
                     if (noCollideWithOtherUnitsVertically(unit, unit.position, false)) {
                         unit.onGround = false
+                        unit.jumpState.canJump = false
                     }
                 }
             }
