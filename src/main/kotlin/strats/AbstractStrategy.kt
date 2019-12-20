@@ -5,6 +5,7 @@ import MainKt
 import ifEnabledLog
 import model.*
 import model.Unit
+import sim.Simulator
 import util.fori
 import kotlin.math.max
 
@@ -102,5 +103,19 @@ open class AbstractStrategy : StrategyAdvCombined {
 
     fun getAnotherUnit(): Unit? {
         return game.units.firstOrNull { it.isMy() && me.id != it.id }
+    }
+
+    fun fastJumpFix(unit: Unit, unitAction: UnitAction) {
+        val unitYDecimal = unit.position.y % 1
+        if (unitAction.jump && unit.jumpState.maxTime < 0.30150 && unitYDecimal < 0.20) {
+            if (Simulator(game).isVerticalCollideLevel(
+                    unit.position.copy().minus(0.0, unitYDecimal + 0.1),
+                    unit, false, false
+                )
+            ) {
+                //fast jump
+                unitAction.jump = false
+            }
+        }
     }
 }

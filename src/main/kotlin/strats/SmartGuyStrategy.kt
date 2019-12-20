@@ -30,7 +30,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         val nearestWeapon = getClosestItem(Item.Weapon::class)
         var nearestHealth = getHealthPack()
 
-        if (me.health == game.properties.unitMaxHealth || (getAnotherMe()?.health
+        if (me.health > game.properties.unitMaxHealth * 0.9 || (getAnotherMe()?.health
                 ?: 100) < me.health /*&& game.currentTick > 1300*/ && nearestHealth != null
         ) {
             nearestHealth = null
@@ -173,6 +173,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             }
         }
         action.plantMine = false
+
+        fastJumpFix(me, action)
 
         d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
 

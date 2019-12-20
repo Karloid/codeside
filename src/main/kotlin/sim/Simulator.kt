@@ -2,7 +2,6 @@
 
 package sim
 
-import core.MyStrategy
 import ifEnabledLog
 import model.*
 import model.Unit
@@ -11,36 +10,19 @@ import util.then
 import kotlin.math.abs
 
 
-var emptySimCount: Long = 0
-var fullSimTickCount: Long = 0
 
-class Simulator(val game: Game, val mStrt: MyStrategy) {
+class Simulator(val game: Game) {
 
     @JvmField
     var ticksCacled: Int = 0
 
     @JvmField
-    var robotBallTouches = IntArray(8)
-
     var resultKill: Boolean? = null
 
     @JvmField
     var microTicks: Int = 10
 
-    var customRenderArray: MutableList<Any>? = null
-
     val metainfo: SimMetaInfo by lazy { SimMetaInfo() }
-
-    val prop = game.properties
-
-
-    fun move(e: Unit, delta_time: Float) {
-        /* e.velocity = e.velocity.clamp(copyRules.MAX_ENTITY_SPEED)
-         e.position += e.velocity * delta_time
-         e.position.y -= copyRules.GRAVITY * delta_time * delta_time / 2
-         e.velocity.y -= copyRules.GRAVITY * delta_time*/
-    }
-
 
     fun tick() {
         ticksCacled++
@@ -336,7 +318,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         return true
     }
 
-    private fun noCollideWithOtherUnitsVertically(myUnit: Unit, newPosition: Point2D, checkTop: Boolean): Boolean {
+    fun noCollideWithOtherUnitsVertically(myUnit: Unit, newPosition: Point2D, checkTop: Boolean): Boolean {
         return game.units.none {
             it != myUnit &&
                     (checkTop.then { it.position.y > newPosition.y } ?: run { it.position.y < newPosition.y }) &&
@@ -345,7 +327,7 @@ class Simulator(val game: Game, val mStrt: MyStrategy) {
         }
     }
 
-    private fun isVerticalCollideLevel(
+    fun isVerticalCollideLevel(
         newPosition: Point2D,
         unit: Unit,
         isTopCheck: Boolean,

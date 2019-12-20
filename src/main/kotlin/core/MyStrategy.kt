@@ -24,13 +24,13 @@ import java.util.*
 //TODO stay away from rocket launcher  (check space around)
 //TODO astar way search
 
-//TODO fast jumps upwards, look at do we stay on platform or not
 //TODO target unit with lowest health
+//TODO calc potential field of danger zones
 
 class MyStrategy : AbstractStrategy() {
 
     private var forceSimTill: Int = 0
-    private var myLastHp: Int = 0
+    private var myLastHp = mutableMapOf<Int, Int>()
     private var simTill: Int = 0
     private var statBox = StatBox()
     private var prevGame: Game? = null
@@ -69,7 +69,7 @@ class MyStrategy : AbstractStrategy() {
         val noWeapon = me.weapon != null
         var isDoSim = simTill >= game.currentTick && noWeapon
 
-        if (myLastHp > me.health) {
+        if (myLastHp.getOrPut(me.id, { game.properties.unitMaxHealth }) > me.health) {
             //taking damage
             forceSimTill = game.currentTick + 40
         }
@@ -103,7 +103,7 @@ class MyStrategy : AbstractStrategy() {
         prevActions.add(action)
 
         calcStats()
-        myLastHp = me.health
+        myLastHp[me.id] = me.health
         return action
     }
 
@@ -223,7 +223,8 @@ class MyStrategy : AbstractStrategy() {
         var tickK = getMaxJumpTicks() / 3 * 3
 
         // variants.clear()
-        // variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.STILL))
+        // //variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.STILL))
+        // variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.UP))
         // //variants.add(DebugAndJumpStrategy())
         // tickK = getMaxJumpTicks() * 20
 
@@ -323,7 +324,7 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
-        if (me.health != game.properties.unitMaxHealth) {
+        if (me.health < game.properties.unitMaxHealth * 0.9) {
             score -= getMinDistToHealth(simulator.game, me) * 10
         }
 
@@ -370,7 +371,7 @@ class MyStrategy : AbstractStrategy() {
     ): Simulator {
 
         val simGame = game.copy()
-        val sim = Simulator(simGame, this)
+        val sim = Simulator(simGame)
         val enStrat = EmptyStrategy(this)
 
         val simTickCount = (1 * tickK).toInt()
@@ -444,7 +445,10 @@ class MyStrategy : AbstractStrategy() {
         if (!isReal) {
             return
         }
-        log { "final act: onGround=${me.onGround} onLadder=${me.onLadder} canJump=${me.jumpState.canJump}-${me.jumpState.maxTime.f()} canCancel=${me.jumpState.canCancel} \naction:$action took ${timeEnd - timeStart}ms" }
+        log {
+            "final act: onGround=${me.onGround} onLadder=${me.onLadder} " +
+                    "jumpstate=${me.jumpState.description()} \naction:$action took ${timeEnd - timeStart}ms"
+        }
     }
 
     fun Point2D.toUnitCenter(): Point2D {

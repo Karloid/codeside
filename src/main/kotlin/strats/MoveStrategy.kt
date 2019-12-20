@@ -5,10 +5,11 @@ import model.Game
 import model.Unit
 import model.UnitAction
 
-class MoveStrategy(val leftRight: MoveLeftRight, val moveUpDown: MoveUpDown) : StrategyAdvCombined {
+class MoveStrategy(val leftRight: MoveLeftRight, val moveUpDown: MoveUpDown) : AbstractStrategy() {
     override var isReal: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
+        super.getAction(unit, game, debug)
         val unitAction = UnitAction()
 
         when (leftRight) {
@@ -23,6 +24,8 @@ class MoveStrategy(val leftRight: MoveLeftRight, val moveUpDown: MoveUpDown) : S
             }
             MoveUpDown.DOWN -> unitAction.jumpDown = true
         }
+
+        fastJumpFix(unit, unitAction)
 
         return unitAction
     }
