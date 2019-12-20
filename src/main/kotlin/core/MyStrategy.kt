@@ -60,7 +60,7 @@ class MyStrategy : AbstractStrategy() {
 
         val shootAction = shootingStart.getAction(me, game, debug)
 
-        val noWeapon = me.weapon != null 
+        val noWeapon = me.weapon != null
         var isDoSim = simTill >= game.currentTick && noWeapon
 
         if (!shootAction.shoot && game.bullets.isEmpty()) {
@@ -252,7 +252,7 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
-
+        val currentDistToEnemies = game.getMinDistToEnemies(me)
         val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
         if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
             score -= simDistToEnemies
@@ -266,7 +266,6 @@ class MyStrategy : AbstractStrategy() {
             if (xDist > 2) {
                 return@let
             }
-            val currentDistToEnemies = game.getMinDistToEnemies(me)
 
             val delta = simDistToEnemies - currentDistToEnemies
             val sameHealthButIdLower =
@@ -295,6 +294,13 @@ class MyStrategy : AbstractStrategy() {
             score -= getMinDistToHealth(simulator.game, me) * 10
         }
 
+        //keep away when reloading
+        if (currentDistToEnemies < 4) {
+            if (me.weapon?.fireTimer ?: 0.0 > 0.1) {
+                score += simDistToEnemies / 2
+            }
+
+        }
         //TODO calc in game score
 
 
@@ -306,11 +312,18 @@ class MyStrategy : AbstractStrategy() {
     private fun getMinDistToHealth(game: Game, unit: Unit): Double {
         val actualUnit = game.units.firstOrNull { it.id == unit.id } ?: return 0.0
 
+        val enemies = game.units.filter { it.playerId != unit.playerId }
+
         return game.lootBoxes
             .filter { it.item is Item.HealthPack }
-            .minBy { it.position.distance(actualUnit.position) }
-            ?.position
-            ?.distance(actualUnit.position) ?: 0.0
+            .map { health ->
+                val distToMe = health.position.distance(actualUnit.position)
+
+                if (enemies.map { health.position.distance(it.position) }.any { it < distToMe }) {
+                    return@map 999999.0
+                }
+                distToMe
+            }.min() ?: 0.0
     }
 
 
