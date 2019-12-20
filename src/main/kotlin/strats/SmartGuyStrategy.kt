@@ -32,13 +32,17 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         var nearestHealth = getHealthPack(null)
 
         val anotherMe = getAnotherMe()
-        if ((me.health > game.properties.unitMaxHealth * 0.9 || (anotherMe?.health
-                ?: 100) < me.health) /*&& game.currentTick > 1300*/ && nearestHealth != null && skippedHealth < 40
+        if (me.health > game.properties.unitMaxHealth * 0.9) {
+            nearestHealth = null
+        }
+
+        if (anotherMe != null && (me.health > game.properties.unitMaxHealth * 0.9 ||
+                    anotherMe.health < me.health) && nearestHealth != null && skippedHealth < 40
         ) {
-            if (me.health < game.properties.unitMaxHealth * 0.9) {
+            if (me.health < game.properties.unitMaxHealth * 0.9 && anotherMe.health < me.health) {
                 nearestHealth = getHealthPack(nearestHealth)
 
-                if (nearestHealth != null && anotherMe != null) {
+                if (nearestHealth != null) {
                     val anotherX = anotherMe.position.x
                     if ((anotherX > me.position.x && nearestHealth.position.x > me.position.x) ||
                         (anotherX < me.position.x && nearestHealth.position.x < me.position.x)
@@ -251,6 +255,11 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
     private fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
         if (en == null) {
+            return false
+        }
+        val myDist = me.position.distance(point)
+        val enDist = en.position.distance(point)
+        if (myDist < enDist) {
             return false
         }
         val vectorToEn = me.position.copy() - en.position
