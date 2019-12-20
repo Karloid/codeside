@@ -97,6 +97,16 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                         log { "aim lower due enemy is falling $nearestEnemy" }
                     }
                 }
+
+                val lastWeaponAngle = me.weapon?.lastAngle ?: 0.0
+
+                val angleDiff = lastWeaponAngle - target.angle()
+                myPrint { "aim angle diff ${angleDiff.f()}" }
+                if (abs(angleDiff) < 0.25) {
+                    myPrint { "keep old angle" }
+                    target = Point2D(lastWeaponAngle).length(2.0)
+                }
+
                 val aims = listOf(target)
 
                 if (canShot(nearestEnemy, aims, action)) {
@@ -305,14 +315,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             }
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
-                val angleDiff = lastWeaponAngle - it.aim.angle()
-                myPrint { "aim angle diff ${angleDiff.f()}" }
-                if (abs(angleDiff) < 0.05) {
-                    myPrint { "keep old angle" }
-                    action.aim = Point2D(lastWeaponAngle).length(2.0)
-                } else {
-                    action.aim = it.aim
-                }
                 canShootOnce = true
                 myPrint { "fire at $it" }
             }
