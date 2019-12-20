@@ -25,6 +25,8 @@ import java.util.*
 //TODO astar way search
 class MyStrategy : AbstractStrategy() {
 
+    private var forceSimTill: Int = 0
+    private var myLastHp: Int = 0
     private var simTill: Int = 0
     private var statBox = StatBox()
     private var prevGame: Game? = null
@@ -63,12 +65,19 @@ class MyStrategy : AbstractStrategy() {
         val noWeapon = me.weapon != null
         var isDoSim = simTill >= game.currentTick && noWeapon
 
+        if (myLastHp > me.health) {
+            //taking damage
+            forceSimTill = game.currentTick + 40
+        }
 
         if (!shootAction.shoot && game.bullets.isEmpty()) {
             isDoSim = false
         }
         if (isDoSim && noShootTick() > 150) {
             isDoSim = false
+        }
+        if (game.currentTick < forceSimTill) {
+            isDoSim = true
         }
         //isDoSim = true //TODO remove
         if (!isDoSim) {
@@ -90,7 +99,7 @@ class MyStrategy : AbstractStrategy() {
         prevActions.add(action)
 
         calcStats()
-
+        myLastHp = me.health
         return action
     }
 
@@ -209,10 +218,10 @@ class MyStrategy : AbstractStrategy() {
         }
         var tickK = getMaxJumpTicks() / 3 * 3
 
-         // variants.clear()
-         // variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.STILL))
-         // //variants.add(DebugAndJumpStrategy())
-         // tickK = getMaxJumpTicks() * 20
+        // variants.clear()
+        // variants.add(MoveStrategy(MoveLeftRight.RIGHT, MoveUpDown.STILL))
+        // //variants.add(DebugAndJumpStrategy())
+        // tickK = getMaxJumpTicks() * 20
 
         val strat = pickBestStrat(variants, tickK)
 
