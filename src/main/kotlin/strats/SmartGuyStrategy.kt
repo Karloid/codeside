@@ -28,12 +28,27 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         val nearestEnemy: Unit? = getClosestEnemy()
         val nearestWeapon = getClosestItem(Item.Weapon::class)
-        var nearestHealth = getHealthPack()
+        var nearestHealth = getHealthPack(null)
 
-        if (me.health > game.properties.unitMaxHealth * 0.9 || (getAnotherMe()?.health
-                ?: 100) < me.health /*&& game.currentTick > 1300*/ && nearestHealth != null
+        val anotherMe = getAnotherMe()
+        if ((me.health > game.properties.unitMaxHealth * 0.9 || (anotherMe?.health
+                ?: 100) < me.health) /*&& game.currentTick > 1300*/ && nearestHealth != null
         ) {
-            nearestHealth = null
+            if (me.health < game.properties.unitMaxHealth * 0.9) {
+                nearestHealth = getHealthPack(nearestHealth)
+
+                if (nearestHealth != null && anotherMe != null) {
+                    val anotherX = anotherMe.position.x
+                    if ((anotherX > me.position.x && nearestHealth.position.x > me.position.x) ||
+                        (anotherX < me.position.x && nearestHealth.position.x < me.position.x)
+                    ) {
+                        nearestHealth = getHealthPack(null)
+                        log { "keep original health" }
+                    }
+                }
+            } else {
+                nearestHealth = null
+            }
             log { "ignore health" }
         }
 
@@ -214,11 +229,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return false
     }
 
-    private fun getHealthPack(): LootBox? {
+    private fun getHealthPack(ignoreIt: LootBox?): LootBox? {
         val en = getClosestEnemy()
         return game.lootBoxes
             .filter {
                 (it.item::class == Item.HealthPack::class).not().then { return@filter false }
+
+                if (it == ignoreIt) {
+                    return@filter false
+                }
 
                 return@filter !isEnemyCloser(en, it.position)
             }
