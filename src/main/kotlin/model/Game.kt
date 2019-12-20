@@ -154,4 +154,8 @@ class Game {
     fun getDist(me: Unit, another: Unit): Double {
         return getUnitPos(me.id).distance(getUnitPos(another.id))
     }
+
+    fun getUnitNullable(me: Unit): Unit? {
+        return units.firstOrNull { it.id == me.id }
+    }
 }

@@ -4,7 +4,7 @@
     "Custom": {
       "level": {
         "LoadFrom": {
-          "path": "level_t.txt"
+          "path": "level_test_tower.txt"
         }
       },
       "properties": null
@@ -20,14 +20,6 @@
         "token": null
       }
     },
-    {
-      "Tcp": {
-        "host": null,
-        "port": 31002,
-        "accept_timeout": null,
-        "timeout": null,
-        "token": null
-      }
-    }
+    "Keyboard"
   ]
 }

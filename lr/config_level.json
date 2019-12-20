@@ -3,14 +3,22 @@
     "Custom": {
       "level": {
         "LoadFrom": {
-          "path": "levels/level_top.txt"
+          "path": "levels/level_t.txt"
         }
       },
       "properties": null
     }
   },
   "players": [
-    "Keyboard",
+    {
+      "Tcp": {
+        "host": null,
+        "port": 31002,
+        "accept_timeout": null,
+        "timeout": null,
+        "token": null
+      }
+    },
     {
       "Tcp": {
         "host": null,

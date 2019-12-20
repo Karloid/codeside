@@ -299,7 +299,9 @@ class MyStrategy : AbstractStrategy() {
             if (me.weapon?.fireTimer ?: 0.0 > 0.1) {
                 score += simDistToEnemies / 2
             }
-
+        }
+        simulator.game.getUnitNullable(me)?.onLadder?.then {
+            score += 10
         }
         //TODO calc in game score
 
