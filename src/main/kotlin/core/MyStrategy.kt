@@ -393,6 +393,8 @@ class MyStrategy : AbstractStrategy() {
         return sim
     }
 
+    private val stillStrategy = MoveStrategy(MoveLeftRight.STILL, MoveUpDown.STILL)
+
     private fun predictStratMoves(
         strat: Strategy,
         sim: Simulator,
@@ -400,10 +402,21 @@ class MyStrategy : AbstractStrategy() {
         isMe: Boolean,
         simGame: Game
     ) {
+        val anotherMe = getAnotherUnit()
+
         simGame.units.forEach { unit ->
             if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
                 //val unitcopy = unit.copy()
-                val action = strat.getAction(unit, simGame, debug)
+
+                var action = strat.getAction(unit, simGame, debug)
+                if (true) {
+                    if (anotherMe?.id == unit.id) {
+                        val delta = anotherMe.position.copy().minus(me.position).abs()
+                        if (delta.x < 1.5 && delta.y < 2) {
+                            action = stillStrategy.getAction(unit, simGame, debug)
+                        }
+                    }
+                }
 
                 unit.simAction = action
             }

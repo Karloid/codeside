@@ -15,6 +15,7 @@ import kotlin.reflect.KClass
 
 class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
+    private var skippedHealth: Int =0
     var disableShooting: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
@@ -32,7 +33,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         val anotherMe = getAnotherMe()
         if ((me.health > game.properties.unitMaxHealth * 0.9 || (anotherMe?.health
-                ?: 100) < me.health) /*&& game.currentTick > 1300*/ && nearestHealth != null
+                ?: 100) < me.health) /*&& game.currentTick > 1300*/ && nearestHealth != null && skippedHealth < 40
         ) {
             if (me.health < game.properties.unitMaxHealth * 0.9) {
                 nearestHealth = getHealthPack(nearestHealth)
@@ -46,8 +47,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                         log { "keep original health" }
                     }
                 }
+             //   skippedHealth = 0
             } else {
                 nearestHealth = null
+              //  skippedHealth++
             }
             log { "ignore health" }
         }
