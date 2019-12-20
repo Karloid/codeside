@@ -23,6 +23,10 @@ import java.util.*
 
 //TODO stay away from rocket launcher  (check space around)
 //TODO astar way search
+
+//TODO fast jumps upwards, look at do we stay on platform or not
+//TODO target unit with lowest health
+
 class MyStrategy : AbstractStrategy() {
 
     private var forceSimTill: Int = 0
