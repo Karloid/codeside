@@ -343,12 +343,14 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (it.hitTargetDamage <= 0) {
                 return false
             }
-            if (isRocketLauncher) {
+            val canShoot = if (isRocketLauncher) {
                 //game.properties.weaponParams[WeaponType.ROCKET_LAUNCHER]!!.explosion.
                 it.hitTargetDamage > it.hitMeDamage * 1.4
             } else {
                 it.hitTargetDamage > it.hitMeDamage * 1.4
             }
+            myPrint { "canShoot=${game} rocket=${isRocketLauncher} target=${it.hitTargetDamage} me=${it.hitMeDamage}" }
+            canShoot
         }.minBy { abs(it.aim.angle().toDouble() - lastWeaponAngle) }
             ?.let {
                 canShootOnce = true
@@ -375,7 +377,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         var weGetWalls = false
         val rayLengthMax = from.distance(to)
 
-        val epsilon = 0.0001
+        val epsilon = 0.000001
 
         while (true) {
             // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }

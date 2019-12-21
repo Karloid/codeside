@@ -6,6 +6,7 @@ import model.Unit
 import sim.SimScore
 import sim.Simulator
 import strats.*
+import util.Direction
 import util.f
 import util.fori
 import util.then
@@ -310,6 +311,7 @@ class MyStrategy : AbstractStrategy() {
         // score -= diff * 1000
 
         score += remainingTeamHealth.toDouble()
+        checkStrangeScore(score)
 
         simScore.myHealthBonus = remainingTeamHealth
 
@@ -327,12 +329,14 @@ class MyStrategy : AbstractStrategy() {
         }
         if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
             score -= simDistToEnemies
+            checkStrangeScore(score)
         }
         anotherUnit?.let { another ->
             val xDist = (another.position.copy() - me.position).abs().x
             if (xDist > 4) {
                 val distToAnother = simulator.game.getDist(me, another)
                 score -= distToAnother * 5
+                checkStrangeScore(score)
             }
             if (xDist > 2) {
                 return@let
@@ -355,6 +359,7 @@ class MyStrategy : AbstractStrategy() {
             } else {
                 score += delta * 5
             }
+            checkStrangeScore(score)
             //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
@@ -363,24 +368,36 @@ class MyStrategy : AbstractStrategy() {
             //keep center
             simulator.game.getUnitPosNullable(me.id)?.let { mySimPos ->
                 score -= (abs(mySimPos.x - game.level.tiles.cellsWidth / 2)) / 100
+                checkStrangeScore(score)
             }
         }
 
         if (me.health < game.properties.unitMaxHealth * 0.9 && simulator.game.healthCount() > 0) {
-            score -= getMinDistToHealth(simulator.game, me) * 10
+            val distToHealtRaw = getMinDistToHealth(simulator.game, me)
+            if (distToHealtRaw < 120) {
+                val distToHealth = distToHealtRaw * 10
+                score -= distToHealth
+                checkStrangeScore(score)
+            }
         }
 
         //keep away when reloading
         if (currentDistToEnemies < 9 && simDistToEnemies != null) {
             if (me.weapon?.fireTimer ?: 0.0 > 0.15) {
                 score += simDistToEnemies / 1.5
+                checkStrangeScore(score)
             }
         }
-        simulator.game.getUnitNullable(me)?.onLadder?.then {
+        val simMe = simulator.game.getUnitNullable(me)
+        simMe?.onLadder?.then {
             score += 10
         }
-        simulator.game.getUnitNullable(me)?.onGround?.not()?.then {
+        simMe?.onGround?.not()?.then {
+            val simPosCopy = simMe.position.copy()
             score += 11
+            if (game.level.isAir(simPosCopy.applyDir(Direction.DOWN)) && game.level.isAir(simPosCopy.applyDir(Direction.DOWN))) {
+                score += 5
+            }
         }
 
         val mySimPos = simulator.game.getUnitPosNullable(me.id)
@@ -391,8 +408,12 @@ class MyStrategy : AbstractStrategy() {
             val distToClosest = me.position.pathDist(closestEnemy.position)
             if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null && distToClosest < 6) {
                 score += mySimPos.pathDist(closestEnemy.position) / 10
+
+                checkStrangeScore(score)
             }
         }
+
+        //TODO avoid tight places
 
         //keep back from our rocket man
         anotherUnit?.let {
@@ -409,16 +430,24 @@ class MyStrategy : AbstractStrategy() {
                         score += mySimPos.pathDist(anotherUnit.position) / 2
                         score += mySimPos.pathDist(closestEnemy.position) / 2
                     }
+                    checkStrangeScore(score)
                 }
             }
         }
 
-        //TODO calc in game score
 
+        //TODO calc in game score
+        //TODO antistuck
 
         return simScore.apply {
             this.score = score
             createdAtTick = game.currentTick
+        }
+    }
+
+    private fun checkStrangeScore(score: Double) {
+        if (score < -1000) {
+            val x = 10
         }
     }
 

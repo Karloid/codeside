@@ -54,4 +54,13 @@ class Level {
             }
         }
     }
+
+    fun isAir(point2D: Point2D): Boolean {
+        try {
+            val fastNoRound = tiles.getFastNoRound(point2D)
+            return fastNoRound != Tile.WALL && fastNoRound != Tile.JUMP_PAD
+        } catch (e: Exception) {
+            return false
+        }
+    }
 }
