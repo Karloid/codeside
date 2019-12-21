@@ -6,10 +6,7 @@ import model.Unit
 import sim.SimScore
 import sim.Simulator
 import strats.*
-import util.Direction
-import util.f
-import util.fori
-import util.then
+import util.*
 import java.lang.Math.abs
 import java.util.*
 import kotlin.math.absoluteValue
@@ -183,7 +180,7 @@ class MyStrategy : AbstractStrategy() {
                 size = bigSize
             }
 
-            log { "sim $colorIndex ${evalAndSim.strat}= ${evalAndSim.score}, health=${evalAndSim.myHealthBonus}" }
+            log { "sim $colorIndex ${evalAndSim}" }
 
             val sim = evalAndSim.simulator
 
@@ -210,7 +207,12 @@ class MyStrategy : AbstractStrategy() {
                 for (hit in sim.metainfo.unitHitRegs) {
                     val size = game.properties.mineSize
                     debug.rect(hit.point, size, ColorFloat.RED)
-                    debug.text(hit.bullet.weaponType.toString(), hit.point.copy().minus(0.0, 0.5), ColorFloat.RED, size = 18f)
+                    debug.text(
+                        hit.bullet.weaponType.toString(),
+                        hit.point.copy().minus(0.0, 0.5),
+                        ColorFloat.RED,
+                        size = 18f
+                    )
                 }
 
                 for (exp in sim.metainfo.explosions) {
@@ -285,7 +287,7 @@ class MyStrategy : AbstractStrategy() {
 
         var best = evalAndSims.maxBy { it.score }!!
 
-        log { "picked strat=${best.strat} score=${best.score}" }
+        log { "picked strat=${best}" }
         drawDebugSimulator(evalAndSims, best)
 
         return best.strat
@@ -370,12 +372,14 @@ class MyStrategy : AbstractStrategy() {
         }
 
         //health
+        var likeGoingToHeal = false
         if (me.health < game.properties.unitMaxHealth * 0.9 && simulator.game.healthCount() > 0) {
             val distToHealtRaw = getMinDistToHealth(simulator.game, me)
             if (distToHealtRaw < 120) {
                 val distToHealth = distToHealtRaw * 10
                 score -= distToHealth
                 checkStrangeScore(score)
+                likeGoingToHeal = true
             }
         }
 
@@ -416,6 +420,17 @@ class MyStrategy : AbstractStrategy() {
         }
 
         //TODO avoid tight places
+        if (mySimPos != null && me.weapon != null) {
+            val potentialWalls = Potential.potential.getFastNoRound(mySimPos)
+            val wallsPenalty = if (likeGoingToHeal) {
+                potentialWalls / 2
+            } else {
+                potentialWalls * 2
+            }
+            score -= potentialWalls
+            simScore.potentialWallsPenalty = potentialWalls
+            checkStrangeScore(score)
+        }
 
         //keep back from our rocket man
         anotherUnit?.let {
@@ -573,7 +588,9 @@ class MyStrategy : AbstractStrategy() {
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)
                 }
             }
-            if (getAnotherUnit()?.let { it.id < me.id } ?: true) {
+            @Suppress("NullableBooleanElvis")
+            //print map
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && false) {
                 me.position.pathDist(Point2D(0, 0))
                 Path.cachedAccess.getFastNoRound(me.position)?.let { access ->
                     access.fori { x, y, v ->
@@ -582,7 +599,16 @@ class MyStrategy : AbstractStrategy() {
                         }
                         debug.text("$v", Point2D(x, y), ColorFloat.ACCESS, 18f)
                     }
+                }
+            }
 
+            //print map
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true) {
+                Potential.potential.fori { x, y, v ->
+                    if (v < 0.1) {
+                        return@fori
+                    }
+                    debug.text("${v.f1()}", Point2D(x, y), ColorFloat.POTENTIAL, 13f, TextAlignment.LEFT)
                 }
 
             }
