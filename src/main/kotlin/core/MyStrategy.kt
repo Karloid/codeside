@@ -170,9 +170,6 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun drawDebugSimulator(simScores: ArrayList<SimScore>, best: SimScore) {
-        if (me.id != 5) {
-            return
-        }
         var colorIndex = 0
         val smallSize = Point2D(1 / 10f, 1 / 10f)
         val bigSize = smallSize.copy().mul(2.0)
@@ -372,6 +369,7 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
+        //health
         if (me.health < game.properties.unitMaxHealth * 0.9 && simulator.game.healthCount() > 0) {
             val distToHealtRaw = getMinDistToHealth(simulator.game, me)
             if (distToHealtRaw < 120) {
