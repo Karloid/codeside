@@ -1,6 +1,7 @@
 
 import core.MyStrategy
 import core.Path
+import core.Potential
 import strats.Strategy
 import util.StreamUtil
 import java.io.*
@@ -32,6 +33,7 @@ internal constructor(host: String, port: Int, token: String) {
 
             if (!firstHandled) {
                 Path.init(playerView.game)
+                Potential.init(playerView.game)
             }
 
             val actions = HashMap<Int, model.UnitAction>()
