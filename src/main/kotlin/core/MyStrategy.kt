@@ -379,6 +379,9 @@ class MyStrategy : AbstractStrategy() {
         simulator.game.getUnitNullable(me)?.onLadder?.then {
             score += 10
         }
+        simulator.game.getUnitNullable(me)?.onGround?.not()?.then {
+            score += 11
+        }
 
         val mySimPos = simulator.game.getUnitPosNullable(me.id)
 
