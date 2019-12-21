@@ -406,7 +406,7 @@ class MyStrategy : AbstractStrategy() {
         closestEnemy?.let {
             val distToClosest = me.position.pathDist(closestEnemy.position)
             if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null && distToClosest < 6) {
-                score += mySimPos.pathDist(closestEnemy.position) / 10
+                score += mySimPos.pathDist(closestEnemy.position) / 4
 
                 checkStrangeScore(score)
             }
