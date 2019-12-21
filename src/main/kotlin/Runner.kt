@@ -1,5 +1,6 @@
 
 import core.MyStrategy
+import core.Path
 import strats.Strategy
 import util.StreamUtil
 import java.io.*
@@ -24,9 +25,15 @@ internal constructor(host: String, port: Int, token: String) {
     internal fun run() {
         val myStrategy: Strategy = MyStrategy()
         val debug = Debug(outputStream)
+        var firstHandled = false
         while (true) {
             val message = model.ServerMessageGame.readFrom(inputStream)
             val playerView = message.playerView ?: break
+
+            if (!firstHandled) {
+                Path.init(playerView.game)
+            }
+
             val actions = HashMap<Int, model.UnitAction>()
             for (unit in playerView.game.units) {
                 if (unit.playerId == playerView.myId) {

@@ -53,19 +53,19 @@ class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: I
         }
     }
 
-    fun set(pos: Point2D, value : T) {
+    fun set(pos: Point2D, value: T) {
         set(pos.x.roundToInt(), pos.y.roundToInt(), value)
-    }
-
-    fun setFast(pos: Point2D, value : T) {
-        setFast(pos.x.roundToInt(), pos.y.roundToInt(), value)
     }
 
     fun get(pos: Point2D): T? {
         return get(pos.x.toInt(), pos.y.toInt())
     }
 
-    fun getFast(pos: Point2D): T {
-        return getFast(pos.x.roundToInt(), pos.y.roundToInt())
+    fun getFastNoRound(pos: Point2D): T {
+        return getFast(pos.x.toInt(), pos.y.toInt())
+    }
+
+    fun setFastNoRound(pos: Point2D, value: T) {
+        setFast(pos.intX, pos.intY, value)
     }
 }
