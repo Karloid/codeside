@@ -147,8 +147,10 @@ def worker(args):
     }
     cwd = os.getcwd()
 
+    swap_str = "swap_" if swap else ""
+
     config_path = os.path.join(cwd, f"tmp/_config{idx}.json")
-    result_path = os.path.join(cwd, f"tmp/_result{idx}.txt")
+    result_path = os.path.join(cwd, f"tmp/_{swap_str}result{idx}.txt")
     with open(config_path, "w") as out:
         json.dump(config, out, indent=4)
     if os.path.exists(result_path):
@@ -192,8 +194,19 @@ def start_process():
 @click.option('--team-size', type=int, default=2)
 @click.option('--profile-mode', is_flag=False)
 def run(p1, p2, lr_bin, start_seed, level, nthreads, count, team_size, profile_mode):
-    if not os.path.exists("tmp"):
-        os.makedirs("tmp")
+    folder  = "tmp"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     pool = multiprocessing.Pool(processes=nthreads, initializer=start_process)
     pool.map(worker, [(

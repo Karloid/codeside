@@ -21,7 +21,7 @@ def main():
 def analyze(base_path):
 	cwd = os.getcwd()
 
-	full_path = cwd + "\\" + base_path + "\\"
+	full_path = cwd + "/" + base_path + ""
 	os.chdir(full_path)
 
 	while True:
