@@ -1,5 +1,6 @@
 package model
 
+import core.pathDist
 import util.Direction
 import util.StreamUtil
 
@@ -135,15 +136,18 @@ class Game {
         }
     }
 
-    fun getMinDistToEnemies(unit: Unit): Double {
+    fun getMinDistToEnemies(unit: Unit): Double? {
         val id = unit.id
         val playerId = unit.playerId
 
-        val unitPosition = getUnitPos(id)
+        val unitPosition = getUnitPosNullable(id)
+        if (unitPosition == null) {
+            return null
+        }
 
         val minDistanceToEnemy = units
             .filter { it.playerId != playerId }
-            .minBy { it.position.distance(unitPosition) }?.position?.distance(unitPosition) ?: 100.0
+            .minBy { it.position.pathDist(unitPosition) }?.position?.pathDist(unitPosition) ?: 100.0
 
         return minDistanceToEnemy
     }
@@ -152,7 +156,7 @@ class Game {
     fun getUnitPosNullable(id: Int) = units.firstOrNull { it.id == id }?.position
 
     fun getDist(me: Unit, another: Unit): Double {
-        return getUnitPos(me.id).distance(getUnitPos(another.id))
+        return getUnitPos(me.id).pathDist(getUnitPos(another.id))
     }
 
     fun getUnitNullable(me: Unit): Unit? {

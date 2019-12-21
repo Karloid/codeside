@@ -3,6 +3,7 @@ package strats
 import Debug
 import core.AimScore
 import core.MyStrategy
+import core.pathDist
 import model.*
 import model.Unit
 import sim.Simulator
@@ -250,15 +251,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
                 return@filter !isEnemyCloser(en, it.position)
             }
-            .minBy { it.position.distance(me.position) }
+            .minBy { it.position.pathDist(me.position) }
     }
 
     private fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
         if (en == null) {
             return false
         }
-        val myDist = me.position.distance(point)
-        val enDist = en.position.distance(point)
+        val myDist = me.position.pathDist(point)
+        val enDist = en.position.pathDist(point)
         if (myDist < enDist) {
             return false
         }
@@ -474,7 +475,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1
 
     private fun <T : Any> getClosestItem(type: KClass<T>): LootBox? {
-        return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.distance(me.position) }
+        return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.pathDist(me.position) }
     }
 
     private fun wantSwapFromRocketLauncher(me: Unit): Boolean {
@@ -507,7 +508,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return game.lootBoxes.filter {
             val item = it.item
             item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position)
-        }.minBy { it.position.distance(me.position) }
+        }.minBy { it.position.pathDist(me.position) }
     }
 
 

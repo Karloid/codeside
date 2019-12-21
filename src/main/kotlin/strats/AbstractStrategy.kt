@@ -2,6 +2,7 @@ package strats
 
 import Debug
 import MainKt
+import core.pathDist
 import ifEnabledLog
 import model.*
 import model.Unit
@@ -66,14 +67,14 @@ open class AbstractStrategy : StrategyAdvCombined {
         return game.lootBoxes.filter {
             val item = it.item
             item is Item.Weapon && item.weaponType == weaponType
-        }.minBy { it.position.distance(me.position) }
+        }.minBy { it.position.pathDist(me.position) }
     }
 
     protected fun getClosestEnemy(): Unit? {
         val anotherMe = getAnotherUnit()
         val enemies = game.units.filter { it.isMy().not() }
         val closest = enemies.minBy {
-            var dist = it.position.distance(me.position)
+            var dist = it.position.pathDist(me.position)
            // if (anotherMe != null) {
            //     dist += it.position.distance(anotherMe.position)
            // }
@@ -81,7 +82,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         } ?: return null
         
         enemies.firstOrNull { !it.isMy() && closest != it }?.let { lowHealth ->
-            if (lowHealth.health < closest.health && lowHealth.position.distance(closest.position) < 4) {
+            if (lowHealth.health < closest.health && lowHealth.position.pathDist(closest.position) < 4) {
                 return lowHealth
             }
 

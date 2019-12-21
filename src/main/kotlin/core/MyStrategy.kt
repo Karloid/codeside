@@ -170,11 +170,14 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun drawDebugSimulator(simScores: ArrayList<SimScore>, best: SimScore) {
+        /* if (me.id != 3) {
+             return
+         }*/
         var colorIndex = 0
         val smallSize = Point2D(1 / 10f, 1 / 10f)
         val bigSize = smallSize.copy().mul(2.0)
 
-        simScores.forEach { evalAndSim ->
+        simScores.sortedBy { it.score }.asReversed().forEach { evalAndSim ->
             var myColor = simColors[colorIndex % simColors.size]
             var size = smallSize
             val isBest = best == evalAndSim
@@ -182,6 +185,8 @@ class MyStrategy : AbstractStrategy() {
                 myColor = myColor.copy(a = 1f)
                 size = bigSize
             }
+
+            log { "sim $colorIndex ${evalAndSim.strat}= ${evalAndSim.score}, health=${evalAndSim.myHealthBonus}" }
 
             val sim = evalAndSim.simulator
 
@@ -192,13 +197,12 @@ class MyStrategy : AbstractStrategy() {
                     entry.value.fori { movePoint ->
                         debug.rect(movePoint, size, myColor)
                         if (movePoint === last && me.id == entry.key) {
-                            debug.text("s${evalAndSim.score.f()}", movePoint, myColor)
-                            log{"draw score for sim ${evalAndSim.strat}"}
+                            debug.text("${colorIndex}_${evalAndSim.score.f()}", movePoint, myColor)
                         }
                     }
                 }
-                colorIndex++
             }
+            colorIndex++
 
             if (isBest) {
                 for (bullet in sim.metainfo.bulletsHistory) {
@@ -291,9 +295,9 @@ class MyStrategy : AbstractStrategy() {
 
     private fun eval(simulator: Simulator, strat: StrategyAdvCombined): SimScore {
 
-        var score = 0.0
-        val myUnits = game.units.filter { it.isMy() }
+        val simScore = SimScore(0.0, simulator, strat)
 
+        var score = 0.0
 
         val myUnitsSim = simulator.game.units.filter { it.playerId == me.playerId }
 
@@ -301,10 +305,14 @@ class MyStrategy : AbstractStrategy() {
         val enHealth = simulator.game.units.filter { !it.isMy() }.sumBy { it.health } * 1
         score -= enHealth
 
-        val diff = myUnitsSim.size - myUnits.size
-        score -= diff * 1000
+        //val myUnits = game.units.filter { it.isMy() }
+        // val diff = myUnitsSim.size - myUnits.size
+        // score -= diff * 1000
 
-        score = remainingTeamHealth.toDouble()
+        score += remainingTeamHealth.toDouble()
+
+        simScore.myHealthBonus = remainingTeamHealth
+
         val anotherUnit = getAnotherUnit()
         if (strat is MoveStrategy) {
             if (strat.moveUpDown == MoveUpDown.UP && !me.onGround && !me.onLadder && (anotherUnit?.id ?: 0) > me.id) {
@@ -312,9 +320,12 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
-        val currentDistToEnemies = game.getMinDistToEnemies(me)
+        val currentDistToEnemies = game.getMinDistToEnemies(me)!!
         val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
-        if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
+        if (simDistToEnemies == null) {
+            score -= 1
+        }
+        if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
             score -= simDistToEnemies
         }
         anotherUnit?.let { another ->
@@ -326,6 +337,10 @@ class MyStrategy : AbstractStrategy() {
             if (xDist > 2) {
                 return@let
             }
+            if (simDistToEnemies == null) {
+                //we dead
+                return@let
+            }
 
             val delta = simDistToEnemies - currentDistToEnemies
             val sameHealthButIdLower =
@@ -334,6 +349,7 @@ class MyStrategy : AbstractStrategy() {
                     me.weapon?.typ == WeaponType.ROCKET_LAUNCHER &&
                     another.weapon?.typ != WeaponType.ROCKET_LAUNCHER
 
+            //sw
             if (another.health < me.health || (sameHealthButIdLower || sameHealthButHasRocketLauncher)) {
                 score -= delta * 5
             } else {
@@ -342,11 +358,11 @@ class MyStrategy : AbstractStrategy() {
             //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
-        val distToCenter = abs(me.position.x - game.level.tiles.cellsWidth)
+        val distToCenter = abs(me.position.x - game.level.tiles.cellsWidth / 2)
         if (distToCenter > game.level.tiles.cellsWidth / 3) {
             //keep center
             simulator.game.getUnitPosNullable(me.id)?.let { mySimPos ->
-                score -= (abs(mySimPos.x - game.level.tiles.cellsWidth)) / 100
+                score -= (abs(mySimPos.x - game.level.tiles.cellsWidth / 2)) / 100
             }
         }
 
@@ -355,9 +371,9 @@ class MyStrategy : AbstractStrategy() {
         }
 
         //keep away when reloading
-        if (currentDistToEnemies < 5) {
+        if (currentDistToEnemies < 9 && simDistToEnemies != null) {
             if (me.weapon?.fireTimer ?: 0.0 > 0.15) {
-                score += simDistToEnemies / 2
+                score += simDistToEnemies / 1.5
             }
         }
         simulator.game.getUnitNullable(me)?.onLadder?.then {
@@ -369,9 +385,9 @@ class MyStrategy : AbstractStrategy() {
         val closestEnemy = getClosestEnemy()
         //keep away from rocket mans
         closestEnemy?.let {
-            val distToClosest = me.position.distance(closestEnemy.position)
+            val distToClosest = me.position.pathDist(closestEnemy.position)
             if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null && distToClosest < 6) {
-                score += mySimPos.distance(closestEnemy.position) / 10
+                score += mySimPos.pathDist(closestEnemy.position) / 10
             }
         }
 
@@ -381,14 +397,14 @@ class MyStrategy : AbstractStrategy() {
                 if (isBetween(closestEnemy.position, mySimPos, anotherUnit.position)) {
                     return@let
                 }
-                val distToANother = me.position.distance(anotherUnit.position)
-                if (distToANother < 4 && anotherUnit.position.distance(closestEnemy.position) < 4.5) {
-                    score += mySimPos.distance(anotherUnit.position) / 2
-                    score += mySimPos.distance(closestEnemy.position) / 2
+                val distToANother = me.position.pathDist(anotherUnit.position)
+                if (distToANother < 4 && anotherUnit.position.pathDist(closestEnemy.position) < 4.5) {
+                    score += mySimPos.pathDist(anotherUnit.position) / 2
+                    score += mySimPos.pathDist(closestEnemy.position) / 2
 
-                    if (anotherUnit.position.distance(closestEnemy.position) < 2) {
-                        score += mySimPos.distance(anotherUnit.position) / 2
-                        score += mySimPos.distance(closestEnemy.position) / 2
+                    if (anotherUnit.position.pathDist(closestEnemy.position) < 2) {
+                        score += mySimPos.pathDist(anotherUnit.position) / 2
+                        score += mySimPos.pathDist(closestEnemy.position) / 2
                     }
                 }
             }
@@ -397,7 +413,8 @@ class MyStrategy : AbstractStrategy() {
         //TODO calc in game score
 
 
-        return SimScore(score, simulator, strat).apply {
+        return simScore.apply {
+            this.score = score
             createdAtTick = game.currentTick
         }
     }
@@ -432,9 +449,9 @@ class MyStrategy : AbstractStrategy() {
         return game.lootBoxes
             .filter { it.item is Item.HealthPack }
             .map { health ->
-                val distToMe = health.position.distance(actualUnit.position)
+                val distToMe = health.position.pathDist(actualUnit.position)
 
-                if (enemies.map { health.position.distance(it.position) }.any { it < distToMe }) {
+                if (enemies.map { health.position.pathDist(it.position) }.any { it < distToMe }) {
                     return@map 999999.0
                 }
                 distToMe
@@ -521,6 +538,19 @@ class MyStrategy : AbstractStrategy() {
                     val y = unit.position.y - 1
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)
                 }
+            }
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true) {
+                me.position.pathDist(Point2D(0, 0))
+                Path.cachedAccess.getFastNoRound(me.position)?.let { access ->
+                    access.fori { x, y, v ->
+                        if (v > 120) {
+                            return@fori
+                        }
+                        debug.text("$v", Point2D(x, y), ColorFloat.ACCESS, 18f)
+                    }
+
+                }
+
             }
         }
     }
