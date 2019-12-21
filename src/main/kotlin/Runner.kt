@@ -1,7 +1,8 @@
-
 import core.MyStrategy
 import core.Path
 import core.Potential
+import model.UnitAction
+import strats.SmartGuyStrategy
 import strats.Strategy
 import util.StreamUtil
 import java.io.*
@@ -39,7 +40,24 @@ internal constructor(host: String, port: Int, token: String) {
             val actions = HashMap<Int, model.UnitAction>()
             for (unit in playerView.game.units) {
                 if (unit.playerId == playerView.myId) {
-                    actions[unit.id] = myStrategy.getAction(unit, playerView.game, debug)
+
+                    kotlin.runCatching {
+                        myStrategy.getAction(unit, playerView.game, debug)
+                    }
+                        .onFailure {
+                            MainKt.log { "got failure $it" }
+                            val fallbackAct = kotlin.runCatching {
+                                SmartGuyStrategy(myStrategy as MyStrategy).getAction(
+                                    unit,
+                                    playerView.game,
+                                    debug
+                                )
+                            }.getOrNull() ?: UnitAction()
+
+                            actions[unit.id] = fallbackAct
+                        }
+                        .onSuccess { actions[unit.id] = it }
+
                 }
             }
             model.PlayerMessageGame.ActionMessage(model.Versioned(actions)).writeTo(outputStream)

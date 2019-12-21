@@ -166,4 +166,8 @@ class Game {
     fun healthCount(): Int {
         return lootBoxes.count { it.item is Item.HealthPack }
     }
+
+    fun getMinDistToHealth(mySimPos: Point2D): Double? {
+        return lootBoxes.filter { it.item is Item.HealthPack }.map { it.position.pathDist(mySimPos) }.min()
+    }
 }

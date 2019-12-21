@@ -63,10 +63,10 @@ open class AbstractStrategy : StrategyAdvCombined {
         return Point2D(Math.min(point.x, value), Math.min(point.y, value))
     }
 
-    protected fun getClosestWeaponItem(weaponType: WeaponType): LootBox? {
+    protected fun getClosestWeaponItem(weaponType: WeaponType?): LootBox? {
         return game.lootBoxes.filter {
             val item = it.item
-            item is Item.Weapon && item.weaponType == weaponType
+            item is Item.Weapon && (weaponType == null || item.weaponType == weaponType)
         }.minBy { it.position.pathDist(me.position) }
     }
 

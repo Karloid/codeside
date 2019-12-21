@@ -13,7 +13,7 @@ data class ColorFloat(
     companion object {
 
         val ACCESS = ColorFloat(Color.WHITE).apply { a = 0.3f }
-        val POTENTIAL = ColorFloat(Color.WHITE).apply { a = 0.7f }
+        val POTENTIAL = ColorFloat(Color.WHITE).apply { a = 0.5f }
         val RELOAD = ColorFloat(Color.ORANGE)
         val GRAY = ColorFloat(Color.PINK)
         val RED: ColorFloat = ColorFloat(Color.RED)

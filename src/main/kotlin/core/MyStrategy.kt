@@ -13,19 +13,12 @@ import kotlin.math.absoluteValue
 
 //TODO calc two sims at once
 //TODO Handle two units at once
-//TODO highier score to keep jumping
-//TODO calc trampline
+
 //TODO better resource management, keep to center of the map
-//TODO draw reload
-//TODO reload time in eval
 
-//TODO stay away from rocket launcher  (check space around)
-//TODO astar way search
+//TODO stay away from rocket launcher  (check space around) - kind of
 
-//TODO target unit with lowest health
 //TODO calc potential field of danger zones
-
-//TODO real distance calculation via paperio logic with precalculated arrays
 
 class MyStrategy : AbstractStrategy() {
 
@@ -449,6 +442,26 @@ class MyStrategy : AbstractStrategy() {
                     }
                     checkStrangeScore(score)
                 }
+            }
+        }
+
+        //plus pick gun
+        if (me.weapon == null && mySimPos != null) {
+            val pathToGun = getClosestWeaponItem(null)?.position?.pathDist(mySimPos)
+            if (pathToGun != null && pathToGun < 100) {
+                score -= pathToGun
+                simScore.pathToGunPenalty = pathToGun
+                checkStrangeScore(score)
+            }
+        }
+        if (mySimPos != null) {
+
+            var path = simulator.game.getMinDistToHealth(mySimPos)
+            if (path != null && path < 100) {
+                path /= 1
+                score -= path
+                simScore.pathToHealPenalty = path
+                checkStrangeScore(score)
             }
         }
 
