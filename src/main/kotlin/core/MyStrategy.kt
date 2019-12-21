@@ -383,18 +383,22 @@ class MyStrategy : AbstractStrategy() {
 
         //keep away when reloading
         if (currentDistToEnemies < 9 && simDistToEnemies != null) {
-            if (me.weapon?.fireTimer ?: 0.0 > 0.15) {
+            var reloadThreshold = 0.15
+            if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
+                reloadThreshold = 0.35
+            }
+            if (me.weapon?.fireTimer ?: 0.0 > reloadThreshold) {
                 score += simDistToEnemies / 1.5
                 checkStrangeScore(score)
             }
         }
         val simMe = simulator.game.getUnitNullable(me)
         simMe?.onLadder?.then {
-            score += 10
+            score += 5
         }
         simMe?.onGround?.not()?.then {
             val simPosCopy = simMe.position.copy()
-            score += 11
+            score += 5
             if (game.level.isAir(simPosCopy.applyDir(Direction.DOWN)) && game.level.isAir(simPosCopy.applyDir(Direction.DOWN))) {
                 score += 5
             }
