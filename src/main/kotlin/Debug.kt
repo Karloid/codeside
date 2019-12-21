@@ -5,12 +5,13 @@ import java.io.OutputStream
 class Debug(private val stream: OutputStream) {
 
     fun draw(customData: model.CustomData) {
+        if (!MainKt.enabledLog) return
         try {
-            model.PlayerMessageGame.CustomDataMessage(customData).writeTo(stream)
-            stream.flush()
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
+                model.PlayerMessageGame.CustomDataMessage(customData).writeTo(stream)
+                stream.flush()
+            } catch (e: IOException) {
+                throw RuntimeException(e)
+            }
     }
 
     fun line(from: Point2D, to: Point2D, color: ColorFloat, width: Float = 1 / 20f) {

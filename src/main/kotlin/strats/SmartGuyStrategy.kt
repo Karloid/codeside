@@ -3,6 +3,7 @@ package strats
 import Debug
 import core.AimScore
 import core.MyStrategy
+import core.Path
 import core.pathDist
 import model.*
 import model.Unit
@@ -60,7 +61,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             log { "ignore health" }
         }
 
-        var targetPos: Point2D = me.position
+        var extraSpace: Int = 0
+        var realTargetPos: Point2D = me.position
 
         val wantSwapFromRocketLauncher = wantSwapFromRocketLauncher(me)
 
@@ -82,15 +84,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (me.weapon == null && nearestWeapon != null) {
             log { "go pick weapon ${nearestWeapon.posInfo()}" }
 
-            targetPos = nearestWeapon.position
+            realTargetPos = nearestWeapon.position
         } else if (nearestHealth != null) {
             log { "go pick ${nearestHealth.posInfo()}" }
 
-            targetPos = nearestHealth.position
+            realTargetPos = nearestHealth.position
         } else if (preferredWeaponToPick != null) {
             log { "go pick ${preferredWeaponToPick!!.posInfo()} instead because we don't want rocket launcher " }
-            targetPos = preferredWeaponToPick!!.position
-            action.swapWeapon = isClose(targetPos)
+            realTargetPos = preferredWeaponToPick!!.position
+            action.swapWeapon = isClose(realTargetPos)
         } /*else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
             targetPos = nearestWeapon.position
@@ -98,13 +100,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }*/ else if (nearestEnemy != null) {
             log { "go to enemy" }
             //TODO go out from enemy pos, use micro sims?
-            targetPos = nearestEnemy.position.copy()
-            val mul = if (me.position.x - targetPos.x < 0) -1 else 1
-            var distance = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
+            realTargetPos = nearestEnemy.position.copy()
+            val mul = if (me.position.x - realTargetPos.x < 0) -1 else 1
+            var extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
             if (game.currentTick > 2400) {
-                distance = 0
+                extraSpace = 0
             }
-            targetPos = targetPos.copy() + Point2D(distance * mul, 0)
         }
 
         action.aim = Point2D(0.0, 0.0)
@@ -137,13 +138,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 }
             }
         }
-        var jump = targetPos.y > me.position.y;
-        if (targetPos.x > me.position.x &&
+        val nextTargetPos = Path.getNextTarget(me.position, realTargetPos, extraSpace).plus(0.5, 0.0)
+
+        var jump = nextTargetPos.y > me.position.y;
+        if (nextTargetPos.x > me.position.x &&
             isObstacleAtDirection(Direction.RIGHT)
         ) {
             jump = true
         }
-        if (targetPos.x < me.position.x &&
+        if (nextTargetPos.x < me.position.x &&
             isObstacleAtDirection(Direction.LEFT)
         ) {
             jump = true
@@ -158,15 +161,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 jump = true
             }
         }
-        val vectorMove = (me.position.copy() - targetPos).abs()
+        val vectorMove = (me.position.copy() - nextTargetPos).abs()
 
-        if (vectorMove.x < 1.2 && me.position.y > targetPos.y && vectorMove.y > 0.3) {
+        if (vectorMove.x < 1.2 && me.position.y > nextTargetPos.y && vectorMove.y > 0.3) {
             jump = false
         }
 
-        log { "me ${me.position} _ target->$targetPos aim=${action.aim}" }
-        val travelDistX = targetPos.x - me.position.x
-        val travelDistY = targetPos.y - me.position.y
+        log { "me ${me.position} _ realTarget->$realTargetPos nextTarget->$nextTargetPos aim=${action.aim}" }
+        val travelDistX = nextTargetPos.x - me.position.x
+        val travelDistY = nextTargetPos.y - me.position.y
 
         if (Math.abs(travelDistX) < 0.19 && abs(travelDistY) < 0.2) {
             action.velocity = 0.0
@@ -175,7 +178,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
         action.jump = jump
         if (vectorMove.x < 1) {
-            action.jumpDown = jump.not().then { targetPos.y - me.position.y < -0.5f } ?: false
+            action.jumpDown = jump.not().then { nextTargetPos.y - me.position.y < -0.5f } ?: false
             if (action.jumpDown && isObstacleAtDirection(Direction.DOWN)) {
                 val noLeftObstacle = !isObstacleAtDirection(Direction.LEFT)
                 val noRightObstacle = !isObstacleAtDirection(Direction.RIGHT)
@@ -199,7 +202,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         fastJumpFix(me, action)
 
-        d { debug.line(me.position, targetPos, ColorFloat.TARGET_POS) }
+        d { debug.line(me.position, nextTargetPos, ColorFloat.TARGET_POS, 1 / 10f) }
+        d { debug.line(me.position, realTargetPos, ColorFloat.TARGET_POS_REAL) }
 
         return action
     }
@@ -460,7 +464,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     ?: (hitTarget.ref < hitMe.ref).then { ColorFloat.AIM_RAY_BAD }
                     ?: weGetWalls.then { ColorFloat.AIM_RAY_WALSS } ?: ColorFloat.AIM_RAY_UNKNOWN
 
-            debug.rect(endFinal, Point2D(0.1, 0.1), color)
+          //  debug.rect(endFinal, Point2D(0.1, 0.1), color)
             debug.line(from, endFinal, color)
         }
         return weGetWalls

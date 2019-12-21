@@ -10,7 +10,6 @@ import util.Direction
 import util.f
 import util.fori
 import util.then
-import java.awt.Color
 import java.lang.Math.abs
 import java.util.*
 import kotlin.math.absoluteValue
@@ -171,9 +170,9 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun drawDebugSimulator(simScores: ArrayList<SimScore>, best: SimScore) {
-        /* if (me.id != 3) {
-             return
-         }*/
+        if (me.id != 5) {
+            return
+        }
         var colorIndex = 0
         val smallSize = Point2D(1 / 10f, 1 / 10f)
         val bigSize = smallSize.copy().mul(2.0)
@@ -213,7 +212,8 @@ class MyStrategy : AbstractStrategy() {
 
                 for (hit in sim.metainfo.unitHitRegs) {
                     val size = game.properties.mineSize
-                    debug.rect(hit, size, ColorFloat(Color.RED))
+                    debug.rect(hit.point, size, ColorFloat.RED)
+                    debug.text(hit.bullet.weaponType.toString(), hit.point.copy().minus(0.0, 0.5), ColorFloat.RED, size = 18f)
                 }
 
                 for (exp in sim.metainfo.explosions) {

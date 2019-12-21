@@ -1,5 +1,6 @@
 package core
 
+import MainKt
 import model.Game
 import model.Point2D
 import model.Tile
@@ -84,5 +85,68 @@ object Path {
                 null
             }
         }
+
+    fun getNextTarget(start: Point2D, end: Point2D, extraSpace: Int): Point2D {
+        try {
+
+            var access = cachedAccess.getFastNoRound(end)
+            if (access == null) {
+                access = calcAccess(end)
+                cachedAccess.setFastNoRound(end, access)
+            }
+
+            var currentValue = access.getFastNoRound(start) - extraSpace
+            var currentPoint = start
+
+            var targetDistance = 0 + extraSpace
+            var delta = currentValue - targetDistance
+            if (delta > 0) {
+                delta -= 2
+                delta = maxOf(delta, 0)
+            } else {
+                delta = 2
+                delta = minOf(delta, 0)
+            }
+            targetDistance += delta
+
+            while (currentValue != targetDistance) {
+                getAdjacent(currentPoint.intX, currentPoint.intY)
+                val x = currentPoint.intX
+                val y = currentPoint.intY
+                val dirToZero = currentValue > targetDistance
+                if (compare1(access, x - 1, y, currentValue, dirToZero)) {
+                    currentPoint = Point2D(x - 1, y)
+                } else if (compare1(access, x + 1, y, currentValue, dirToZero)) {
+                    currentPoint = Point2D(x + 1, y)
+                } else if (compare1(access, x, y - 1, currentValue, dirToZero)) {
+                    currentPoint = Point2D(x, y - 1)
+                } else if (compare1(access, x, y + 1, currentValue, dirToZero)) {
+                    currentPoint = Point2D(x, y + 1)
+                } else {
+                    MainKt.log { "failed to search way" }
+                    return end
+                }
+                currentValue = access.getFastNoRound(currentPoint)
+            }
+            return currentPoint
+        } catch (e: Exception) {
+            MainKt.log { "failed getNextTarget exception=$e" }
+        }
+        return end
+    }
+
+    private fun compare1(access: PlainArray<Int>, x: Int, y: Int, currentValue: Int, toZero: Boolean): Boolean {
+        val valueAtPoint = access.getFast(x, y)
+        if (valueAtPoint == Integer.MAX_VALUE) {
+            return false
+        }
+        if (toZero) {
+            return valueAtPoint < currentValue
+        } else {
+            return valueAtPoint > currentValue
+        }
+
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }
 

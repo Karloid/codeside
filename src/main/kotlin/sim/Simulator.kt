@@ -163,7 +163,7 @@ class Simulator(val game: Game) {
                     onBulletCollide(bullet)
 
                     bulletsToRemove.add(bullet)
-                    metainfo.unitHitRegs.add(bullet.position.copy())
+                    metainfo.unitHitRegs.add(BulletHitPoint(bullet.position.copy(), bullet))
                     return@forEach
                 }
             }
@@ -174,7 +174,7 @@ class Simulator(val game: Game) {
                     bulletsToRemove.add(bullet)
 
                     if (bullet.explosionParams != null) {
-                        metainfo.unitHitRegs.add(bullet.position.copy())
+                        metainfo.unitHitRegs.add(BulletHitPoint(bullet.position.copy(), bullet))
                     }
                 }
             }

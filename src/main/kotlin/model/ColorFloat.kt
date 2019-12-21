@@ -16,11 +16,13 @@ data class ColorFloat(
         val RELOAD = ColorFloat(Color.ORANGE)
         val GRAY = ColorFloat(Color.PINK)
         val RED: ColorFloat = ColorFloat(Color.RED)
+        val ORANGE: ColorFloat = ColorFloat(Color.ORANGE)
         val TEXT_ID = ColorFloat(Color.BLACK)
         val EXPLOSION: ColorFloat = ColorFloat(Color.YELLOW).apply { a = 0.5f }
         val EXPLOSION_UNIT: ColorFloat = ColorFloat(1f, 0.9f, 0f, 0.4f)
         val DEAD_SIM_UNIT: ColorFloat = ColorFloat(Color.PINK).apply { a = 0.5f }
-        val TARGET_POS: ColorFloat = ColorFloat(Color.pink)
+        val TARGET_POS: ColorFloat = ColorFloat(Color.YELLOW).apply { }
+        val TARGET_POS_REAL: ColorFloat = ColorFloat(Color.pink).apply { a = 0.7f }
         val POINT_TO_CHECK = ColorFloat(0f, 0f, 1f, 1f)
         val WALL: ColorFloat = ColorFloat(Color.LIGHT_GRAY)
         val WALL_UNDER_ME: ColorFloat = ColorFloat(Color.DARK_GRAY)
