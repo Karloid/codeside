@@ -317,6 +317,11 @@ class MyStrategy : AbstractStrategy() {
                 score += 10
             }
         }
+        val mySimUnitPos = simulator.game.getUnitPosNullable(me.id)
+        val mySimUnit = simulator.game.getUnitNullable(me)
+        if (mySimUnit != null && !mySimUnit.onGround && !mySimUnit.onLadder && mySimUnit.jumpState.maxTime > 0 && !mySimUnit.jumpState.canCancel) {
+            score -= 15
+        }
 
         val currentDistToEnemies = game.getMinDistToEnemies(me)!!
         val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
@@ -362,7 +367,7 @@ class MyStrategy : AbstractStrategy() {
         val distToCenter = abs(me.position.x - game.level.tiles.cellsWidth / 2)
         if (distToCenter > game.level.tiles.cellsWidth / 3) {
             //keep center
-            simulator.game.getUnitPosNullable(me.id)?.let { mySimPos ->
+            mySimUnitPos?.let { mySimPos ->
                 score -= (abs(mySimPos.x - game.level.tiles.cellsWidth / 2)) / 100
                 checkStrangeScore(score)
             }
@@ -403,7 +408,7 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
-        val mySimPos = simulator.game.getUnitPosNullable(me.id)
+        val mySimPos = mySimUnitPos
 
         val closestEnemy = getClosestEnemy()
 
@@ -622,20 +627,31 @@ class MyStrategy : AbstractStrategy() {
                         if (v > 120) {
                             return@fori
                         }
-                        debug.text("$v", Point2D(x, y), ColorFloat.ACCESS, 18f)
+                        debug.text("$v", Point2D(x, y), ColorFloat.ACCESS, 18f, alignment = TextAlignment.LEFT)
+                    }
+                }
+            }
+            //print passable
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true) {
+
+                Path.cachedAccessMove.array.firstOrNull { it != null }?.let { access ->
+                    access.fori { x, y, v ->
+                        if (v > 120) {
+                            return@fori
+                        }
+                        debug.text("$v", Point2D(x, y), ColorFloat.ACCESS, 18f, alignment = TextAlignment.LEFT)
                     }
                 }
             }
 
             //print map
-            if (getAnotherUnit()?.let { it.id < me.id } ?: true) {
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && false) {
                 Potential.potential.fori { x, y, v ->
                     if (v < 0.1) {
                         return@fori
                     }
                     debug.text("${v.f1()}", Point2D(x, y), ColorFloat.POTENTIAL, 13f, TextAlignment.LEFT)
                 }
-
             }
         }
     }

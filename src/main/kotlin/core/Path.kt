@@ -22,6 +22,7 @@ object Path {
 
     lateinit var gameTiles: PlainArray<Tile>
     lateinit var cachedAccess: PlainArray<PlainArray<Int>?>
+    lateinit var cachedAccessMove: PlainArray<PlainArray<Int>?>
 
 
     fun getPathDistI(a: Point2D, b: Point2D): Int {
@@ -37,7 +38,11 @@ object Path {
         return maxOf(newAccess.getFastNoRound(a), newAccess.getFastNoRound(b))
     }
 
-    fun calcAccess(pointFrom: Point2D, blackList: List<Point2D>? = null): PlainArray<Int> {
+    fun calcAccess(
+        pointFrom: Point2D,
+        blackList: List<Point2D>? = null,
+        checkIsPassable: Boolean = false
+    ): PlainArray<Int> {
         val result = PlainArray(cachedAccess.cellsWidth, cachedAccess.cellsHeight) { Int.MAX_VALUE }
 
         result.setFastNoRound(pointFrom, 0)
@@ -52,7 +57,7 @@ object Path {
 
             val myVal = result.getFastNoRound(el)
             adjacent.forEach { candidate ->
-                if (blackList?.contains(candidate) == true) {
+                if (blackList?.contains(candidate) == true || (checkIsPassable && !isPassable(candidate))) {
                     return@forEach
                 }
                 val candidateVal = result.getFastNoRound(candidate)
@@ -64,6 +69,35 @@ object Path {
         }
 
         return result
+    }
+
+    private fun isPassable(candidate: Point2D): Boolean {
+        val tile = gameTiles.getFastNoRound(candidate)
+        return when (tile) {
+            Tile.EMPTY -> {
+                val x = candidate.intX
+                var y = candidate.intY
+                val initialY = candidate.intY
+
+                var result = false
+                while (y > -1) {
+                    y--
+                    val tileBelow = gameTiles.getFast(x, y)
+                    if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
+                        result = initialY - y <= 6
+                        break
+                    } else if (tileBelow == Tile.JUMP_PAD) {
+                        result = initialY - y <= 10
+                        break
+                    }
+                }
+                result
+            }
+            Tile.WALL -> false
+            Tile.PLATFORM -> true
+            Tile.LADDER -> true
+            Tile.JUMP_PAD -> true
+        }
     }
 
     fun getAdjacent(x: Int, y: Int): MutableList<Point2D> {
@@ -78,6 +112,7 @@ object Path {
     fun init(game: Game) {
         gameTiles = game.level.tiles
         cachedAccess = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
+        cachedAccessMove = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
     }
 
     private fun PlainArray<Tile>.getIfNotWall(x: Int, y: Int) =
@@ -89,13 +124,13 @@ object Path {
             }
         }
 
-    fun getNextTarget(start: Point2D, end: Point2D, extraSpace: Int): Point2D {
+    fun getNextMoveTarget(start: Point2D, end: Point2D, extraSpace: Int): Point2D {
         try {
 
-            var access = cachedAccess.getFastNoRound(end)
+            var access = cachedAccessMove.getFastNoRound(end)
             if (access == null) {
-                access = calcAccess(end)
-                cachedAccess.setFastNoRound(end, access)
+                access = calcAccess(end, checkIsPassable = true)
+                cachedAccessMove.setFastNoRound(end, access)
             }
 
             var currentValue = access.getFastNoRound(start)

@@ -17,6 +17,8 @@ import kotlin.reflect.KClass
 
 class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
+    private val ignoreRocket = true
+
     private var skippedHealth: Int = 0
     var disableShooting: Boolean = false
 
@@ -143,7 +145,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 }
             }
         }
-        val nextTargetPos = Path.getNextTarget(me.position, realTargetPos, extraSpace).plus(0.5, 0.0)
+        val nextTargetPos = Path.getNextMoveTarget(me.position, realTargetPos, extraSpace).plus(0.5, 0.0)
 
         var jump = nextTargetPos.y > me.position.y;
         if (nextTargetPos.x > me.position.x &&
@@ -216,6 +218,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private fun getMyActions() = prevActions.getOrPut(me.id, { mutableListOf() })
 
     private fun wantToPickRocketLauncher(): Boolean {
+        if (ignoreRocket) {
+            return false
+        }
         val anotherMe = getAnotherMe() ?: return false
 
         if (anotherMe.weapon == null) {
@@ -469,7 +474,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     ?: (hitTarget.ref < hitMe.ref).then { ColorFloat.AIM_RAY_BAD }
                     ?: weGetWalls.then { ColorFloat.AIM_RAY_WALSS } ?: ColorFloat.AIM_RAY_UNKNOWN
 
-          //  debug.rect(endFinal, Point2D(0.1, 0.1), color)
+            //  debug.rect(endFinal, Point2D(0.1, 0.1), color)
             debug.line(from, endFinal, color)
         }
         return weGetWalls
@@ -499,6 +504,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (!isRocketLauncher) {
             return false
         }
+        if (ignoreRocket) {
+            return true
+        }
+
         val anotherMe = getAnotherMe()
 
         if (anotherMe?.weapon != null && anotherMe.weapon?.typ != WeaponType.ROCKET_LAUNCHER) {
