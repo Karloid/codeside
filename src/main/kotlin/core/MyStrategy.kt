@@ -23,6 +23,7 @@ import kotlin.math.absoluteValue
 //TODO go closer when enemy reloading or near it
 //TODO go away when enemy ready
 //TODO do not use much rocket launcher?
+//TODO add simple run to enemy strategy
 
 class MyStrategy : AbstractStrategy() {
 
