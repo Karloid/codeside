@@ -20,6 +20,10 @@ import kotlin.math.absoluteValue
 
 //TODO calc potential field of danger zones
 
+//TODO go closer when enemy reloading or near it
+//TODO go away when enemy ready
+//TODO do not use much rocket launcher?
+
 class MyStrategy : AbstractStrategy() {
 
     private var forceSimTill: Int = 0
