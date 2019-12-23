@@ -5,7 +5,10 @@ import model.Game
 import model.Point2D
 import model.Tile
 import util.PlainArray
+import util.then
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.abs
 
 fun Point2D.pathDist(b: Point2D): Double {
     return pathDistInt(b).toDouble()
@@ -95,36 +98,45 @@ object Path {
                 cachedAccess.setFastNoRound(end, access)
             }
 
-            var currentValue = access.getFastNoRound(start) - extraSpace
+            var currentValue = access.getFastNoRound(start)
             var currentPoint = start
 
-            var targetDistance = 0 + extraSpace
-            var delta = currentValue - targetDistance
+            var targetValue = 0 + extraSpace
+            var initialTargetValue = 0 + extraSpace
+            var delta = currentValue - targetValue
             if (delta > 0) {
                 delta -= 2
                 delta = maxOf(delta, 0)
             } else {
-                delta = 2
+                delta += 2
                 delta = minOf(delta, 0)
             }
-            targetDistance += delta
+            targetValue += delta
 
             currentValue = access.getFastNoRound(currentPoint)
 
-            while (currentValue != targetDistance) {
+            var finalDelta = abs(currentValue - initialTargetValue)
+
+            val availableVariants = ArrayList<Point2D>(4)
+            while (currentValue != targetValue) {
                 //getAdjacent(currentPoint.intX, currentPoint.intY)
                 val x = currentPoint.intX
                 val y = currentPoint.intY
-                val dirToZero = currentValue > targetDistance
+                val dirToZero = currentValue > targetValue
+
                 if (compare1(access, x - 1, y, currentValue, dirToZero)) {
-                    currentPoint = Point2D(x - 1, y)
-                } else if (compare1(access, x + 1, y, currentValue, dirToZero)) {
-                    currentPoint = Point2D(x + 1, y)
-                } else if (compare1(access, x, y - 1, currentValue, dirToZero)) {
-                    currentPoint = Point2D(x, y - 1)
-                } else if (compare1(access, x, y + 1, currentValue, dirToZero)) {
-                    currentPoint = Point2D(x, y + 1)
-                } else {
+                    availableVariants.add(Point2D(x - 1, y))
+                }
+                if (compare1(access, x + 1, y, currentValue, dirToZero)) {
+                    availableVariants.add(Point2D(x + 1, y))
+                }
+                if (compare1(access, x, y - 1, currentValue, dirToZero)) {
+                    availableVariants.add(Point2D(x, y - 1))
+                }
+                if (compare1(access, x, y + 1, currentValue, dirToZero)) {
+                    availableVariants.add(Point2D(x, y + 1))
+                }
+                if (availableVariants.isEmpty()) {
                     MainKt.log { "failed to search way bad value" }
                     val newValue = access.getFastNoRound(currentPoint)
                     if (currentValue != newValue) {
@@ -136,7 +148,18 @@ object Path {
 
                     return end
                 }
+                currentPoint = availableVariants.minBy {
+                    when (gameTiles.getFastNoRound(currentPoint)) {
+                        Tile.EMPTY -> 5.0
+                        Tile.WALL -> 999.0
+                        Tile.PLATFORM -> 5.0
+                        Tile.LADDER -> 2.5
+                        Tile.JUMP_PAD -> (finalDelta > 3).then { 2.5 } ?: 6.0
+                    }
+                }!!
+
                 currentValue = access.getFastNoRound(currentPoint)
+                availableVariants.clear()
             }
             return currentPoint
         } catch (e: Exception) {
