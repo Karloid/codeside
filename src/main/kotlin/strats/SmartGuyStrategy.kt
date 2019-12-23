@@ -102,7 +102,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             //TODO go out from enemy pos, use micro sims?
             realTargetPos = nearestEnemy.position.copy()
             val mul = if (me.position.x - realTargetPos.x < 0) -1 else 1
-            var extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
+            extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
             if (game.currentTick > 2400) {
                 extraSpace = 0
             }
@@ -116,9 +116,14 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 var target = nearestEnemy.center() - me.center()
                 if (!nearestEnemy.onLadder && !nearestEnemy.onGround) {
                     val jumpState = nearestEnemy.jumpState
-                    if (!jumpState.canCancel && jumpState.maxTime < 1) {
-                        target = nearestEnemy.center().minus(0.0, nearestEnemy.size.y / 4) - me.center()
+                    //unit falling
+                    if (jumpState.maxTime < 0.0) {
+                        target = nearestEnemy.center().minus(0.0, nearestEnemy.size.y / 3) - me.center()
                         log { "aim lower due enemy is falling $nearestEnemy" }
+                    }
+                    if (jumpState.maxTime > 0.0 && !jumpState.canCancel) {
+                        target = nearestEnemy.center().plus(0.0, nearestEnemy.size.y / 3) - me.center()
+                        log { "aim higher due enemy is jumpaded $nearestEnemy" }
                     }
                 }
 

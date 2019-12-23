@@ -109,8 +109,10 @@ object Path {
             }
             targetDistance += delta
 
+            currentValue = access.getFastNoRound(currentPoint)
+
             while (currentValue != targetDistance) {
-                getAdjacent(currentPoint.intX, currentPoint.intY)
+                //getAdjacent(currentPoint.intX, currentPoint.intY)
                 val x = currentPoint.intX
                 val y = currentPoint.intY
                 val dirToZero = currentValue > targetDistance
@@ -123,7 +125,15 @@ object Path {
                 } else if (compare1(access, x, y + 1, currentValue, dirToZero)) {
                     currentPoint = Point2D(x, y + 1)
                 } else {
-                    MainKt.log { "failed to search way" }
+                    MainKt.log { "failed to search way bad value" }
+                    val newValue = access.getFastNoRound(currentPoint)
+                    if (currentValue != newValue) {
+                        MainKt.log { "restore current value $currentValue -> $newValue" }
+                        currentValue = newValue
+
+                        continue
+                    }
+
                     return end
                 }
                 currentValue = access.getFastNoRound(currentPoint)
@@ -145,8 +155,6 @@ object Path {
         } else {
             return valueAtPoint > currentValue
         }
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
 

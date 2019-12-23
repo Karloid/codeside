@@ -406,13 +406,20 @@ class MyStrategy : AbstractStrategy() {
         val mySimPos = simulator.game.getUnitPosNullable(me.id)
 
         val closestEnemy = getClosestEnemy()
-        //keep away from rocket mans
-        closestEnemy?.let {
-            val distToClosest = me.position.pathDist(closestEnemy.position)
-            if (it.weapon?.typ == WeaponType.ROCKET_LAUNCHER && me.weapon?.typ != WeaponType.ROCKET_LAUNCHER && mySimPos != null && distToClosest < 6) {
-                score += mySimPos.pathDist(closestEnemy.position) / 4
 
-                checkStrangeScore(score)
+        if (me.weapon?.typ != WeaponType.ROCKET_LAUNCHER) {
+            //keep away from rocket mans
+            closestEnemy?.let {
+                game.units.filter {
+                    !it.isMy() && it.weapon?.typ == WeaponType.ROCKET_LAUNCHER
+                }.forEach {
+                    val dist = me.position.pathDist(it.position)
+                    if (mySimPos != null && dist < 10) {
+                        score += mySimPos.pathDist(closestEnemy.position)
+
+                        checkStrangeScore(score)
+                    }
+                }
             }
         }
 
@@ -453,8 +460,9 @@ class MyStrategy : AbstractStrategy() {
         if (me.weapon == null && mySimPos != null) {
             val pathToGun = getClosestWeaponItem(null)?.position?.pathDist(mySimPos)
             if (pathToGun != null && pathToGun < 100) {
-                score -= pathToGun
-                simScore.pathToGunPenalty = pathToGun
+                val pathPenalty = pathToGun * 100
+                score -= pathPenalty
+                simScore.pathToGunPenalty = pathPenalty
                 checkStrangeScore(score)
             }
         }
