@@ -17,14 +17,15 @@ import kotlin.reflect.KClass
 
 class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
-    private val ignoreRocket = true
+    private var ignoreRocket = true
 
     private var skippedHealth: Int = 0
     var disableShooting: Boolean = false
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
-
+        val width = game.level.tiles.cellsWidth
+        ignoreRocket = game.level.walls.size > width * 4 + width * 2.3
         return doSmartGuy()
     }
 
