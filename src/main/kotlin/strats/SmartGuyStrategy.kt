@@ -25,7 +25,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
         val width = game.level.tiles.cellsWidth
-        ignoreRocket = game.level.walls.size > width * 4 + width * 2.3
+        ignoreRocket = game.level.walls.size < width * 4 + width * 2.3
         return doSmartGuy()
     }
 
