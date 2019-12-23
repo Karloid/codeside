@@ -215,6 +215,8 @@ class Simulator(val game: Game) {
                 }
             }
         }
+
+        //TODO simulate mines
     }
 
     private fun getCollidedHealth(unit: Unit): LootBox? {

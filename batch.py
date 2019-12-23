@@ -43,7 +43,7 @@ def worker(args):
     # return
 
     if level in ["Simple"]:
-        level_config = level
+        level_config = "Complex"
     else:
         level_config = {"LoadFrom": {"path": level}}
 

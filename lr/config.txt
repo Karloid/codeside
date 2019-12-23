@@ -1,6 +1,6 @@
 {
     "seed": 19442210111,
-    "options_preset": "Round2",
+    "options_preset": "Finals",
     "players": [
          {
            "Tcp": {
