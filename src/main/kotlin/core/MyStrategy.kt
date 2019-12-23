@@ -87,6 +87,10 @@ class MyStrategy : AbstractStrategy() {
         if (game.currentTick < forceSimTill) {
             isDoSim = true
         }
+
+        if (me.weapon == null && (getClosestWeaponItem(null)?.position?.distance(me.position) ?: 999.0) < 1) {
+            isDoSim = false
+        }
         //isDoSim = true //TODO remove
         if (!isDoSim) {
             action = shootAction
@@ -307,6 +311,8 @@ class MyStrategy : AbstractStrategy() {
         // score -= diff * 1000
 
         score += remainingTeamHealth.toDouble()
+
+
         checkStrangeScore(score)
 
         simScore.myHealthBonus = remainingTeamHealth
@@ -328,11 +334,10 @@ class MyStrategy : AbstractStrategy() {
         if (simDistToEnemies == null) {
             score -= 1
         }
-        if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
-            score -= simDistToEnemies
-            checkStrangeScore(score)
-        }
+
         anotherUnit?.let { another ->
+            score -= simulator.metainfo.unitDamage.getOrPut(another.id, { Ref(0.0) }).ref * 5
+
             val xDist = (another.position.copy() - me.position).abs().x
             if (xDist > 4) {
                 val distToAnother = simulator.game.getDist(me, another)
@@ -364,12 +369,26 @@ class MyStrategy : AbstractStrategy() {
             //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
+        score -= simulator.metainfo.unitDamage.getOrPut(me.id, { Ref(0.0) }).ref * 10
+        checkStrangeScore(score)
+
         val distToCenter = abs(me.position.x - game.level.tiles.cellsWidth / 2)
         if (distToCenter > game.level.tiles.cellsWidth / 3) {
             //keep center
             mySimUnitPos?.let { mySimPos ->
                 score -= (abs(mySimPos.x - game.level.tiles.cellsWidth / 2)) / 100
                 checkStrangeScore(score)
+            }
+        }
+
+        val noShootTick = noShootTick()
+        if (noShootTick > 150 && simDistToEnemies != null) {
+            score -= simDistToEnemies
+            if (noShootTick > 300) {
+                score -= simDistToEnemies * 3
+            }
+            if (noShootTick > 500) {
+                score -= simDistToEnemies * 5
             }
         }
 
@@ -428,6 +447,11 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
+        if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER && !likeGoingToHeal) {
+            score -= simDistToEnemies * 3
+            checkStrangeScore(score)
+        }
+
         //TODO avoid tight places
         if (mySimPos != null && me.weapon != null) {
             val potentialWalls = Potential.potential.getFastNoRound(mySimPos)
@@ -436,10 +460,11 @@ class MyStrategy : AbstractStrategy() {
             } else {
                 potentialWalls * 2
             }
-            score -= potentialWalls
-            simScore.potentialWallsPenalty = potentialWalls
+            score -= wallsPenalty
+            simScore.potentialWallsPenalty = wallsPenalty
             checkStrangeScore(score)
         }
+
 
         //keep back from our rocket man
         anotherUnit?.let {
@@ -463,8 +488,10 @@ class MyStrategy : AbstractStrategy() {
 
         //plus pick gun
         if (me.weapon == null && mySimPos != null) {
-            val pathToGun = getClosestWeaponItem(null)?.position?.pathDist(mySimPos)
+            val closestWeaponItem = getClosestWeaponItem(null)
+            var pathToGun = closestWeaponItem?.position?.pathDist(mySimPos)
             if (pathToGun != null && pathToGun < 100) {
+                pathToGun += closestWeaponItem!!.position.distance(mySimPos) % 1
                 val pathPenalty = pathToGun * 100
                 score -= pathPenalty
                 simScore.pathToGunPenalty = pathPenalty
@@ -632,9 +659,11 @@ class MyStrategy : AbstractStrategy() {
                 }
             }
             //print passable
-            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true) {
+            val position = getClosestEnemy()?.position
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true && position != null) {
 
-                Path.cachedAccessMove.array.firstOrNull { it != null }?.let { access ->
+                Path.getNextMoveTarget(me.position, position, 0)
+                Path.cachedAccessMove.get(position)?.let { access ->
                     access.fori { x, y, v ->
                         if (v > 120) {
                             return@fori

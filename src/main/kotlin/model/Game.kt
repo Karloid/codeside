@@ -140,10 +140,7 @@ class Game {
         val id = unit.id
         val playerId = unit.playerId
 
-        val unitPosition = getUnitPosNullable(id)
-        if (unitPosition == null) {
-            return null
-        }
+        val unitPosition = getUnitPosNullable(id) ?: return null
 
         val minDistanceToEnemy = units
             .filter { it.playerId != playerId }

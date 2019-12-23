@@ -5,6 +5,7 @@ package sim
 import ifEnabledLog
 import model.*
 import model.Unit
+import util.Ref
 import util.fori
 import util.then
 import kotlin.math.abs
@@ -158,7 +159,8 @@ class Simulator(val game: Game) {
             //check unit collide
             for (unit in game.units) {
                 isCollide(bullet, unit).then {
-                    unit.health -= bullet.damage
+                    val damage = bullet.damage
+                    onUnitTakeDamage(unit, damage)
 
                     onBulletCollide(bullet)
 
@@ -260,7 +262,7 @@ class Simulator(val game: Game) {
             for (unit in game.units) {
                 val isAffected = unitAffectedByExplosion(unit, bullet.explosionParams!!.radius, bullet.position)
                 if (isAffected) {
-                    unit.health -= damage
+                    onUnitTakeDamage(unit, damage)
                     affectedUnits.add(unit.position.copy())
                 }
             }
@@ -270,6 +272,11 @@ class Simulator(val game: Game) {
                 metainfo.explosions.add(explosion)
             }
         }
+    }
+
+    private fun onUnitTakeDamage(unit: Unit, damage: Int) {
+        unit.health -= damage
+        metainfo.unitDamage.getOrPut(unit.id, { Ref(0.0) }).ref += damage
     }
 
     private fun isCollideWalls(bullet: Bullet): Boolean {
