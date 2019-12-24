@@ -23,6 +23,7 @@ object Path {
     lateinit var gameTiles: PlainArray<Tile>
     lateinit var cachedAccess: PlainArray<PlainArray<Int>?>
     lateinit var cachedAccessMove: PlainArray<PlainArray<Int>?>
+    lateinit var cachedPassable: PlainArray<Boolean?>
 
 
     fun getPathDistI(a: Point2D, b: Point2D): Int {
@@ -72,8 +73,9 @@ object Path {
     }
 
     fun isOk(candidate1: Point2D): Boolean {
+        cachedPassable.getFastNoRound(candidate1)?.let { return it }
         val tile = gameTiles.getFastNoRound(candidate1)
-        return when (tile) {
+        val result = when (tile) {
             Tile.EMPTY -> {
                 val x = candidate1.intX
                 var y = candidate1.intY
@@ -98,11 +100,15 @@ object Path {
             Tile.LADDER -> true
             Tile.JUMP_PAD -> true
         }
+
+        cachedPassable.setFastNoRound(candidate1, result)
+        return result
     }
 
-    private fun isPassable(candidate: Point2D, result: PlainArray<Int>): Boolean {
+    private fun isPassable(candidate: Point2D, calcedAccess: PlainArray<Int>): Boolean {
+        cachedPassable.getFastNoRound(candidate)?.let { return it }
 
-        if (result.getFast(candidate.intX, candidate.intY + 1) != Int.MAX_VALUE) {
+        if (calcedAccess.getFast(candidate.intX, candidate.intY + 1) != Int.MAX_VALUE) {
             return true
         }
         val left1 = candidate.copy().minus(1.0, 0.0)
@@ -111,11 +117,14 @@ object Path {
         val right1 = candidate.copy().plus(1.0, 0.0)
         val right1IsNotWall = gameTiles.getFastNoRound(right1) != Tile.WALL
         val right2 = candidate.copy().plus(2.0, 0.0)
-        return isOk(candidate) ||
+        val result = isOk(candidate) ||
                 isOk(left1) ||
                 (left1IsNotWall && isOk(left2)) ||
                 isOk(right1) ||
                 (right1IsNotWall && isOk(right2))
+
+        cachedPassable.setFastNoRound(candidate, result)
+        return result
     }
 
     fun getAdjacent(x: Int, y: Int): MutableList<Point2D> {
@@ -131,6 +140,7 @@ object Path {
         gameTiles = game.level.tiles
         cachedAccess = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
         cachedAccessMove = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
+        cachedPassable = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
     }
 
     private fun PlainArray<Tile>.getIfNotWall(x: Int, y: Int) =
