@@ -32,6 +32,8 @@ import kotlin.math.absoluteValue
 
 //TODO handle weapon pick trhough sim
 
+//TODO keep smaller distance to enemy for better aiming
+
 
 class MyStrategy : AbstractStrategy() {
 
