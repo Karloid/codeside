@@ -459,7 +459,13 @@ class MyStrategy : AbstractStrategy() {
             simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->
                 score -= mySimPos.pathDist(enSimPos) * 40
             }
+        }
 
+        //keep to enemy without health
+        if (simMe != null && mySimPos != null && closestEnemy != null && me.weapon != null && closestEnemy.health * 2 < simMe.health) {
+            simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->
+                score -= mySimPos.pathDist(enSimPos) * 20
+            }
         }
 
         if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER && !likeGoingToHeal) {
