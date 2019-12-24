@@ -25,6 +25,14 @@ import kotlin.math.absoluteValue
 //TODO do not use much rocket launcher?
 //TODO add simple run to enemy strategy
 
+//TODO aggressive potential fields for health?
+//TODO handle mines
+//TODO check jumppad is triggered by any intersect
+//TODO handle one sim with other preselected sim
+
+//TODO handle weapon pick trhough sim
+
+
 class MyStrategy : AbstractStrategy() {
 
     private var forceSimTill: Int = 0
