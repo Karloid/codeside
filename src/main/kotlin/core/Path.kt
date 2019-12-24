@@ -72,32 +72,40 @@ object Path {
     }
 
     private fun isPassable(candidate: Point2D): Boolean {
-        val tile = gameTiles.getFastNoRound(candidate)
-        return when (tile) {
-            Tile.EMPTY -> {
-                val x = candidate.intX
-                var y = candidate.intY
-                val initialY = candidate.intY
+        fun isOk(candidate1: Point2D): Boolean {
+            val tile = gameTiles.getFastNoRound(candidate1)
+            return when (tile) {
+                Tile.EMPTY -> {
+                    val x = candidate1.intX
+                    var y = candidate1.intY
+                    val initialY = candidate1.intY
 
-                var result = false
-                while (y > -1) {
-                    y--
-                    val tileBelow = gameTiles.getFast(x, y)
-                    if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
-                        result = initialY - y <= 6
-                        break
-                    } else if (tileBelow == Tile.JUMP_PAD) {
-                        result = initialY - y <= 10
-                        break
+                    var result = false
+                    while (y > -1) {
+                        y--
+                        val tileBelow = gameTiles.getFast(x, y)
+                        if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
+                            result = initialY - y <= 6
+                            break
+                        } else if (tileBelow == Tile.JUMP_PAD) {
+                            result = initialY - y <= 10
+                            break
+                        }
                     }
+                    result
                 }
-                result
+                Tile.WALL -> false
+                Tile.PLATFORM -> true
+                Tile.LADDER -> true
+                Tile.JUMP_PAD -> true
             }
-            Tile.WALL -> false
-            Tile.PLATFORM -> true
-            Tile.LADDER -> true
-            Tile.JUMP_PAD -> true
         }
+        return isOk(candidate) ||
+                isOk(candidate.copy().minus(1.0, 0.0))||
+                isOk(candidate.copy().minus(2.0, 0.0))||
+                isOk(candidate.copy().plus(2.0, 0.0))||
+                isOk(candidate.copy().plus(1.0, 0.0) )
+
     }
 
     fun getAdjacent(x: Int, y: Int): MutableList<Point2D> {
@@ -136,17 +144,10 @@ object Path {
             var currentValue = access.getFastNoRound(start)
             var currentPoint = start
 
-            var targetValue = 0 + extraSpace
-            var initialTargetValue = 0 + extraSpace
-            var delta = currentValue - targetValue
-            if (delta > 0) {
-                delta -= 2
-                delta = maxOf(delta, 0)
-            } else {
-                delta += 2
-                delta = minOf(delta, 0)
-            }
-            targetValue += delta
+            var targetValue = 0 + 0
+            var initialTargetValue = 0 + 0
+
+            targetValue = maxOf(currentValue - 2, 0)
 
             currentValue = access.getFastNoRound(currentPoint)
 

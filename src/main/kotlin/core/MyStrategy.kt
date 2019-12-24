@@ -445,13 +445,21 @@ class MyStrategy : AbstractStrategy() {
                     !it.isMy() && it.weapon?.typ == WeaponType.ROCKET_LAUNCHER
                 }.forEach {
                     val dist = me.position.pathDist(it.position)
-                    if (mySimPos != null && dist < 10) {
+                    if (mySimPos != null && dist < 6) {
                         score += mySimPos.pathDist(closestEnemy.position)
 
                         checkStrangeScore(score)
                     }
                 }
             }
+        }
+
+        //keep to enemy without weapon
+        if (mySimPos != null && closestEnemy != null && me.weapon != null && closestEnemy.weapon == null) {
+            simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->
+                score -= mySimPos.pathDist(enSimPos) * 40
+            }
+
         }
 
         if (simDistToEnemies != null && me.weapon?.typ == WeaponType.ROCKET_LAUNCHER && !likeGoingToHeal) {
@@ -679,11 +687,11 @@ class MyStrategy : AbstractStrategy() {
                 }
             }
             //print passable
-            val position = getClosestEnemy()?.position
-            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true && position != null) {
+            val clossestEnemyPos = getClosestEnemy()?.position
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true && clossestEnemyPos != null) {
 
-                Path.getNextMoveTarget(me.position, position, 0)
-                Path.cachedAccessMove.get(position)?.let { access ->
+                Path.getNextMoveTarget(me.position, clossestEnemyPos, 0)
+                Path.cachedAccessMove.get(clossestEnemyPos)?.let { access ->
                     access.fori { x, y, v ->
                         if (v > 120) {
                             return@fori
