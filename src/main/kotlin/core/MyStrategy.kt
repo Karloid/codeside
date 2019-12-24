@@ -307,6 +307,7 @@ class MyStrategy : AbstractStrategy() {
         val enHealth = simulator.game.units.filter { !it.isMy() }.sumBy { it.health } * 1
         score -= enHealth
 
+        val imRocket = me.weapon?.typ == WeaponType.ROCKET_LAUNCHER
         //val myUnits = game.units.filter { it.isMy() }
         // val diff = myUnitsSim.size - myUnits.size
         // score -= diff * 1000
@@ -318,20 +319,25 @@ class MyStrategy : AbstractStrategy() {
 
         simScore.myHealthBonus = remainingTeamHealth
 
+        val currentDistToEnemies = game.getMinDistToEnemies(me)!!
+        val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
+
         val anotherUnit = getAnotherUnit()
         if (strat is MoveStrategy) {
-            if (strat.moveUpDown == MoveUpDown.UP && !me.onGround && !me.onLadder && (anotherUnit?.id ?: 0) > me.id) {
-                score += 10
-            }
+            // if (strat.moveUpDown == MoveUpDown.UP && !me.onGround && !me.onLadder && (anotherUnit?.id ?: 0) > me.id) {
+            //     score += 10
+            // }
         }
         val mySimUnitPos = simulator.game.getUnitPosNullable(me.id)
         val mySimUnit = simulator.game.getUnitNullable(me)
+        //jump pad
         if (mySimUnit != null && !mySimUnit.onGround && !mySimUnit.onLadder && mySimUnit.jumpState.maxTime > 0 && !mySimUnit.jumpState.canCancel) {
             score -= 15
         }
 
-        val currentDistToEnemies = game.getMinDistToEnemies(me)!!
-        val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
+
+
+
         if (simDistToEnemies == null) {
             score -= 1
         }
@@ -488,8 +494,11 @@ class MyStrategy : AbstractStrategy() {
         }
 
         //plus pick gun
-        if (me.weapon == null && mySimPos != null) {
-            val closestWeaponItem = getClosestWeaponItem(null)
+        if ((me.weapon == null || (imRocket && shootingStart.ignoreRocket)) && mySimPos != null) {
+            var closestWeaponItem = getClosestWeaponItem(null)
+            if (imRocket) {
+                closestWeaponItem = getPrefferedWeapon(null)
+            }
             var pathToGun = closestWeaponItem?.position?.pathDist(mySimPos)
             if (pathToGun != null && pathToGun < 100) {
                 pathToGun += closestWeaponItem!!.position.distance(mySimPos) % 1
@@ -507,6 +516,16 @@ class MyStrategy : AbstractStrategy() {
                 score -= path
                 simScore.pathToHealPenalty = path
                 checkStrangeScore(score)
+            }
+        }
+
+        //falling
+        if (mySimUnit != null && !mySimUnit.onGround && !mySimUnit.onLadder && mySimUnit.jumpState.maxTime > 0 &&
+            !(imRocket && !likeGoingToHeal)
+        ) {
+            score -= 15
+            if (simDistToEnemies != null) {
+                score += simDistToEnemies * 5
             }
         }
 

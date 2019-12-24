@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
 
 class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
-    private var ignoreRocket = true
+    var ignoreRocket = true
 
     private var skippedHealth: Int = 0
     var disableShooting: Boolean = false
@@ -269,32 +269,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             .minBy { it.position.pathDist(me.position) }
     }
 
-    private fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
-        if (en == null) {
-            return false
-        }
-        val myDist = me.position.pathDist(point)
-        val enDist = en.position.pathDist(point)
-        if (myDist < enDist) {
-            return false
-        }
-        val vectorToEn = me.position.copy() - en.position
-        val vectorToHeath = me.position.copy() - point
-        //if x distance is smaller
-        if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
-
-            //and it is same side
-            //ignore health
-            if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
-                return true
-            }
-            if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
-                return true
-            }
-        }
-        return false
-    }
-
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {
         val center = me.center()
         action.aim = aims.last()
@@ -522,15 +496,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return true
     }
 
-    private fun getPrefferedWeapon(en: Unit?) =
-        getClosestWeaponItem(listOf(WeaponType.PISTOL, WeaponType.ASSAULT_RIFLE), en)
-
-    private fun getClosestWeaponItem(types: List<WeaponType>, en: Unit?): LootBox? {
-        return game.lootBoxes.filter {
-            val item = it.item
-            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position)
-        }.minBy { it.position.pathDist(me.position) }
-    }
 
 
     private fun wantSwapToRocketLauncher(me: Unit): Boolean {

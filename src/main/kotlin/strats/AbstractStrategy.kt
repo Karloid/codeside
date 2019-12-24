@@ -8,6 +8,7 @@ import model.*
 import model.Unit
 import sim.Simulator
 import util.fori
+import kotlin.math.abs
 import kotlin.math.max
 
 val wallSize = Point2D(0.5, 0.5)
@@ -61,6 +62,15 @@ open class AbstractStrategy : StrategyAdvCombined {
 
     private fun min(point: Point2D, value: Double): Point2D {
         return Point2D(Math.min(point.x, value), Math.min(point.y, value))
+    }
+    fun getPrefferedWeapon(en: Unit?) =
+        getClosestWeaponItem(listOf(WeaponType.PISTOL, WeaponType.ASSAULT_RIFLE), en)
+
+    private fun getClosestWeaponItem(types: List<WeaponType>, en: Unit?): LootBox? {
+        return game.lootBoxes.filter {
+            val item = it.item
+            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position)
+        }.minBy { it.position.pathDist(me.position) }
     }
 
     protected fun getClosestWeaponItem(weaponType: WeaponType?): LootBox? {
@@ -127,5 +137,31 @@ open class AbstractStrategy : StrategyAdvCombined {
                 unitAction.jump = false
             }
         }
+    }
+
+    protected fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
+        if (en == null) {
+            return false
+        }
+        val myDist = me.position.pathDist(point)
+        val enDist = en.position.pathDist(point)
+        if (myDist < enDist) {
+            return false
+        }
+        val vectorToEn = me.position.copy() - en.position
+        val vectorToHeath = me.position.copy() - point
+        //if x distance is smaller
+        if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
+
+            //and it is same side
+            //ignore health
+            if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
+                return true
+            }
+            if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
+                return true
+            }
+        }
+        return false
     }
 }
