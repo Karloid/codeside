@@ -609,7 +609,7 @@ class MyStrategy : AbstractStrategy() {
             predictStratMoves(myStrat, sim, tick, true, simGame)
             predictStratMoves(enStrat, sim, tick, false, simGame)
 
-            sim.microTicks = game.properties.updatesPerTick / 3
+            sim.microTicks = game.properties.updatesPerTick / 5
 
             sim.tick()
 
