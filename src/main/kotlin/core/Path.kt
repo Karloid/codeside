@@ -57,7 +57,7 @@ object Path {
 
             val myVal = result.getFastNoRound(el)
             adjacent.forEach { candidate ->
-                if (blackList?.contains(candidate) == true || (checkIsPassable && !isPassable(candidate))) {
+                if (blackList?.contains(candidate) == true || (checkIsPassable && !isPassable(candidate, result))) {
                     return@forEach
                 }
                 val candidateVal = result.getFastNoRound(candidate)
@@ -71,36 +71,40 @@ object Path {
         return result
     }
 
-    private fun isPassable(candidate: Point2D): Boolean {
-        fun isOk(candidate1: Point2D): Boolean {
-            val tile = gameTiles.getFastNoRound(candidate1)
-            return when (tile) {
-                Tile.EMPTY -> {
-                    val x = candidate1.intX
-                    var y = candidate1.intY
-                    val initialY = candidate1.intY
+    fun isOk(candidate1: Point2D): Boolean {
+        val tile = gameTiles.getFastNoRound(candidate1)
+        return when (tile) {
+            Tile.EMPTY -> {
+                val x = candidate1.intX
+                var y = candidate1.intY
+                val initialY = candidate1.intY
 
-                    var result = false
-                    while (y > -1) {
-                        y--
-                        val tileBelow = gameTiles.getFast(x, y)
-                        if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
-                            result = initialY - y <= 6
-                            break
-                        } else if (tileBelow == Tile.JUMP_PAD) {
-                            result = initialY - y <= 10
-                            break
-                        }
+                var result = false
+                while (y > -1) {
+                    y--
+                    val tileBelow = gameTiles.getFast(x, y)
+                    if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
+                        result = initialY - y <= 6
+                        break
+                    } else if (tileBelow == Tile.JUMP_PAD) {
+                        result = initialY - y <= 10
+                        break
                     }
-                    result
                 }
-                Tile.WALL -> false
-                Tile.PLATFORM -> true
-                Tile.LADDER -> true
-                Tile.JUMP_PAD -> true
+                result
             }
+            Tile.WALL -> false
+            Tile.PLATFORM -> true
+            Tile.LADDER -> true
+            Tile.JUMP_PAD -> true
         }
+    }
 
+    private fun isPassable(candidate: Point2D, result: PlainArray<Int>): Boolean {
+
+        if (result.getFast(candidate.intX, candidate.intY + 1) != Int.MAX_VALUE) {
+            return true
+        }
         val left1 = candidate.copy().minus(1.0, 0.0)
         val left1IsNotWall = gameTiles.getFastNoRound(left1) != Tile.WALL
         val left2 = candidate.copy().minus(2.0, 0.0)
