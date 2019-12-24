@@ -100,12 +100,18 @@ object Path {
                 Tile.JUMP_PAD -> true
             }
         }
-        return isOk(candidate) ||
-                isOk(candidate.copy().minus(1.0, 0.0))||
-                isOk(candidate.copy().minus(2.0, 0.0))||
-                isOk(candidate.copy().plus(2.0, 0.0))||
-                isOk(candidate.copy().plus(1.0, 0.0) )
 
+        val left1 = candidate.copy().minus(1.0, 0.0)
+        val left1IsNotWall = gameTiles.getFastNoRound(left1) != Tile.WALL
+        val left2 = candidate.copy().minus(2.0, 0.0)
+        val right1 = candidate.copy().plus(1.0, 0.0)
+        val right1IsNotWall = gameTiles.getFastNoRound(right1) != Tile.WALL
+        val right2 = candidate.copy().plus(2.0, 0.0)
+        return isOk(candidate) ||
+                isOk(left1) ||
+                (left1IsNotWall && isOk(left2)) ||
+                isOk(right1) ||
+                (right1IsNotWall && isOk(right2))
     }
 
     fun getAdjacent(x: Int, y: Int): MutableList<Point2D> {
