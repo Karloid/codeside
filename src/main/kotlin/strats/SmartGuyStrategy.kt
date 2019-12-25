@@ -32,11 +32,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private fun doSmartGuy(): UnitAction {
         val action = UnitAction()
 
+        val anotherMe = getAnotherMe()
+
         val nearestEnemy: Unit? = getClosestEnemy()
-        val nearestWeapon = getClosestItem(Item.Weapon::class)
+        val nearestWeapon = getClosestWeapon()
         var nearestHealth = getHealthPack(null)
 
-        val anotherMe = getAnotherMe()
         if (me.health > game.properties.unitMaxHealth * 0.9) {
             nearestHealth = null
         }
@@ -88,6 +89,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             log { "go pick weapon ${nearestWeapon.posInfo()}" }
 
             realTargetPos = nearestWeapon.position
+
         } else if (nearestHealth != null) {
             log { "go pick ${nearestHealth.posInfo()}" }
 
@@ -469,6 +471,17 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.pathDist(me.position) }
     }
 
+     fun getClosestWeapon(): LootBox? {
+        val anotherMe = getAnotherMe()
+        val blackListedWeapon = anotherMe?.takeIf { it.weapon == null && me.id < anotherMe.id }?.let {
+            game.lootBoxes.filter { it.item::class == Item.Weapon::class }
+                .minBy { it.position.pathDist(anotherMe.position) }
+        }
+        return game.lootBoxes.filter { it.item::class == Item.Weapon::class && it != blackListedWeapon }
+            .minBy { it.position.pathDist(me.position) }
+    }
+
+
     private fun wantSwapFromRocketLauncher(me: Unit): Boolean {
         getAnotherMe()?.let {
             if (it.weapon == null) {
@@ -495,7 +508,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         return true
     }
-
 
 
     private fun wantSwapToRocketLauncher(me: Unit): Boolean {

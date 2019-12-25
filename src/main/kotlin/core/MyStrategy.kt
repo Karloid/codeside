@@ -34,6 +34,8 @@ import kotlin.math.absoluteValue
 
 //TODO keep smaller distance to enemy for better aiming
 
+//TODO added smarter enemy strat
+
 
 class MyStrategy : AbstractStrategy() {
 
@@ -633,7 +635,10 @@ class MyStrategy : AbstractStrategy() {
 
         val simGame = game.copy()
         val sim = Simulator(simGame)
+       //val enStrat = SmartGuyStrategy(this)
+       //enStrat.disableShooting = true
         val enStrat = EmptyStrategy(this)
+
 
         val simTickCount = (1 * tickK).toInt()
         for (tick in 0..simTickCount) {
