@@ -242,6 +242,7 @@ class Simulator(val game: Game) {
         val newPosition = unit.position
 
         val yToCheck = unit.position.y.toInt()
+        val yToCheck2 = (unit.position.y + unit.size.y).toInt()
 
         val xLeft = (newPosition.x - unitHalfXSize).toInt()
         val xRight = (newPosition.x + unitHalfXSize).toInt()
@@ -249,6 +250,10 @@ class Simulator(val game: Game) {
             if (xToCheck == xLeft || xToCheck == xRight) {
                 val tile = game.level.tiles.getFast(xToCheck, yToCheck)
                 if (tile == Tile.JUMP_PAD) {
+                    return true
+                }
+                val tile2 = game.level.tiles.getFast(xToCheck, yToCheck2)
+                if (tile2 == Tile.JUMP_PAD) {
                     return true
                 }
             }

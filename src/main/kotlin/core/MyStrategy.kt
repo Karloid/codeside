@@ -27,8 +27,8 @@ import kotlin.math.absoluteValue
 
 //TODO aggressive potential fields for health?
 //TODO handle mines
-//TODO check jumppad is triggered by any intersect
-//TODO handle one sim with other preselected sim
+//+++ check jumppad is triggered by any intersect
+//+++ handle one sim with other preselected sim
 
 //TODO handle weapon pick trhough sim
 
