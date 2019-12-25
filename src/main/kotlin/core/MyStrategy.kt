@@ -46,6 +46,8 @@ class MyStrategy : AbstractStrategy() {
     private var timeEnd: Long = 0L
     private var timeStart: Long = 0L
 
+    private var savedStrat = SavedStrat()
+
     private var shootingStart = SmartGuyStrategy(this).apply {
         isReal = true
         disableShooting = false
@@ -105,6 +107,7 @@ class MyStrategy : AbstractStrategy() {
         //isDoSim = true //TODO remove
         if (!isDoSim) {
             action = shootAction
+            setCurrentStrat(shootingStart)
         } else {
             action = doSimMove()
 
@@ -126,6 +129,15 @@ class MyStrategy : AbstractStrategy() {
         calcStats()
         myLastHp[me.id] = me.health
         return action
+    }
+
+    private fun setCurrentStrat(newStrat: StrategyAdvCombined) {
+        if (savedStrat.savedAt == game.currentTick) {
+            return
+        }
+        savedStrat.savedAt = game.currentTick
+        savedStrat.strat = newStrat
+        savedStrat.forUnitId = me.id
     }
 
     private fun isRocketBulletsNearBy(): Boolean {
@@ -273,6 +285,9 @@ class MyStrategy : AbstractStrategy() {
         val strat = pickBestStrat(variants, tickK)
 
         strat.isReal = true
+
+        setCurrentStrat(strat)
+
         return strat.getAction(me, game, debug)
     }
 
@@ -654,14 +669,22 @@ class MyStrategy : AbstractStrategy() {
             if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
                 //val unitcopy = unit.copy()
 
-                var action = strat.getAction(unit, simGame, debug)
-                if (true) {
-                    if (anotherMe?.id == unit.id) {
+                var action: UnitAction? = null
+                if (anotherMe?.id == unit.id) {
+                    //use saved strat to calc teammate
+                    if (game.currentTick == savedStrat.savedAt && unit.id == savedStrat.forUnitId) {
+                        savedStrat.strat.isReal = false
+                        action = savedStrat.strat.getAction(unit, simGame, debug)
+                        savedStrat.strat.isReal = true
+                    } else {
                         val delta = anotherMe.position.copy().minus(me.position).abs()
                         if (delta.x < 1.5 && delta.y < 2) {
                             action = stillStrategy.getAction(unit, simGame, debug)
                         }
                     }
+                }
+                if (action == null) {
+                    action = strat.getAction(unit, simGame, debug)
                 }
 
                 unit.simAction = action
