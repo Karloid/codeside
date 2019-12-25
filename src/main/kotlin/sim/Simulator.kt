@@ -75,9 +75,12 @@ class Simulator(val game: Game) {
                 unit.jumpState.speed = game.properties.jumpPadJumpSpeed
             }
 
+            //hack
+            val itIsJumpPadJump = unit.isJumpPadJump()
+
             // vertical movement UP jump
-            if ((action.jump && unit.jumpState.canJump) || unit.isJumpPadJump()) {
-                if (!unit.isJumpPadJump()) {
+            if ((action.jump && unit.jumpState.canJump) || itIsJumpPadJump) {
+                if (!itIsJumpPadJump) {
                     unit.jumpState.canCancel = true
                     unit.jumpState.speed = game.properties.unitJumpSpeed
                 }
@@ -90,7 +93,7 @@ class Simulator(val game: Game) {
                     unit.jumpState.canCancel = false;
                 }
 
-                if (unit.jumpState.canJump || unit.isJumpPadJump()) {
+                if (unit.jumpState.canJump || itIsJumpPadJump) {
                     if (isCollideVerticallyTop(delta_time, unit)) {
 
                         unit.jumpState.canJump = false
@@ -105,7 +108,7 @@ class Simulator(val game: Game) {
             updateUnitLadder(unit)
 
             //check we still on ground
-            if (!action.jump && !unit.onLadder && !(!unit.onGround && !unit.jumpState.canJump)) {
+            if (!action.jump && !itIsJumpPadJump && !unit.onLadder && !(!unit.onGround && !unit.jumpState.canJump)) {
                 if (!isVerticalCollideLevel(
                         unit.position,
                         unit,
@@ -121,7 +124,7 @@ class Simulator(val game: Game) {
             }
 
             // hmm something  // canceling jump?
-            if (!action.jump && unit.jumpState.canCancel) {
+            if (!action.jump && !itIsJumpPadJump && unit.jumpState.canCancel) {
                 unit.jumpState.canJump = false
                 unit.jumpState.maxTime = 0.0
                 unit.jumpState.speed = 0.0
@@ -132,7 +135,7 @@ class Simulator(val game: Game) {
             val isOnLadderDown = unit.simAction.jumpDown && unit.onLadder
             val isJumpDownFromPlatform = unit.simAction.jumpDown && unit.onGround
             if (isFailing || isOnLadderDown || isJumpDownFromPlatform) {
-                if (isCollideVerticallyBot(delta_time, unit, action.jumpDown)) {
+                if (!isCollideWithTramp(unit) && isCollideVerticallyBot(delta_time, unit, action.jumpDown)) {
                     unit.onGround = true
                     unit.jumpState.canJump = true
                     unit.jumpState.maxTime = game.properties.unitJumpTime
