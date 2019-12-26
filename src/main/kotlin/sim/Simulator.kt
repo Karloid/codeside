@@ -251,11 +251,11 @@ class Simulator(val game: Game) {
         for (xToCheck in xLeft..xRight) {
             if (xToCheck == xLeft || xToCheck == xRight) {
                 val tile = game.level.tiles.getFast(xToCheck, yToCheck)
-                if (tile == Tile.JUMP_PAD) {
+                if (tile === Tile.JUMP_PAD) {
                     return true
                 }
                 val tile2 = game.level.tiles.getFast(xToCheck, yToCheck2)
-                if (tile2 == Tile.JUMP_PAD) {
+                if (tile2 === Tile.JUMP_PAD) {
                     return true
                 }
             }

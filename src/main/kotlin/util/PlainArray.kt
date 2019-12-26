@@ -12,7 +12,7 @@ class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: I
         array = Array(cellsWidth * cellsHeight, init as (Int) -> Any) as Array<T>
     }
 
-    internal operator fun get(x: Int, y: Int): T? {
+    inline internal operator fun get(x: Int, y: Int): T? {
         return if (!inBounds(x, y)) {
             null
         } else {

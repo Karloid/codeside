@@ -149,7 +149,7 @@ object Path {
         cachedPassable = PlainArray(gameTiles.cellsWidth, gameTiles.cellsHeight) { null }
     }
 
-    private fun PlainArray<Tile>.getIfNotWall(x: Int, y: Int) =
+    private inline fun PlainArray<Tile>.getIfNotWall(x: Int, y: Int) =
         get(x, y)?.let {
             if (it != Tile.WALL) {
                 Point2D(x + 0.1, y + 0.1)

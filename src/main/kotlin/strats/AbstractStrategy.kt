@@ -84,7 +84,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         val anotherMe = getAnotherUnit()
         val enemies = game.units.filter { it.isMy().not() }
         val closest = enemies.minBy {
-            var dist = it.position.pathDist(me.position)
+            var dist = me.position.pathDist(it.position)
            // if (anotherMe != null) {
            //     dist += it.position.distance(anotherMe.position)
            // }
@@ -143,8 +143,8 @@ open class AbstractStrategy : StrategyAdvCombined {
         if (en == null) {
             return false
         }
-        val myDist = me.position.pathDist(point)
-        val enDist = en.position.pathDist(point)
+        val myDist = point.pathDist(en.position)
+        val enDist = point.pathDist(en.position)
         if (myDist < enDist) {
             return false
         }

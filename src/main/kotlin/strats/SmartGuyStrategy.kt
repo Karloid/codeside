@@ -368,8 +368,14 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         val rayLengthMax = from.distance(to)
 
 
-        val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
-        
+        val checkStep =
+            ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
+        val remainingVector = to - pointToCheck
+        val stepVector = remainingVector.length(checkStep)
+
+        val maxSteps = rayLengthMax / checkStep
+
+        var step = 0
 
         while (true) {
             // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }
@@ -432,17 +438,12 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 break
             }
 
-            val remainingVector = to - pointToCheck
-            val remainingDist = remainingVector.length()
+            pointToCheck.plus(stepVector)
 
-            if (remainingDist <= checkStep * 1.2) {
+            step++
+            if (step >= maxSteps) {
                 break
             }
-            pointToCheck += remainingVector.length(checkStep)
-            if (pointToCheck.distance(from) >= rayLengthMax) {
-                break
-            }
-
             //d { debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK) }
         }
 
