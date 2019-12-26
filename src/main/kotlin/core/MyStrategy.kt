@@ -655,7 +655,7 @@ class MyStrategy : AbstractStrategy() {
             if (tick < simTickCount) {
                 sim.microTicks = game.properties.updatesPerTick / 5
             } else {
-                sim.microTicks = (game.properties.updatesPerTick / 5) * (1 - tick / simTickCount) + 1
+                sim.microTicks = (game.properties.updatesPerTick / 7)
             }
 
             sim.tick()
