@@ -5,6 +5,7 @@ package sim
 import ifEnabledLog
 import model.*
 import model.Unit
+import util.PlainArray
 import util.Ref
 import util.fori
 import util.then
@@ -174,7 +175,7 @@ class Simulator(val game: Game) {
             }
 
             if (!bulletsToRemove.contains(bullet)) {
-                isCollideWalls(bullet).then {
+                isCollideWalls(bullet, game.level.tiles).then {
                     onBulletCollide(bullet)
                     bulletsToRemove.add(bullet)
 
@@ -287,44 +288,14 @@ class Simulator(val game: Game) {
         metainfo.unitDamage.getOrPut(unit.id, { Ref(0.0) }).ref += damage
     }
 
-    private fun isCollideWalls(bullet: Bullet): Boolean {
-        val tiles = game.level.tiles
-        val halfSize = bullet.size / 2
-
-        var x = (bullet.position.x - halfSize).toInt()
-        var y = (bullet.position.y - halfSize).toInt()
-        tiles.getFast(x, y).equals(Tile.WALL).then {
-            return true
-        }
-
-        x = (bullet.position.x - halfSize).toInt()
-        y = (bullet.position.y + halfSize).toInt()
-        tiles.getFast(x, y).equals(Tile.WALL).then {
-            return true
-        }
-
-        x = (bullet.position.x + halfSize).toInt()
-        y = (bullet.position.y + halfSize).toInt()
-        tiles.getFast(x, y).equals(Tile.WALL).then {
-            return true
-        }
-
-        x = (bullet.position.x + halfSize).toInt()
-        y = (bullet.position.y - halfSize).toInt()
-        tiles.getFast(x, y).equals(Tile.WALL).then {
-            return true
-        }
-
-        return false
-    }
-
     private fun isCollide(bullet: Bullet, unit: Unit): Boolean {
         if (unit.id == bullet.unitId) {
             return false
         }
-        val size = bullet.size * 1.05
-        return abs(bullet.position.x - unit.position.x) < size / 2 + unit.size.x / 2 &&
-                abs(bullet.position.y - (unit.position.y + unit.size.y / 2)) < size / 2 + unit.size.y / 2
+        val bulletSize = bullet.size
+        val size = bulletSize * 1.05
+        val bulletPos = bullet.position
+        return isCollide(bulletPos, unit, size)
     }
 
     private fun updateUnitLadder(unit: Unit) {
@@ -458,6 +429,50 @@ class Simulator(val game: Game) {
             val radius = explosRadius * 1.2f
             val isAffected = distToBullet.x - unit.size.x / 2 <= radius && distToBullet.y - unit.size.y / 2 <= radius
             return isAffected
+        }
+
+        fun isCollide(bulletPos: Point2D, unit: Unit, size: Double) =
+            abs(bulletPos.x - unit.position.x) < size / 2 + unit.size.x / 2 &&
+                    abs(bulletPos.y - (unit.position.y + unit.size.y / 2)) < size / 2 + unit.size.y / 2
+
+        fun isCollideWalls(bullet: Bullet, tiles: PlainArray<Tile>): Boolean {
+            val size = bullet.size
+            val bulletPos = bullet.position
+
+            return isCollideWalls(bulletPos, size, tiles)
+        }
+
+        fun isCollideWalls(
+            bulletPos: Point2D,
+            size: Double,
+            tiles: PlainArray<Tile>
+        ): Boolean {
+            val halfSize = size / 2
+            var x = (bulletPos.x - halfSize).toInt()
+            var y = (bulletPos.y - halfSize).toInt()
+            tiles.getFast(x, y).equals(Tile.WALL).then {
+                return true
+            }
+
+            x = (bulletPos.x - halfSize).toInt()
+            y = (bulletPos.y + halfSize).toInt()
+            tiles.getFast(x, y).equals(Tile.WALL).then {
+                return true
+            }
+
+            x = (bulletPos.x + halfSize).toInt()
+            y = (bulletPos.y + halfSize).toInt()
+            tiles.getFast(x, y).equals(Tile.WALL).then {
+                return true
+            }
+
+            x = (bulletPos.x + halfSize).toInt()
+            y = (bulletPos.y - halfSize).toInt()
+            tiles.getFast(x, y).equals(Tile.WALL).then {
+                return true
+            }
+
+            return false
         }
     }
 

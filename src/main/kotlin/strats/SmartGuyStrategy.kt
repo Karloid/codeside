@@ -304,7 +304,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     val hitPoint = Ref<Point2D?>(null)
 
                     val stuckWall =
-                        didStuckWithSomething(
+                        didStuckWithSomething2(
                             center.copy(),
                             center.copy() + ray.copy(),
                             hitTargetRef,
@@ -377,7 +377,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             var closestUnit = target
             for (unit in game.units) {
                 if (unit != me) {
-                    val dist = signedDist(pointToCheck, unit)
+                    val dist = bulletCollide(pointToCheck, unit, weapon.params.bullet.size)
                     if (dist < distanceTarget) {
                         distanceTarget = dist
                         closestUnit = unit
@@ -385,10 +385,13 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 }
             }
 
-            var distanceWalls = signedDist(pointToCheck, null)
+            var distanceWalls =
+                if (Simulator.isCollideWalls(pointToCheck, weapon.params.bullet.size, game.level.tiles)) {
+                    0.1
+                } else {
+                    100.0
+                }
 
-            distanceWalls -= weapon.params.bullet.size / 2
-            distanceTarget -= weapon.params.bullet.size / 2
 
             val isUnitCloser = distanceTarget < distanceWalls
 
@@ -398,9 +401,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 distanceWalls
             }
 
-            distance -= pointSize
-
-            if (distance < epsilon) {
+            if (distance < 0.2) {
                 if (isUnitCloser) {
                     closestUnit.isMy().then {
                         hitMe.ref += weapon.params.bullet.damage
@@ -434,7 +435,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (remainingDist < epsilon) {
                 break
             }
-            pointToCheck += remainingVector.length(distance)
+            val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
+            pointToCheck += remainingVector.length(checkStep)
             if (pointToCheck.distance(from) >= rayLengthMax) {
                 break
             }
@@ -563,7 +565,11 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     }
 
     private fun bulletCollide(pointToCheck: Point2D, unit: Unit, bulletSize: Double): Double {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return if (Simulator.isCollide(pointToCheck, unit, bulletSize)) {
+            0.0
+        } else {
+            100.0
+        }
     }
 
     private fun getAnotherMe(): Unit? {
@@ -580,7 +586,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.pathDist(me.position) }
     }
 
-     fun getClosestWeapon(): LootBox? {
+    fun getClosestWeapon(): LootBox? {
         val anotherMe = getAnotherMe()
         val blackListedWeapon = anotherMe?.takeIf { it.weapon == null && me.id < anotherMe.id }?.let {
             game.lootBoxes.filter { it.item::class == Item.Weapon::class }
