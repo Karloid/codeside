@@ -174,7 +174,13 @@ object Path {
             var finalDelta = abs(currentValue - initialTargetValue)
 
             val availableVariants = ArrayList<Point2D>(4)
+            var count = 0
             while (currentValue != targetValue) {
+                count++
+                if (count > 80) {
+                    MainKt.log { "UNABLE TO FIND PATH IN 80 loop" }
+                    return end
+                }
                 //getAdjacent(currentPoint.intX, currentPoint.intY)
                 val x = currentPoint.intX
                 val y = currentPoint.intY
