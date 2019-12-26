@@ -85,12 +85,16 @@ object Path {
                 while (y > -1) {
                     y--
                     val tileBelow = gameTiles.getFast(x, y)
+                    val currentDelta = initialY - y
                     if (tileBelow == Tile.WALL || tileBelow == Tile.PLATFORM || tileBelow == Tile.LADDER) {
-                        result = initialY - y <= 6
+                        result = currentDelta <= 6
                         break
                     } else if (tileBelow == Tile.JUMP_PAD) {
-                        result = initialY - y <= 10
+                        result = currentDelta <= 10
                         break
+                    }
+                    if (currentDelta > 10) {
+                        result = false
                     }
                 }
                 result
