@@ -3,9 +3,11 @@ package model
 import util.PlainArray
 import util.StreamUtil
 
+val EMPTY = PlainArray(0,0,{Tile.WALL})
 class Level {
     val walls = ArrayList<Point2D>(30 * 40)
-    lateinit var tiles: PlainArray<Tile>
+    @JvmField
+    var tiles: PlainArray<Tile> = EMPTY
 
     constructor() {}
     constructor(tiles: PlainArray<Tile>) {

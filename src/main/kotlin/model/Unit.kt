@@ -7,9 +7,12 @@ class Unit {
     var playerId: Int = 0
     var id: Int = 0
     var health: Int = 0
-    lateinit var position: model.Point2D
-    lateinit var size: model.Point2D
-    lateinit var jumpState: model.JumpState
+    @JvmField
+    var position: model.Point2D = Point2D.STUB
+    @JvmField
+    var size: model.Point2D = Point2D.STUB
+    @JvmField
+    var jumpState: model.JumpState = JumpState.EMPTY
     var walkedRight: Boolean = false
     var stand: Boolean = false
     var onGround: Boolean = false

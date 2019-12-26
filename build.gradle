@@ -21,7 +21,13 @@ dependencies {
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs = [
+                '-Xno-param-assertions',
+                '-Xno-call-assertions',
+                '-Xno-receiver-assertions'
+        ]
 }
+
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }

@@ -10,13 +10,15 @@ import util.f
 import kotlin.math.round
 
 class Point2D {
+    @JvmField
     var x: Double
+    @JvmField
     var y: Double
 
-    val intX: Int
+    inline val intX: Int
         get() = x.toInt()
 
-    val intY: Int
+    inline val intY: Int
         get() = y.toInt()
 
     val roundX: Int
@@ -303,6 +305,7 @@ class Point2D {
             return result
         }
 
+        val STUB: Point2D = Point2D(0, 0)
         val ZERO = Point2D(0, 0)
         val UP = Point2D(0, 1)
         val RIGHT = Point2D(1, 0)

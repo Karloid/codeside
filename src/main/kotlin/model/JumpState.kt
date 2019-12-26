@@ -7,6 +7,7 @@ class JumpState {
     var speed: Double = 0.0
     var maxTime: Double = 0.0
     var canCancel: Boolean = false
+
     constructor() {}
     constructor(canJump: Boolean, speed: Double, maxTime: Double, canCancel: Boolean) {
         this.canJump = canJump
@@ -14,7 +15,10 @@ class JumpState {
         this.maxTime = maxTime
         this.canCancel = canCancel
     }
+
     companion object {
+
+        val EMPTY: JumpState = JumpState(true, 0.0, 0.0, false)
 
         fun readFrom(stream: java.io.InputStream): JumpState {
             val result = JumpState()

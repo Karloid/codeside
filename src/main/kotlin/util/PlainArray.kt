@@ -5,10 +5,11 @@ import kotlin.math.roundToInt
 
 class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: Int, init: (Int) -> T) {
 
-    val array: MutableList<T>
+    @JvmField
+    val array: Array<T>
 
     init {
-        array = MutableList(this.cellsWidth * cellsHeight, init)
+        array = Array(cellsWidth * cellsHeight, init as (Int) -> Any) as Array<T>
     }
 
     internal operator fun get(x: Int, y: Int): T? {
@@ -41,7 +42,7 @@ class PlainArray<T> internal constructor(val cellsWidth: Int, val cellsHeight: I
         array[y * cellsWidth + x] = `val`
     }
 
-    fun inBounds(x: Int, y: Int): Boolean {
+    inline fun inBounds(x: Int, y: Int): Boolean {
         return !(x < 0 || x >= cellsWidth || y < 0 || y >= cellsHeight)
     }
 

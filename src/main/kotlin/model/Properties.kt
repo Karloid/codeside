@@ -50,6 +50,8 @@ class Properties {
     }
     companion object {
 
+        val EMPTY: Properties = Properties()
+
         fun readFrom(stream: java.io.InputStream): Properties {
             val result = Properties()
             result.maxTickCount = StreamUtil.readInt(stream)

@@ -44,7 +44,8 @@ object Path {
         blackList: List<Point2D>? = null,
         checkIsPassable: Boolean = false
     ): PlainArray<Int> {
-        val result = PlainArray(cachedAccess.cellsWidth, cachedAccess.cellsHeight) { Int.MAX_VALUE }
+        val maxValue: Int? = Int.MAX_VALUE
+        val result = PlainArray(cachedAccess.cellsWidth, cachedAccess.cellsHeight) { maxValue!! }
 
         result.setFastNoRound(pointFrom, 0)
 
@@ -131,8 +132,9 @@ object Path {
         return result
     }
 
+    val result = ArrayList<Point2D>(4)
     fun getAdjacent(x: Int, y: Int): MutableList<Point2D> {
-        val result = mutableListOf<Point2D>()
+        result.clear()
         gameTiles.getIfNotWall(x - 1, y)?.let { result.add(it) }
         gameTiles.getIfNotWall(x, y - 1)?.let { result.add(it) }
         gameTiles.getIfNotWall(x, y + 1)?.let { result.add(it) }

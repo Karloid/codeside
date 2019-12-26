@@ -132,7 +132,7 @@ class Simulator(val game: Game) {
             }
 
             //failing bottom
-            val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder && !isCollideWithTramp(unit)
+            val isFailing = !unit.jumpState.canJump && !unit.onGround && !unit.onLadder
             val isOnLadderDown = unit.simAction.jumpDown && unit.onLadder
             val isJumpDownFromPlatform = unit.simAction.jumpDown && unit.onGround
             if (isFailing || isOnLadderDown || isJumpDownFromPlatform) {
@@ -147,8 +147,6 @@ class Simulator(val game: Game) {
 
             //check ladder
             updateUnitLadder(unit)
-            //TODO jump pad
-
 
             //TODO fighting
             val x = 10
@@ -344,11 +342,13 @@ class Simulator(val game: Game) {
     }
 
     fun noCollideWithOtherUnitsVertically(myUnit: Unit, newPosition: Point2D, checkTop: Boolean): Boolean {
+        val unitSize = myUnit.size
         return game.units.none {
+            val pos = it.position
             it != myUnit &&
-                    (checkTop.then { it.position.y > newPosition.y } ?: run { it.position.y < newPosition.y }) &&
-                    abs(it.position.y - newPosition.y) < myUnit.size.y &&
-                    abs(it.position.x - newPosition.x) < myUnit.size.x
+                    (checkTop.then { pos.y > newPosition.y } ?: run { pos.y < newPosition.y }) &&
+                    abs(pos.y - newPosition.y) < unitSize.y &&
+                    abs(pos.x - newPosition.x) < unitSize.x
         }
     }
 
@@ -361,10 +361,9 @@ class Simulator(val game: Game) {
         val yBot = newPosition.y.toInt()
         val yTop = (newPosition.y + unit.size.y).toInt()
 
-
         val unitHalfXSize = unit.size.x / 2f
 
-        val yCheck = isTopCheck.then { yTop } ?: yBot
+        val yCheck: Int = if (isTopCheck) yTop else yBot
 
         val respectNotOnlyWalls = !jumpDown && !isTopCheck
         return checkVerticalWalls(newPosition, unitHalfXSize, yCheck, respectNotOnlyWalls, unit)
@@ -450,25 +449,25 @@ class Simulator(val game: Game) {
             val halfSize = size / 2
             var x = (bulletPos.x - halfSize).toInt()
             var y = (bulletPos.y - halfSize).toInt()
-            tiles.getFast(x, y).equals(Tile.WALL).then {
+            (tiles.getFast(x, y) === Tile.WALL).then {
                 return true
             }
 
             x = (bulletPos.x - halfSize).toInt()
             y = (bulletPos.y + halfSize).toInt()
-            tiles.getFast(x, y).equals(Tile.WALL).then {
+            (tiles.getFast(x, y) === Tile.WALL).then {
                 return true
             }
 
             x = (bulletPos.x + halfSize).toInt()
             y = (bulletPos.y + halfSize).toInt()
-            tiles.getFast(x, y).equals(Tile.WALL).then {
+            (tiles.getFast(x, y) === Tile.WALL).then {
                 return true
             }
 
             x = (bulletPos.x + halfSize).toInt()
             y = (bulletPos.y - halfSize).toInt()
-            tiles.getFast(x, y).equals(Tile.WALL).then {
+            (tiles.getFast(x, y) === Tile.WALL).then {
                 return true
             }
 

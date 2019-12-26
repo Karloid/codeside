@@ -33,7 +33,14 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <version>${kotlin.version}</version>
 
-                <configuration />
+                <configuration>
+                <args>
+                    <arg>-Xno-param-assertions</arg>
+                    <arg>-Xno-call-assertions</arg>
+                    <arg>-Xno-receiver-assertions</arg>
+                </args>
+                </configuration>
+                
                 <executions>
                     <execution>
                         <id>compile</id>

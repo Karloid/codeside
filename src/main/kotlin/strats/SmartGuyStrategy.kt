@@ -367,7 +367,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         var weGetWalls = false
         val rayLengthMax = from.distance(to)
 
-        val epsilon = 0.000001
+
+        val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
+        
 
         while (true) {
             // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }
@@ -433,7 +435,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             val remainingVector = to - pointToCheck
             val remainingDist = remainingVector.length()
 
-            val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
             if (remainingDist <= checkStep * 1.2) {
                 break
             }
