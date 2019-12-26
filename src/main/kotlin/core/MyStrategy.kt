@@ -652,7 +652,11 @@ class MyStrategy : AbstractStrategy() {
             predictStratMoves(myStrat, sim, tick, true, simGame)
             predictStratMoves(enStrat, sim, tick, false, simGame)
 
-            sim.microTicks = game.properties.updatesPerTick / 5
+            if (tick < simTickCount) {
+                sim.microTicks = game.properties.updatesPerTick / 5
+            } else {
+                sim.microTicks = (game.properties.updatesPerTick / 5) * (1 - tick / simTickCount) + 1
+            }
 
             sim.tick()
 
@@ -676,13 +680,16 @@ class MyStrategy : AbstractStrategy() {
         simGame: Game
     ) {
         val anotherMe = getAnotherUnit()
+        val empty = EmptyStrategy(this)
 
         simGame.units.forEach { unit ->
             if ((isMe && unit.playerId == me.playerId) || (!isMe && unit.playerId != me.playerId)) {
                 //val unitcopy = unit.copy()
-
                 var action: UnitAction? = null
-                if (anotherMe?.id == unit.id) {
+                val timePassed = System.currentTimeMillis() - timeStart
+                if (timePassed > 800) {
+                    action = empty.getAction(unit, game, debug)
+                } else if (anotherMe?.id == unit.id) {
                     //use saved strat to calc teammate
                     if (game.currentTick == savedStrat.savedAt && unit.id == savedStrat.forUnitId) {
                         savedStrat.strat.isReal = false
