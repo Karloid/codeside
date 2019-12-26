@@ -351,6 +351,111 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return canShootOnce
     }
 
+    private fun didStuckWithSomething2(
+        from: Point2D,
+        to: Point2D,
+        hitTarget: Ref<Double>,
+        hitMe: Ref<Double>,
+        target: Unit,
+        pointSize: Double,
+        hitPoint: Ref<Point2D?>,
+        isRocketLauncher: Boolean,
+        weapon: Weapon
+    ): Boolean {
+        var pointToCheck = from.copy()
+
+        var weGetWalls = false
+        val rayLengthMax = from.distance(to)
+
+        val epsilon = 0.000001
+
+        while (true) {
+            // d { debug.rect(pointToCheck, Point2D(0.1, 0.1), ColorFloat.RAY_DIST_CHECK) }
+
+
+            var distanceTarget = 1000.0
+            var closestUnit = target
+            for (unit in game.units) {
+                if (unit != me) {
+                    val dist = signedDist(pointToCheck, unit)
+                    if (dist < distanceTarget) {
+                        distanceTarget = dist
+                        closestUnit = unit
+                    }
+                }
+            }
+
+            var distanceWalls = signedDist(pointToCheck, null)
+
+            distanceWalls -= weapon.params.bullet.size / 2
+            distanceTarget -= weapon.params.bullet.size / 2
+
+            val isUnitCloser = distanceTarget < distanceWalls
+
+            var distance = if (isUnitCloser) {
+                distanceTarget
+            } else {
+                distanceWalls
+            }
+
+            distance -= pointSize
+
+            if (distance < epsilon) {
+                if (isUnitCloser) {
+                    closestUnit.isMy().then {
+                        hitMe.ref += weapon.params.bullet.damage
+                    } ?: run {
+                        hitTarget.ref += weapon.params.bullet.damage
+                    }
+                }
+                isRocketLauncher.then {
+                    val explosionRadius = weapon.params.explosion!!.radius
+                    val damage = weapon.params.explosion!!.damage
+                    game.units.forEach { unit ->
+                        Simulator.unitAffectedByExplosion(unit, explosionRadius, pointToCheck).then {
+                            val distToUnit = unit.position.distance(pointToCheck)
+                            if (unit.isMy()) {
+                                hitMe.ref += damage;
+                                hitMe.ref -= distToUnit / 3f
+                            } else {
+                                hitTarget.ref += damage;
+                                hitMe.ref -= distToUnit / 3f
+                            }
+                        }
+                    }
+                }
+                weGetWalls = !isUnitCloser
+                hitPoint.ref = pointToCheck.copy()
+                break
+            }
+
+            val remainingVector = to - pointToCheck
+            val remainingDist = remainingVector.length()
+            if (remainingDist < epsilon) {
+                break
+            }
+            pointToCheck += remainingVector.length(distance)
+            if (pointToCheck.distance(from) >= rayLengthMax) {
+                break
+            }
+
+            //d { debug.circle(pointToCheck, distance, ColorFloat.RAY_DIST_CHECK) }
+        }
+
+        d {
+            val endFinal = hitPoint.ref ?: to
+
+            val color =
+                (hitTarget.ref > hitMe.ref).then { ColorFloat.AIM_RAY_GOOD }
+                    ?: (hitTarget.ref < hitMe.ref).then { ColorFloat.AIM_RAY_BAD }
+                    ?: weGetWalls.then { ColorFloat.AIM_RAY_WALSS } ?: ColorFloat.AIM_RAY_UNKNOWN
+
+            //  debug.rect(endFinal, Point2D(0.1, 0.1), color)
+            debug.line(from, endFinal, color)
+        }
+        return weGetWalls
+    }
+
     //TODO refactor
     private fun didStuckWithSomething(
         from: Point2D,
@@ -455,6 +560,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             debug.line(from, endFinal, color)
         }
         return weGetWalls
+    }
+
+    private fun bulletCollide(pointToCheck: Point2D, unit: Unit, bulletSize: Double): Double {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun getAnotherMe(): Unit? {

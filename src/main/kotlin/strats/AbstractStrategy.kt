@@ -60,7 +60,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         return Point2D(max(point.x, value), max(point.y, value))
     }
 
-    private fun min(point: Point2D, value: Double): Point2D {
+    private inline fun min(point: Point2D, value: Double): Point2D {
         return Point2D(Math.min(point.x, value), Math.min(point.y, value))
     }
     fun getPrefferedWeapon(en: Unit?) =
