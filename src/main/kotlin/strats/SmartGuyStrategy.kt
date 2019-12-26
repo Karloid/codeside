@@ -432,10 +432,11 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
             val remainingVector = to - pointToCheck
             val remainingDist = remainingVector.length()
-            if (remainingDist < epsilon) {
+
+            val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
+            if (remainingDist <= checkStep * 1.2) {
                 break
             }
-            val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
             pointToCheck += remainingVector.length(checkStep)
             if (pointToCheck.distance(from) >= rayLengthMax) {
                 break

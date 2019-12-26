@@ -39,6 +39,7 @@ import kotlin.math.absoluteValue
 
 class MyStrategy : AbstractStrategy() {
 
+    private var accumTook: Long = 0L
     private var forceSimTill: Int = 0
     private var myLastHp = mutableMapOf<Int, Int>()
     private var simTill: Int = 0
@@ -130,6 +131,12 @@ class MyStrategy : AbstractStrategy() {
 
         calcStats()
         myLastHp[me.id] = me.health
+
+        val tookTime = timeEnd - timeStart
+        accumTook += tookTime
+        if (game.currentTick % 200 == 0 && (getAnotherUnit()?.id ?: -1 < me.id) || tookTime > 100) {
+            println("${game.currentTick} : took=$tookTime total=$accumTook")
+        }
         return action
     }
 
@@ -635,8 +642,8 @@ class MyStrategy : AbstractStrategy() {
 
         val simGame = game.copy()
         val sim = Simulator(simGame)
-       //val enStrat = SmartGuyStrategy(this)
-       //enStrat.disableShooting = true
+        //val enStrat = SmartGuyStrategy(this)
+        //enStrat.disableShooting = true
         val enStrat = EmptyStrategy(this)
 
 
