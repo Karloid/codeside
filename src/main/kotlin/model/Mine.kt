@@ -10,8 +10,17 @@ class Mine {
     var timer: Double? = null
     var triggerRadius: Double = 0.0
     lateinit var explosionParams: model.ExplosionParams
+
     constructor() {}
-    constructor(playerId: Int, position: model.Point2D, size: model.Point2D, state: model.MineState, timer: Double?, triggerRadius: Double, explosionParams: model.ExplosionParams) {
+    constructor(
+        playerId: Int,
+        position: model.Point2D,
+        size: model.Point2D,
+        state: model.MineState,
+        timer: Double?,
+        triggerRadius: Double,
+        explosionParams: model.ExplosionParams
+    ) {
         this.playerId = playerId
         this.position = position
         this.size = size
@@ -20,6 +29,7 @@ class Mine {
         this.triggerRadius = triggerRadius
         this.explosionParams = explosionParams
     }
+
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Mine {
@@ -28,11 +38,11 @@ class Mine {
             result.position = model.Point2D.readFrom(stream)
             result.size = model.Point2D.readFrom(stream)
             when (StreamUtil.readInt(stream)) {
-            0 ->result.state = model.MineState.PREPARING
-            1 ->result.state = model.MineState.IDLE
-            2 ->result.state = model.MineState.TRIGGERED
-            3 ->result.state = model.MineState.EXPLODED
-            else -> throw java.io.IOException("Unexpected discriminant value")
+                0 -> result.state = model.MineState.PREPARING
+                1 -> result.state = model.MineState.IDLE
+                2 -> result.state = model.MineState.TRIGGERED
+                3 -> result.state = model.MineState.EXPLODED
+                else -> throw java.io.IOException("Unexpected discriminant value")
             }
             if (StreamUtil.readBoolean(stream)) {
                 result.timer = StreamUtil.readDouble(stream)
@@ -59,5 +69,9 @@ class Mine {
         }
         StreamUtil.writeDouble(stream, triggerRadius)
         explosionParams.writeTo(stream)
+    }
+
+    fun center(): Point2D {
+        return position.copy().plus(0.0, size.y / 2)
     }
 }

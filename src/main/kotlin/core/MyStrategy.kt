@@ -36,6 +36,8 @@ import kotlin.math.absoluteValue
 
 //TODO added smarter enemy strat
 
+//TODO calc time and drop calculations 20*3600+20000
+
 
 class MyStrategy : AbstractStrategy() {
 
@@ -586,6 +588,7 @@ class MyStrategy : AbstractStrategy() {
             createdAtTick = game.currentTick
         }
     }
+
 
     private fun checkStrangeScore(score: Double) {
         if (score < -1000) {

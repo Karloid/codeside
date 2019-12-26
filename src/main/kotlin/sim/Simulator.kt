@@ -197,6 +197,46 @@ class Simulator(val game: Game) {
             }
         }
 
+        for (mine in game.mines) {
+            when (mine.state) {
+                MineState.IDLE -> {
+                    if (isTriggered(mine)) {
+                        mine.state = MineState.TRIGGERED
+                        mine.timer = game.properties.mineTriggerTime
+                    }
+                }
+                MineState.PREPARING -> {
+                    mine.timer = mine.timer ?: 0.0 - delta_time
+                    if (mine.timer!! < 0) {
+                        mine.state = MineState.IDLE
+                    }
+                }
+                MineState.TRIGGERED -> {
+                    mine.timer = mine.timer ?: 0.0 - delta_time
+                    if (mine.timer!! < 0) {
+                        mine.state = MineState.EXPLODED
+                    }
+                }
+                MineState.EXPLODED -> {
+                    mine.explosionParams.damage.let { damage ->
+                        val affectedUnits = mutableListOf<Point2D>()
+                        for (unit in game.units) {
+                            val isAffected = unitAffectedByExplosion(unit, mine.explosionParams!!.radius, mine.center())
+                            if (isAffected) {
+                                onUnitTakeDamage(unit, damage)
+                                affectedUnits.add(unit.position.copy())
+                            }
+                        }
+
+                        ifEnabledLog {
+                            val explosion = Explosion(bullet.position.copy(), affectedUnits, bullet.explosionParams!!.radius)
+                            metainfo.explosions.add(explosion)
+                        }
+                    }
+                }
+            }
+        }
+
         if (deadUnits != null) {
             ifEnabledLog {
                 deadUnits!!.fori {
@@ -220,7 +260,19 @@ class Simulator(val game: Game) {
             }
         }
 
-        //TODO simulate mines
+    }
+
+    private fun isTriggered(mine: Mine): Boolean {
+        val mineX = mine.position.x
+        val mineY = mine.position.y + mine.size.y / 2
+        return game.units.any { unit ->
+            val unitCenter = unit.center()
+            val deltaX = (unitCenter.x - mineX).absoluteValue
+            val deltaY = (unitCenter.y - mineY).absoluteValue
+            deltaX <= unit.size.x /2 + game.properties.mineTriggerRadius &&
+            deltaY <= unit.size.y /2 + game.properties.mineTriggerRadius
+
+        }
     }
 
     private fun getCollidedHealth(unit: Unit): LootBox? {
@@ -238,6 +290,23 @@ class Simulator(val game: Game) {
             return@firstOrNull false
         }
     }
+
+    private fun getCollidedMine(unit: Unit): LootBox? {
+        return game.lootBoxes.firstOrNull { lootbox ->
+            val item = lootbox.item
+            (item is Item.HealthPack).not().then { return@firstOrNull false }
+            val deltaX = (unit.position.x - lootbox.position.x).absoluteValue
+            val deltaY = ((unit.position.y + unit.size.y / 2) - (lootbox.position.y + lootbox.size.y / 2)).absoluteValue
+            if (deltaX < unit.size.x / 2 + lootbox.size.x / 2 &&
+                deltaY < unit.size.y / 2 + lootbox.size.y / 2
+            ) {
+                return@firstOrNull true
+            }
+
+            return@firstOrNull false
+        }
+    }
+
 
     private fun isCollideWithTramp(unit: Unit): Boolean {
         val unitHalfXSize = unit.size.x / 2
