@@ -107,7 +107,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             //TODO go out from enemy pos, use micro sims?
             realTargetPos = nearestEnemy.position.copy()
             val mul = if (me.position.x - realTargetPos.x < 0) -1 else 1
-            extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
+            extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 2 } ?: 1
             if (game.currentTick > 2400) {
                 extraSpace = 0
             }
@@ -332,13 +332,17 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             AimScore(aim, wallHitPercent, hitTargetDamage, hitMeDamage)
         }.filter {
             if (it.hitTargetDamage <= 0) {
+                me.weapon?.let { w ->
+                    action.reload = w.magazine < w.params.magazineSize / 2
+                }
+
                 return false
             }
             val canShoot = if (isRocketLauncher) {
                 //game.properties.weaponParams[WeaponType.ROCKET_LAUNCHER]!!.explosion.
-                it.hitTargetDamage > it.hitMeDamage * 1.4
+                it.hitTargetDamage > it.hitMeDamage * 1.4 && it.hitTargetDamage >= (me.weapon!!.params!!.explosion!!.damage) * 3
             } else {
-                it.hitTargetDamage > it.hitMeDamage * 1.4
+                it.hitTargetDamage > it.hitMeDamage * 1.4 && it.hitTargetDamage >= (me.weapon!!.params.bullet.damage) * 4
             }
             myPrint { "canShoot=${game} rocket=${isRocketLauncher} target=${it.hitTargetDamage} me=${it.hitMeDamage}" }
             canShoot
@@ -435,7 +439,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             if (remainingDist < epsilon) {
                 break
             }
-            val checkStep = ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
+            val checkStep =
+                ((weapon.params.bullet.speed / game.properties.ticksPerSecond) / game.properties.updatesPerTick) * 3.0
             pointToCheck += remainingVector.length(checkStep)
             if (pointToCheck.distance(from) >= rayLengthMax) {
                 break

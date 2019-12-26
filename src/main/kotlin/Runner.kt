@@ -45,6 +45,7 @@ internal constructor(host: String, port: Int, token: String) {
                         myStrategy.getAction(unit, playerView.game, debug)
                     }
                         .onFailure {
+                            it.printStackTrace()
                             MainKt.log { "got failure $it" }
                             val fallbackAct = kotlin.runCatching {
                                 SmartGuyStrategy(myStrategy as MyStrategy).getAction(

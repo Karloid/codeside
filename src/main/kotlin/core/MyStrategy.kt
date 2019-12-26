@@ -440,9 +440,9 @@ class MyStrategy : AbstractStrategy() {
 
         //keep away when reloading
         if (currentDistToEnemies < 9 && simDistToEnemies != null) {
-            var reloadThreshold = 0.15
+            var reloadThreshold = 0.25
             if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
-                reloadThreshold = 0.35
+                reloadThreshold = 0.40
             }
             if (me.weapon?.fireTimer ?: 0.0 > reloadThreshold) {
                 score += simDistToEnemies / 1.5
@@ -483,6 +483,18 @@ class MyStrategy : AbstractStrategy() {
 
         //keep to enemy without weapon
         if (mySimPos != null && closestEnemy != null && me.weapon != null && closestEnemy.weapon == null) {
+            simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->
+                score -= mySimPos.pathDist(enSimPos) * 40
+            }
+        }
+
+        //keep to enemy with reloading
+        if (mySimPos != null &&
+            closestEnemy != null &&
+            me.weapon != null &&
+            closestEnemy.weapon != null &&
+            closestEnemy.isNearReloadOrReload()
+        ) {
             simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->
                 score -= mySimPos.pathDist(enSimPos) * 40
             }
@@ -550,10 +562,9 @@ class MyStrategy : AbstractStrategy() {
             }
         }
         if (mySimPos != null) {
-
             var path = simulator.game.getMinDistToHealth(mySimPos)
             if (path != null && path < 100) {
-                path /= 1
+                path /= 2
                 score -= path
                 simScore.pathToHealPenalty = path
                 checkStrangeScore(score)
@@ -635,8 +646,8 @@ class MyStrategy : AbstractStrategy() {
 
         val simGame = game.copy()
         val sim = Simulator(simGame)
-       //val enStrat = SmartGuyStrategy(this)
-       //enStrat.disableShooting = true
+        //val enStrat = SmartGuyStrategy(this)
+        //enStrat.disableShooting = true
         val enStrat = EmptyStrategy(this)
 
 
@@ -710,8 +721,12 @@ class MyStrategy : AbstractStrategy() {
                 }
                 debug.text(msg, unit.position, ColorFloat.TEXT_ID)
 
-                unit.weapon?.fireTimer?.let {
-                    debug.text(it.f(), unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
+                (unit.weapon?.fireTimer ?: 0.0).let {
+                    debug.text(
+                        it.f() + " " + (unit.weapon?.magazine ?: "-"),
+                        unit.position.copy().minus(0.0, 1.0),
+                        ColorFloat.GRAY
+                    )
                     val x = unit.position.x - unit.size.x / 2
                     val y = unit.position.y - 1
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)
@@ -778,6 +793,17 @@ class MyStrategy : AbstractStrategy() {
     fun Point2D.toUnitCenter(): Point2D {
         return copy().plus(0.0, game.properties.unitSize.y / 2)
     }
+}
+
+private fun Unit.isNearReloadOrReload(): Boolean {
+    return weapon?.let {
+        val fireTimer = it.fireTimer ?: 0.0
+        when (it.typ) {
+            WeaponType.PISTOL -> it.magazine <= 2 && fireTimer > 0.15
+            WeaponType.ASSAULT_RIFLE -> it.magazine <= 5 && fireTimer > 0.15
+            WeaponType.ROCKET_LAUNCHER -> fireTimer > 0.10
+        }
+    } ?: true
 }
 
 
