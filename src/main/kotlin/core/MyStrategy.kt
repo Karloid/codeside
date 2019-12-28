@@ -322,6 +322,12 @@ class MyStrategy : AbstractStrategy() {
             //pick weapon strat
             variants.add(GoToTileStrat(shootingStart.nearestHealth!!.position.copy().noRoundCopy(), "health"))
         }
+        val lastRealTargetPos = shootingStart.lastRealTargetPos
+        if (lastRealTargetPos != null && me.position.y < lastRealTargetPos.y) {
+            getNearestLadder()?.let {
+                variants.add(GoToTileStrat(it, "ladderUp", true))
+            }
+        }
 
         MoveLeftRight.cValues.forEach { leftRight ->
             MoveUpDown.cValues.forEach { upDown ->
@@ -343,6 +349,32 @@ class MyStrategy : AbstractStrategy() {
         setCurrentStrat(strat)
 
         return strat.getAction(me, game, debug)
+    }
+
+    val ladderFindPoints = mutableListOf(
+        Point2D(0, 0),
+        Point2D(1, 0),
+        Point2D(-1, 0),
+        Point2D(2, 0),
+        Point2D(-2, 0),
+        Point2D(3, 0),
+        Point2D(-3, 0),
+        Point2D(-4, 0),
+        Point2D(4, 0)
+    )
+
+    private fun getNearestLadder(): Point2D? {
+        val posToCheck = me.position.copy()
+
+        ladderFindPoints.forEach {
+            val posToCheckReal = posToCheck.copy().plus(it)
+            game.level.tiles.getNoRound(posToCheckReal)?.let {
+                if (it == Tile.LADDER) {
+                    return posToCheckReal.noRoundCopy()
+                }
+            }
+        }
+        return null
     }
 
     private fun getNearestJumpPad(): Point2D? {

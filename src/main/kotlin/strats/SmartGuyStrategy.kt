@@ -25,6 +25,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     var nearestEnemy: Unit? = null
     var nearestWeapon: LootBox? = null
     var nearestHealth: LootBox? = null
+    var lastRealTargetPos: Point2D? = null
 
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
@@ -154,6 +155,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 }
             }
         }
+        lastRealTargetPos = realTargetPos
         val nextTargetPos = Path.getNextMoveTarget(me.position, realTargetPos, extraSpace).plus(0.5, 0.0)
 
         var jump = nextTargetPos.y > me.position.y;
