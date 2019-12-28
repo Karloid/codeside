@@ -188,52 +188,19 @@ class Simulator(val game: Game) {
             game.bullets = game.bullets.filter { !bulletsToRemove.contains(it) }.toTypedArray()
         }
 
+        val minesToCheck = game.mines
+        processMines(minesToCheck, delta_time)
+
+        game.mines.any { it.state == MineState.EXPLODED }.then {
+            game.mines = game.mines.filter { it.state != MineState.EXPLODED }.toTypedArray()
+        }
+
         var deadUnits: MutableList<Unit>? = null
         game.units.forEach {
             it.health = maxOf(it.health, 0)
             if (it.health == 0) {
                 deadUnits = deadUnits ?: mutableListOf()
                 deadUnits!!.add(it)
-            }
-        }
-
-        for (mine in game.mines) {
-            when (mine.state) {
-                MineState.IDLE -> {
-                    if (isTriggered(mine)) {
-                        mine.state = MineState.TRIGGERED
-                        mine.timer = game.properties.mineTriggerTime
-                    }
-                }
-                MineState.PREPARING -> {
-                    mine.timer = mine.timer ?: 0.0 - delta_time
-                    if (mine.timer!! < 0) {
-                        mine.state = MineState.IDLE
-                    }
-                }
-                MineState.TRIGGERED -> {
-                    mine.timer = mine.timer ?: 0.0 - delta_time
-                    if (mine.timer!! < 0) {
-                        mine.state = MineState.EXPLODED
-                    }
-                }
-                MineState.EXPLODED -> {
-                    mine.explosionParams.damage.let { damage ->
-                        val affectedUnits = mutableListOf<Point2D>()
-                        for (unit in game.units) {
-                            val isAffected = unitAffectedByExplosion(unit, mine.explosionParams!!.radius, mine.center())
-                            if (isAffected) {
-                                onUnitTakeDamage(unit, damage)
-                                affectedUnits.add(unit.position.copy())
-                            }
-                        }
-
-                        ifEnabledLog {
-                            val explosion = Explosion(bullet.position.copy(), affectedUnits, bullet.explosionParams!!.radius)
-                            metainfo.explosions.add(explosion)
-                        }
-                    }
-                }
             }
         }
 
@@ -262,6 +229,68 @@ class Simulator(val game: Game) {
 
     }
 
+    private fun processMines(minesToCheck: Array<Mine>, delta_time: Double) {
+        var newMinesToCheck: ArrayList<Mine>? = null
+
+        for (mine in minesToCheck) {
+            when (mine.state) {
+                MineState.IDLE -> {
+                    if (isTriggered(mine)) {
+                        mine.state = MineState.TRIGGERED
+                        mine.timer = game.properties.mineTriggerTime
+                    }
+                }
+                MineState.PREPARING -> {
+                    mine.timer = (mine.timer ?: 0.0) - delta_time
+                    if (mine.timer!! < 0) {
+                        mine.state = MineState.IDLE
+                    }
+                }
+                MineState.TRIGGERED -> {
+                    mine.timer = (mine.timer ?: 0.0) - delta_time
+                    if (mine.timer!! <= 0) {
+                        mine.state = MineState.EXPLODED
+                        newMinesToCheck = newMinesToCheck ?: ArrayList()
+                        newMinesToCheck.add(mine)
+                    }
+                }
+                MineState.EXPLODED -> {
+                    val damage = mine.explosionParams.damage
+                    val affectedUnits = mutableListOf<Point2D>()
+                    for (unit in game.units) {
+                        val isAffected = unitAffectedByExplosion(unit, mine.explosionParams.radius, mine.center())
+                        if (isAffected) {
+                            onUnitTakeDamage(unit, damage)
+                            affectedUnits.add(unit.position.copy())
+                        }
+                    }
+
+                    for (mineToCheckExplode in game.mines) {
+                        if (mineToCheckExplode.state != MineState.EXPLODED) {
+                            val isAffected =
+                                mineAffectedByExplosion(mineToCheckExplode, mine.explosionParams.radius, mine.center())
+
+                            if (isAffected) {
+                                newMinesToCheck = newMinesToCheck ?: ArrayList()
+                                mineToCheckExplode.state = MineState.EXPLODED
+                                newMinesToCheck.add(mineToCheckExplode)
+                            }
+                        }
+                    }
+
+                    ifEnabledLog {
+                        val explosion = Explosion(mine.center().copy(), affectedUnits, mine.explosionParams.radius)
+                        metainfo.explosions.add(explosion)
+                    }
+                }
+            }
+        }
+
+        if (newMinesToCheck != null) {
+            processMines(newMinesToCheck.toTypedArray(), delta_time)
+        }
+    }
+
     private fun isTriggered(mine: Mine): Boolean {
         val mineX = mine.position.x
         val mineY = mine.position.y + mine.size.y / 2
@@ -269,8 +298,8 @@ class Simulator(val game: Game) {
             val unitCenter = unit.center()
             val deltaX = (unitCenter.x - mineX).absoluteValue
             val deltaY = (unitCenter.y - mineY).absoluteValue
-            deltaX <= unit.size.x /2 + game.properties.mineTriggerRadius &&
-            deltaY <= unit.size.y /2 + game.properties.mineTriggerRadius
+            deltaX <= unit.size.x / 2 + game.properties.mineTriggerRadius &&
+                    deltaY <= unit.size.y / 2 + game.properties.mineTriggerRadius
 
         }
     }
@@ -498,6 +527,14 @@ class Simulator(val game: Game) {
             val isAffected = distToBullet.x - unit.size.x / 2 <= radius && distToBullet.y - unit.size.y / 2 <= radius
             return isAffected
         }
+
+        fun mineAffectedByExplosion(mine: Mine, explosRadius: Double, bulletCenter: Point2D): Boolean {
+            val distToBullet = (mine.position.copy().plus(0.0, mine.size.y / 2) - bulletCenter).abs()
+            val radius = explosRadius * 1.2f
+            val isAffected = distToBullet.x - mine.size.x / 2 <= radius && distToBullet.y - mine.size.y / 2 <= radius
+            return isAffected
+        }
+
 
         fun isCollide(bulletPos: Point2D, unit: Unit, size: Double) =
             abs(bulletPos.x - unit.position.x) < size / 2 + unit.size.x / 2 &&

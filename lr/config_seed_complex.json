@@ -1,12 +1,8 @@
 {
-  "seed": 3,
+  "seed": 5,
   "options_preset": {
     "Custom": {
-      "level": {
-        "LoadFrom": {
-          "path": "level_test.txt"
-        }
-      },
+      "level": "Complex",
       "properties": null
     }
   },

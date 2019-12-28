@@ -46,6 +46,7 @@ internal constructor(host: String, port: Int, token: String) {
                     }
                         .onFailure {
                             MainKt.log { "got failure $it" }
+                            it.printStackTrace()
                             val fallbackAct = kotlin.runCatching {
                                 SmartGuyStrategy(myStrategy as MyStrategy).getAction(
                                     unit,
@@ -58,6 +59,7 @@ internal constructor(host: String, port: Int, token: String) {
                         }
                         .onSuccess { actions[unit.id] = it }
 
+                    actions.forEach() {  }
                 }
             }
             model.PlayerMessageGame.ActionMessage(model.Versioned(actions)).writeTo(outputStream)

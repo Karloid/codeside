@@ -129,6 +129,12 @@ class Game {
                 bulletNew
             }
 
+            it.mines = Array(mines.size) { ind ->
+                val mine = mines[ind]
+                val mineCopy = mine.copy()
+                mineCopy
+            }
+
             it.level = level
             it.currentTick = currentTick
             it.properties = properties

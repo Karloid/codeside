@@ -105,6 +105,9 @@ class MyStrategy : AbstractStrategy() {
         if (game.currentTick < forceSimTill) {
             isDoSim = true
         }
+        if (isDoSim == false && game.mines.any { it.position.distance(me.position) < 6 }) {
+            isDoSim = true
+        }
 
         if (me.weapon == null && (getClosestWeaponItem(null)?.position?.distance(me.position) ?: 999.0) < 1) {
             isDoSim = false
@@ -116,14 +119,15 @@ class MyStrategy : AbstractStrategy() {
         } else {
             action = doSimMove()
 
-            action.shoot = shootAction.shoot  //TODO enable
+            action.shoot = shootAction.shoot
             action.aim = shootAction.aim
             action.reload = shootAction.reload
         }
+
         fixStuck(action)
 
         timeEnd = System.currentTimeMillis()
-
+        action.shoot = false
         printAction(action)
         printMap(action)
 
@@ -354,6 +358,7 @@ class MyStrategy : AbstractStrategy() {
         checkStrangeScore(score)
 
         simScore.myHealthBonus = remainingTeamHealth
+        simScore.enHealthPenalty = enHealth
 
         val currentDistToEnemies = game.getMinDistToEnemies(me)!!
         val simDistToEnemies = simulator.game.getMinDistToEnemies(me)
@@ -370,9 +375,6 @@ class MyStrategy : AbstractStrategy() {
         if (mySimUnit != null && !mySimUnit.onGround && !mySimUnit.onLadder && mySimUnit.jumpState.maxTime > 0 && !mySimUnit.jumpState.canCancel) {
             score -= 15
         }
-
-
-
 
         if (simDistToEnemies == null) {
             score -= 1
@@ -734,6 +736,7 @@ class MyStrategy : AbstractStrategy() {
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)
                 }
             }
+
             @Suppress("NullableBooleanElvis")
             //print map
             if (getAnotherUnit()?.let { it.id < me.id } ?: true && false) {
@@ -749,7 +752,7 @@ class MyStrategy : AbstractStrategy() {
             }
             //print passable
             val clossestEnemyPos = getClosestEnemy()?.position
-            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true && clossestEnemyPos != null) {
+            if (getAnotherUnit()?.let { it.id < me.id } ?: true && true && clossestEnemyPos != null && false) {
 
                 Path.getNextMoveTarget(me.position, clossestEnemyPos, 0)
                 Path.cachedAccessMove.get(clossestEnemyPos)?.let { access ->

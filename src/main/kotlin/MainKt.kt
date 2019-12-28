@@ -20,7 +20,7 @@ class MainKt {
 
         @JvmStatic
         fun main(args: Array<String>) {
-          //  enabledLog = true
+            enabledLog = true
             Runner.main(Array(0) { "" })
         }
     }
