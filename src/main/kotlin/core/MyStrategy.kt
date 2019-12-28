@@ -132,13 +132,27 @@ class MyStrategy : AbstractStrategy() {
 
         fixStuck(action)
 
+
         if (me.mines > 1 && action.plantMine && me.onGround && getMyLastAction()?.plantMine != true) {
-            //lets stay for one tick
-            action.velocity = 0.0
-            action.jump = false
-            action.jumpDown = false
-            action.shoot = false
-            log { "stay for one more mine" }
+
+            var oneMineIsEnough = false
+            shootingStart.nearestEnemy?.let { en ->
+                if (en.health <= 50) {
+                    oneMineIsEnough = true
+                } else if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
+                    oneMineIsEnough = true
+                }
+            }
+            if (!oneMineIsEnough) {
+                //lets stay for one tick
+                action.velocity = 0.0
+                action.jump = false
+                action.jumpDown = false
+                action.shoot = false
+                log { "stay for one more mine" }
+            } else {
+                log { "one mine is enough" }
+            }
         }
 
         // action.shoot = false //TODO remove
@@ -460,8 +474,10 @@ class MyStrategy : AbstractStrategy() {
         anotherUnit?.let { another ->
             score -= simulator.metainfo.unitDamage.getOrPut(another.id, { Ref(0.0) }).ref * 5
 
-            val xDist = (another.position.copy() - me.position).abs().x
-            if (xDist > 5) {
+            val distAbs = (another.position.copy() - me.position).abs()
+            val xDist = distAbs.x
+            val yDist = distAbs.y
+            if (xDist > 5 || yDist > 7) {
                 val distToAnother = simulator.game.getDist(me, another)
                 score -= distToAnother * 5
                 if (me.health == 100) {
@@ -692,7 +708,7 @@ class MyStrategy : AbstractStrategy() {
     private fun weaponOperable(me: Unit): Boolean {
         val weapon = me.weapon ?: return false
 
-      return  when (weapon.typ) {
+        return when (weapon.typ) {
             WeaponType.ROCKET_LAUNCHER -> (weapon.fireTimer ?: 0.0) < 0.45
             WeaponType.PISTOL -> weapon.magazine > 3
             WeaponType.ASSAULT_RIFLE -> weapon.magazine > 10

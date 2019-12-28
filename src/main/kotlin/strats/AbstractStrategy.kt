@@ -63,13 +63,14 @@ open class AbstractStrategy : StrategyAdvCombined {
     private inline fun min(point: Point2D, value: Double): Point2D {
         return Point2D(Math.min(point.x, value), Math.min(point.y, value))
     }
+
     fun getPrefferedWeapon(en: Unit?) =
         getClosestWeaponItem(listOf(WeaponType.PISTOL, WeaponType.ASSAULT_RIFLE), en)
 
     private fun getClosestWeaponItem(types: List<WeaponType>, en: Unit?): LootBox? {
         return game.lootBoxes.filter {
             val item = it.item
-            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position)
+            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position, 1f)
         }.minBy { it.position.pathDist(me.position) }
     }
 
@@ -85,12 +86,12 @@ open class AbstractStrategy : StrategyAdvCombined {
         val enemies = game.units.filter { it.isMy().not() }
         val closest = enemies.minBy {
             var dist = me.position.pathDist(it.position)
-           // if (anotherMe != null) {
-           //     dist += it.position.distance(anotherMe.position)
-           // }
+            // if (anotherMe != null) {
+            //     dist += it.position.distance(anotherMe.position)
+            // }
             dist
         } ?: return null
-        
+
         enemies.firstOrNull { !it.isMy() && closest != it }?.let { lowHealth ->
             if (lowHealth.health < closest.health && lowHealth.position.pathDist(closest.position) < 4) {
                 return lowHealth
@@ -139,27 +140,29 @@ open class AbstractStrategy : StrategyAdvCombined {
         }
     }
 
-    protected fun isEnemyCloser(en: Unit?, point: Point2D): Boolean {
+    protected fun isEnemyCloser(en: Unit?, point: Point2D, enDistKoeff: Float): Boolean {
         if (en == null) {
             return false
         }
         val myDist = point.pathDist(en.position)
-        val enDist = point.pathDist(en.position)
+        val enDist = point.pathDist(en.position) * enDistKoeff
         if (myDist < enDist) {
             return false
         }
-        val vectorToEn = me.position.copy() - en.position
-        val vectorToHeath = me.position.copy() - point
-        //if x distance is smaller
-        if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
+        if (false) {
+            val vectorToEn = me.position.copy() - en.position
+            val vectorToHeath = me.position.copy() - point
+            //if x distance is smaller
+            if (abs(vectorToEn.x) < abs(vectorToHeath.x)) {
 
-            //and it is same side
-            //ignore health
-            if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
-                return true
-            }
-            if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
-                return true
+                //and it is same side
+                //ignore health
+                if (vectorToEn.x < 0 && vectorToHeath.x < 0) {
+                    return true
+                }
+                if (vectorToEn.x > 0 && vectorToHeath.x > 0) {
+                    return true
+                }
             }
         }
         return false

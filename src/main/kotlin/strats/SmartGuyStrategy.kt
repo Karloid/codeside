@@ -329,7 +329,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                     return@filter false
                 }
 
-                return@filter !isEnemyCloser(en, it.position)
+                return@filter !isEnemyCloser(en, it.position, 1.5f)
             }
             .minBy { it.position.pathDist(me.position) }
     }
