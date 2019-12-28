@@ -244,7 +244,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         var result = false
 
-        if ((canPlaceMine || haveNearMines) &&
+        if ((canPlaceMine || haveNearMines) && canShoot &&
             Simulator.unitAffectedByExplosion(
                 nearestEnemy,
                 game.properties.mineExplosionParams.radius,
