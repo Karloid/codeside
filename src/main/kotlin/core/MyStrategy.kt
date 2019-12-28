@@ -127,12 +127,16 @@ class MyStrategy : AbstractStrategy() {
             action.shoot = shootAction.shoot
             action.aim = shootAction.aim
             action.reload = shootAction.reload
+            action.plantMine = shootAction.plantMine
         }
 
         fixStuck(action)
 
+        //action.shoot = false //TODO remove
+
         timeEnd = System.currentTimeMillis()
-        action.shoot = false
+
+
         printAction(action)
         printMap(action)
 
@@ -741,7 +745,7 @@ class MyStrategy : AbstractStrategy() {
                 debug.text(msg, unit.position, ColorFloat.TEXT_ID)
 
                 unit.weapon?.fireTimer?.let {
-                    debug.text(it.f(), unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
+                    debug.text(it.f() + " " + unit.weapon!!.magazine, unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
                     val x = unit.position.x - unit.size.x / 2
                     val y = unit.position.y - 1
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)

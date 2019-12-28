@@ -188,6 +188,7 @@ class Simulator(val game: Game) {
             game.bullets = game.bullets.filter { !bulletsToRemove.contains(it) }.toTypedArray()
         }
 
+        //MINES
         val minesToCheck = game.mines
         processMines(minesToCheck, delta_time)
 
@@ -370,6 +371,11 @@ class Simulator(val game: Game) {
                     onUnitTakeDamage(unit, damage)
                     affectedUnits.add(unit.position.copy())
                 }
+            }
+
+            for (mine in game.mines) {
+                val isAffected = mineAffectedByExplosion(mine, bullet.explosionParams!!.radius, bullet.position)
+                isAffected.then { mine.state = MineState.EXPLODED }
             }
 
             ifEnabledLog {
