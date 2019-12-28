@@ -132,7 +132,16 @@ class MyStrategy : AbstractStrategy() {
 
         fixStuck(action)
 
-       // action.shoot = false //TODO remove
+        if (me.mines > 1 && action.plantMine && me.onGround && getMyLastAction()?.plantMine != true) {
+            //lets stay for one tick
+            action.velocity = 0.0
+            action.jump = false
+            action.jumpDown = false
+            action.shoot = false
+            log { "stay for one more mine" }
+        }
+
+        // action.shoot = false //TODO remove
 
         timeEnd = System.currentTimeMillis()
 
@@ -156,7 +165,7 @@ class MyStrategy : AbstractStrategy() {
     }
 
     private fun getMaxTimeMs(): Int {
-       return 20 * game.properties.maxTickCount + 20000
+        return 20 * game.properties.maxTickCount + 20000
     }
 
     private fun setCurrentStrat(newStrat: StrategyAdvCombined) {
@@ -745,7 +754,11 @@ class MyStrategy : AbstractStrategy() {
                 debug.text(msg, unit.position, ColorFloat.TEXT_ID)
 
                 unit.weapon?.fireTimer?.let {
-                    debug.text(it.f() + " " + unit.weapon!!.magazine, unit.position.copy().minus(0.0, 1.0), ColorFloat.GRAY)
+                    debug.text(
+                        it.f() + " " + unit.weapon!!.magazine,
+                        unit.position.copy().minus(0.0, 1.0),
+                        ColorFloat.GRAY
+                    )
                     val x = unit.position.x - unit.size.x / 2
                     val y = unit.position.y - 1
                     debug.rect(x, y, x + 0.2f, y + it, ColorFloat.RELOAD)

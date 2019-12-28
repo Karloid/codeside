@@ -164,4 +164,8 @@ open class AbstractStrategy : StrategyAdvCombined {
         }
         return false
     }
+
+    fun getMyActions() = prevActions.getOrPut(me.id, { mutableListOf() })
+
+    fun getMyLastAction() = getMyActions().lastOrNull()
 }

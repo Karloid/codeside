@@ -264,7 +264,6 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return result
     }
 
-    private fun getMyActions() = prevActions.getOrPut(me.id, { mutableListOf() })
 
     private fun wantToPickRocketLauncher(): Boolean {
         if (ignoreRocket) {
