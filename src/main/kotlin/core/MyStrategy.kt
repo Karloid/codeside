@@ -310,7 +310,12 @@ class MyStrategy : AbstractStrategy() {
         }
         val nearestJumpPad = getNearestJumpPad()
         if ((nearestJumpPad?.distance(me.position) ?: 1000.0) < 16.0) {
-            variants.add(GoToJumpPad(nearestJumpPad!!))
+            variants.add(GoToTileStrat(nearestJumpPad!!))
+        }
+
+        if (me.weapon == null && shootingStart.nearestWeapon?.let { it.position.distance(me.position) < 5.0 } == true) {
+            //pick weapon strat
+            variants.add(GoToTileStrat(shootingStart.nearestWeapon!!.position.copy().noRoundCopy()))
         }
 
         MoveLeftRight.cValues.forEach { leftRight ->

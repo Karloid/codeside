@@ -272,6 +272,10 @@ class Point2D {
         return Math.max(x, y)
     }
 
+    fun noRoundCopy(): Point2D {
+        return Point2D(intX, intY)
+    }
+
     companion object {
         inline fun getPointByDir(direction: Direction): Point2D {
             return when (direction) {

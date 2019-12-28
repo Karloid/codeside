@@ -22,6 +22,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     private var skippedHealth: Int = 0
     var disableShooting: Boolean = false
 
+    var nearestEnemy: Unit? = null
+    var nearestWeapon: LootBox? = null
+    var nearestHealth: LootBox? = null
+
     override fun getAction(unit: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(unit, game, debug)
         val width = game.level.tiles.cellsWidth
@@ -34,9 +38,9 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         val anotherMe = getAnotherMe()
 
-        val nearestEnemy: Unit? = getClosestEnemy()
-        val nearestWeapon = getClosestWeapon()
-        var nearestHealth = getHealthPack(null)
+        nearestEnemy = getClosestEnemy()
+        nearestWeapon = getClosestWeapon()
+        nearestHealth = getHealthPack(null)
 
         if (me.health > game.properties.unitMaxHealth * 0.9) {
             nearestHealth = null
@@ -50,8 +54,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
                 if (nearestHealth != null) {
                     val anotherX = anotherMe.position.x
-                    if ((anotherX > me.position.x && nearestHealth.position.x > me.position.x) ||
-                        (anotherX < me.position.x && nearestHealth.position.x < me.position.x)
+                    if ((anotherX > me.position.x && nearestHealth!!.position.x > me.position.x) ||
+                        (anotherX < me.position.x && nearestHealth!!.position.x < me.position.x)
                     ) {
                         nearestHealth = getHealthPack(null)
                         log { "keep original health" }
@@ -80,20 +84,20 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }
 
         if ((nearestWeapon?.item as? Item.Weapon?)?.weaponType == WeaponType.ROCKET_LAUNCHER
-            && wantToPickRocketLauncher() && isClose(nearestWeapon.position)
+            && wantToPickRocketLauncher() && isClose(nearestWeapon!!.position)
         ) {
             action.swapWeapon = true
         }
 
         if (me.weapon == null && nearestWeapon != null) {
-            log { "go pick weapon ${nearestWeapon.posInfo()}" }
+            log { "go pick weapon ${nearestWeapon!!.posInfo()}" }
 
-            realTargetPos = nearestWeapon.position
+            realTargetPos = nearestWeapon!!.position
 
         } else if (nearestHealth != null) {
-            log { "go pick ${nearestHealth.posInfo()}" }
+            log { "go pick ${nearestHealth!!.posInfo()}" }
 
-            realTargetPos = nearestHealth.position
+            realTargetPos = nearestHealth!!.position
         } else if (preferredWeaponToPick != null) {
             log { "go pick ${preferredWeaponToPick!!.posInfo()} instead because we don't want rocket launcher " }
             realTargetPos = preferredWeaponToPick!!.position
@@ -105,7 +109,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         }*/ else if (nearestEnemy != null) {
             log { "go to enemy" }
             //TODO go out from enemy pos, use micro sims?
-            realTargetPos = nearestEnemy.position.copy()
+            realTargetPos = nearestEnemy!!.position.copy()
             val mul = if (me.position.x - realTargetPos.x < 0) -1 else 1
             extraSpace = me.weapon?.typ?.equals(WeaponType.ROCKET_LAUNCHER).then { 8 } ?: 6
             if (game.currentTick > 2400) {
@@ -117,19 +121,19 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (nearestEnemy != null) {
             if (disableShooting) {
                 action.shoot = false
-            } else if (shouldPlaceMineAndShoot(nearestEnemy, action)) {
+            } else if (shouldPlaceMineAndShoot(nearestEnemy!!, action)) {
 
             } else {
-                var target = nearestEnemy.center() - me.center()
-                if (!nearestEnemy.onLadder && !nearestEnemy.onGround) {
-                    val jumpState = nearestEnemy.jumpState
+                var target = nearestEnemy!!.center() - me.center()
+                if (!nearestEnemy!!.onLadder && !nearestEnemy!!.onGround) {
+                    val jumpState = nearestEnemy!!.jumpState
                     //unit falling
                     if (jumpState.maxTime < 0.0) {
-                        target = nearestEnemy.center().minus(0.0, nearestEnemy.size.y / 3) - me.center()
+                        target = nearestEnemy!!.center().minus(0.0, nearestEnemy!!.size.y / 3) - me.center()
                         log { "aim lower due enemy is falling $nearestEnemy" }
                     }
                     if (jumpState.maxTime > 0.0 && !jumpState.canCancel) {
-                        target = nearestEnemy.center().plus(0.0, nearestEnemy.size.y / 3) - me.center()
+                        target = nearestEnemy!!.center().plus(0.0, nearestEnemy!!.size.y / 3) - me.center()
                         log { "aim higher due enemy is jumpaded $nearestEnemy" }
                     }
                 }
@@ -145,7 +149,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
                 val aims = listOf(target)
 
-                if (canShot(nearestEnemy, aims, action)) {
+                if (canShot(nearestEnemy!!, aims, action)) {
                     action.shoot = true
                 }
             }

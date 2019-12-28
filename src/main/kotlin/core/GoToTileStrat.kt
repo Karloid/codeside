@@ -7,7 +7,7 @@ import model.Unit
 import model.UnitAction
 import strats.AbstractStrategy
 
-class GoToJumpPad(tileTarget: Point2D) : AbstractStrategy() {
+class GoToTileStrat(tileTarget: Point2D) : AbstractStrategy() {
     val target = tileTarget.copy().plus(0.5, 0.0)
 
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
