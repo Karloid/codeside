@@ -154,7 +154,7 @@ class Simulator(val game: Game) {
 
         //BULLETS
 
-        var bulletsToRemove = ArrayList<Bullet>(0)
+        var bulletsToRemove :  ArrayList<Bullet>? = null
         game.bullets.forEach { bullet ->
             bullet.position.plus(bullet.velocity.x * delta_time, bullet.velocity.y * delta_time)
 
@@ -166,26 +166,42 @@ class Simulator(val game: Game) {
 
                     onBulletCollide(bullet)
 
-                    bulletsToRemove.add(bullet)
+                    bulletsToRemove = bulletsToRemove ?: ArrayList(1)
+                    bulletsToRemove!!.add(bullet)
                     metainfo.unitHitRegs.add(BulletHitPoint(bullet.position.copy(), bullet))
                     return@forEach
                 }
             }
 
-            if (!bulletsToRemove.contains(bullet)) {
+            if (bulletsToRemove?.contains(bullet)?.not() ?: true) {
                 isCollideWalls(bullet, game.level.tiles).then {
                     onBulletCollide(bullet)
-                    bulletsToRemove.add(bullet)
+                    bulletsToRemove = bulletsToRemove ?: ArrayList(1)
+                    bulletsToRemove!!.add(bullet)
 
                     if (bullet.explosionParams != null) {
                         metainfo.unitHitRegs.add(BulletHitPoint(bullet.position.copy(), bullet))
                     }
                 }
             }
+
+            if (bulletsToRemove?.contains(bullet)?.not() ?: true) {
+                for (mine in game.mines) {
+                    if (mine.state == MineState.EXPLODED) {
+                        continue
+                    }
+                    val isAffected = mineAffectedByExplosion(mine, bullet.size / 2, bullet.position)
+                    isAffected.then {
+                        mine.state = MineState.EXPLODED
+                        bulletsToRemove = bulletsToRemove ?: ArrayList(1)
+                        bulletsToRemove!!.add(bullet)
+                    }
+                }
+            }
         }
 
-        bulletsToRemove.isNotEmpty().then {
-            game.bullets = game.bullets.filter { !bulletsToRemove.contains(it) }.toTypedArray()
+        bulletsToRemove?.isNotEmpty()?.then {
+            game.bullets = game.bullets.filter { !bulletsToRemove!!.contains(it) }.toTypedArray()
         }
 
         //MINES

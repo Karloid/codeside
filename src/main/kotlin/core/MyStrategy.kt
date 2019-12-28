@@ -132,7 +132,7 @@ class MyStrategy : AbstractStrategy() {
 
         fixStuck(action)
 
-        //action.shoot = false //TODO remove
+       // action.shoot = false //TODO remove
 
         timeEnd = System.currentTimeMillis()
 

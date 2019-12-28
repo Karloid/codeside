@@ -226,7 +226,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
             return false
         }
 
-        val haveNearMines = game.mines.any { it.position.distance(me.position) < 0.1 }
+        val haveNearMines = game.mines.any { it.position.distance(me.position) < 0.3 }
         val canShoot = !(weapon.magazine == 0 || (weapon.fireTimer ?: 0.0) > 1 / game.properties.ticksPerSecond)
         val canPlaceMine = !(me.mines == 0 || !me.onGround)
 
