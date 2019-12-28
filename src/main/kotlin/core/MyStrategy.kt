@@ -455,13 +455,18 @@ class MyStrategy : AbstractStrategy() {
             score -= 1
         }
 
+
+        //switch wit other unit
         anotherUnit?.let { another ->
             score -= simulator.metainfo.unitDamage.getOrPut(another.id, { Ref(0.0) }).ref * 5
 
             val xDist = (another.position.copy() - me.position).abs().x
-            if (xDist > 4) {
+            if (xDist > 5) {
                 val distToAnother = simulator.game.getDist(me, another)
                 score -= distToAnother * 5
+                if (me.health == 100) {
+                    score -= distToAnother * 5
+                }
                 checkStrangeScore(score)
             }
             if (xDist > 2) {
@@ -489,6 +494,12 @@ class MyStrategy : AbstractStrategy() {
             //log { "simDistToEnemies=${simDistToEnemies} ${currentDistToEnemies}" }
         }
 
+        if (simDistToEnemies != null && me.health == 100 && mySimUnitPos != null && weaponOperable(me)) {
+            if (simDistToEnemies > 8) {
+                score -= simDistToEnemies * 10
+                checkStrangeScore(score)
+            }
+        }
         score -= simulator.metainfo.unitDamage.getOrPut(me.id, { Ref(0.0) }).ref * 10
         checkStrangeScore(score)
 
@@ -528,10 +539,11 @@ class MyStrategy : AbstractStrategy() {
         if (currentDistToEnemies < 9 && simDistToEnemies != null) {
             var reloadThreshold = 0.15
             if (me.weapon?.typ == WeaponType.ROCKET_LAUNCHER) {
-                reloadThreshold = 0.35
+                reloadThreshold = 0.45
             }
             if (me.weapon?.fireTimer ?: 0.0 > reloadThreshold) {
-                score += simDistToEnemies / 1.5
+                val bonusDist = simDistToEnemies * 3
+                score += bonusDist
                 checkStrangeScore(score)
             }
         }
@@ -567,11 +579,12 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
+        //penalty for far dist from target
         if (mySimPos != null) {
             shootingStart.lastRealTargetPos?.let { smartTarget ->
-                val targetPathPenaly = smartTarget.pathDist(me.position)
-               // score -= targetPathPenaly
-                //simScore.targetPathPenaly = targetPathPenaly
+                val targetPathPenaly = smartTarget.pathDist(me.position) / 2
+                score -= targetPathPenaly
+                simScore.targetPathPenaly = targetPathPenaly
                 checkStrangeScore(score)
             }
         }
@@ -673,6 +686,16 @@ class MyStrategy : AbstractStrategy() {
         return simScore.apply {
             this.score = score
             createdAtTick = game.currentTick
+        }
+    }
+
+    private fun weaponOperable(me: Unit): Boolean {
+        val weapon = me.weapon ?: return false
+
+      return  when (weapon.typ) {
+            WeaponType.ROCKET_LAUNCHER -> (weapon.fireTimer ?: 0.0) < 0.45
+            WeaponType.PISTOL -> weapon.magazine > 3
+            WeaponType.ASSAULT_RIFLE -> weapon.magazine > 10
         }
     }
 

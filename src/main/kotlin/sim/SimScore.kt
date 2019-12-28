@@ -15,6 +15,7 @@ class SimScore(var score: Double, var simulator: Simulator, var strat: StrategyA
                 " myHealthBonus=$myHealthBonus" +
                 " enHealthPenalty=$enHealthPenalty" +
                 " pathToHealPenalty=$pathToHealPenalty" +
+                " targetPathPenaly=$targetPathPenaly" +
                 ")"
     }
 
