@@ -6,7 +6,8 @@
 sleep 2
 #java -jar ./strategy13379.jar 127.0.0.1 31002 &
 #java -jar ./strategy17757.jar 127.0.0.1 31002 &
-java -jar ./strategy17789.jar 127.0.0.1 31002 &
+#java -jar ./strategy17789.jar 127.0.0.1 31002 &
+java -jar ./strategy18483.jar 127.0.0.1 31002 &
 #java -jar ./strategy17346.jar 127.0.0.1 31002 &
 #java -jar ./strategy17348.jar 127.0.0.1 31002 &
 #java -jar ./strategy16835.jar 127.0.0.1 31002 &

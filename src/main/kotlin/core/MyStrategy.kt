@@ -567,6 +567,16 @@ class MyStrategy : AbstractStrategy() {
             }
         }
 
+        if (mySimPos != null) {
+            shootingStart.lastRealTargetPos?.let { smartTarget ->
+                val targetPathPenaly = smartTarget.pathDist(me.position)
+               // score -= targetPathPenaly
+                //simScore.targetPathPenaly = targetPathPenaly
+                checkStrangeScore(score)
+            }
+        }
+
+
         //keep to enemy without weapon
         if (mySimPos != null && closestEnemy != null && me.weapon != null && closestEnemy.weapon == null) {
             simulator.game.getUnitPosNullable(closestEnemy.id)?.let { enSimPos ->

@@ -3,6 +3,7 @@ package sim
 import strats.StrategyAdvCombined
 
 class SimScore(var score: Double, var simulator: Simulator, var strat: StrategyAdvCombined) {
+    var targetPathPenaly: Double = 0.0
     var pathToHealPenalty: Double = 0.0
     var pathToGunPenalty: Double = 0.0
     var potentialWallsPenalty: Double = 0.0
