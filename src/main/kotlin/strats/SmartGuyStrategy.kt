@@ -117,10 +117,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         if (nearestEnemy != null) {
             if (disableShooting) {
                 action.shoot = false
-            } else if (shouldPlaceMineAndShoot(nearestEnemy)) {
-                action.plantMine = true
-                action.aim = me.position.copy().minus(0.0, 3.0).minus(me.position)
-                action.shoot = true
+            } else if (shouldPlaceMineAndShoot(nearestEnemy, action)) {
+
             } else {
                 var target = nearestEnemy.center() - me.center()
                 if (!nearestEnemy.onLadder && !nearestEnemy.onGround) {
@@ -221,34 +219,49 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         return action
     }
 
-    private fun shouldPlaceMineAndShoot(nearestEnemy: Unit): Boolean {
+    private fun shouldPlaceMineAndShoot(nearestEnemy: Unit, action: UnitAction): Boolean {
         val weapon = me.weapon
         //no weapon
         if (weapon == null) {
             return false
         }
 
-        if (me.mines == 0 || !me.onGround) {
-            return false
-        }
+        val haveNearMines = game.mines.any { it.position.distance(me.position) < 0.1 }
+        val canShoot = !(weapon.magazine == 0 || (weapon.fireTimer ?: 0.0) > 1 / game.properties.ticksPerSecond)
+        val canPlaceMine = !(me.mines == 0 || !me.onGround)
 
-        if (weapon.magazine == 0 || (weapon.fireTimer ?: 0.0) > 1 / game.properties.ticksPerSecond) {
-            if (game.mines.none { it.position.distance(me.position) < 0.1}) {
-                return false
+        var result = false
+
+        if ((canPlaceMine || haveNearMines) &&
+            Simulator.unitAffectedByExplosion(
+                nearestEnemy,
+                game.properties.mineExplosionParams.radius,
+                me.position.copy().plus(0.0, game.properties.mineSize.y / 2),
+                false
+            )
+        ) {
+            log {
+                val nearEnDist = me.position.copy().plus(
+                    0.0,
+                    game.properties.mineSize.y / 2
+                ).distance(nearestEnemy.position)
+                
+                "lets place mine and destroy yourself nearEnemyDist=" + nearEnDist
+            }
+            if (canPlaceMine) {
+                action.plantMine = true
+
+                result = true
+            }
+            if (canShoot) {
+                action.aim = me.position.copy().minus(0.0, 3.0).minus(me.position)
+                action.shoot = true
+
+                result = true
             }
         }
 
-        if (Simulator.unitAffectedByExplosion(
-                nearestEnemy,
-                game.properties.mineExplosionParams.radius,
-                me.position.copy().plus(0.0, game.properties.mineSize.y / 2)
-            )
-        ) {
-            log { "lets place mine and destroy yourself" }
-            return true
-        }
-
-        return false
+        return result
     }
 
     private fun getMyActions() = prevActions.getOrPut(me.id, { mutableListOf() })

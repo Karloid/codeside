@@ -259,7 +259,7 @@ class Simulator(val game: Game) {
                     val damage = mine.explosionParams.damage
                     val affectedUnits = mutableListOf<Point2D>()
                     for (unit in game.units) {
-                        val isAffected = unitAffectedByExplosion(unit, mine.explosionParams.radius, mine.center())
+                        val isAffected = unitAffectedByExplosion(unit, mine.explosionParams.radius, mine.center(), true)
                         if (isAffected) {
                             onUnitTakeDamage(unit, damage)
                             affectedUnits.add(unit.position.copy())
@@ -527,9 +527,14 @@ class Simulator(val game: Game) {
     }
 
     companion object {
-        fun unitAffectedByExplosion(unit: Unit, explosRadius: Double, bulletCenter: Point2D): Boolean {
+        fun unitAffectedByExplosion(
+            unit: Unit,
+            explosRadius: Double,
+            bulletCenter: Point2D,
+            withSave: Boolean = true
+        ): Boolean {
             val distToBullet = (unit.position.copy().plus(0.0, unit.size.y / 2) - bulletCenter).abs()
-            val radius = explosRadius * 1.2f
+            val radius = withSave.then { explosRadius * 1.2f } ?: run { explosRadius * 0.96f }
             val isAffected = distToBullet.x - unit.size.x / 2 <= radius && distToBullet.y - unit.size.y / 2 <= radius
             return isAffected
         }
