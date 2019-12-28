@@ -128,6 +128,7 @@ class MyStrategy : AbstractStrategy() {
             action.aim = shootAction.aim
             action.reload = shootAction.reload
             action.plantMine = shootAction.plantMine
+            action.swapWeapon = shootAction.swapWeapon
         }
 
         fixStuck(action)

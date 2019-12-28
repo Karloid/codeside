@@ -36,4 +36,8 @@ class LootBox {
     fun copy(): LootBox {
         return LootBox(position, size, item)
     }
+
+    fun center(): Point2D {
+        return position.copy().plus(0.0, size.y / 2)
+    }
 }

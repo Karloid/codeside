@@ -78,15 +78,18 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         var preferredWeaponToPick: LootBox? = null
 
         if (wantSwapFromRocketLauncher) {
+            log { "wantSwapFromRocketLauncher" }
             getPrefferedWeapon(nearestEnemy)?.let {
                 preferredWeaponToPick = it
-                action.swapWeapon = isClose(it.position)
+                action.swapWeapon = canPickLootbox(it)
+                log { "doSwap because is close action.swapWeapon=${action.swapWeapon} preferredWeaponToPick=${preferredWeaponToPick?.position}" }
             }
         }
 
         if ((nearestWeapon?.item as? Item.Weapon?)?.weaponType == WeaponType.ROCKET_LAUNCHER
-            && wantToPickRocketLauncher() && isClose(nearestWeapon!!.position)
+            && wantToPickRocketLauncher() && canPickLootbox(nearestWeapon!!)
         ) {
+            log { "wantToPickRocketLauncher and swap to RL" }
             action.swapWeapon = true
         }
 
@@ -100,9 +103,10 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
             realTargetPos = nearestHealth!!.position
         } else if (preferredWeaponToPick != null) {
-            log { "go pick ${preferredWeaponToPick!!.posInfo()} instead because we don't want rocket launcher " }
             realTargetPos = preferredWeaponToPick!!.position
-            action.swapWeapon = isClose(realTargetPos)
+            val isClose = canPickLootbox(preferredWeaponToPick!!)
+            log { "go pick ${preferredWeaponToPick!!.posInfo()} instead because we don't want rocket launcher isClose=$isClose" }
+            action.swapWeapon = isClose
         } /*else if (me.weapon?.typ == WeaponType.PISTOL && nearestWeapon != null) {
             log { "go pick ${nearestWeapon.posInfo()} instead pistol " }
             targetPos = nearestWeapon.position
@@ -224,6 +228,8 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
 
         return action
     }
+
+    private fun canPickLootbox(it: LootBox) = Simulator.unitAffectedByExplosion(me, it.size.x / 2, it.center(), false)
 
     private fun shouldPlaceMineAndShoot(nearestEnemy: Unit, action: UnitAction): Boolean {
         val weapon = me.weapon
@@ -646,7 +652,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
         log { function() }
     }
 
-    private fun isClose(targetPos: Point2D) = targetPos.distMe() < 1
+    private fun isClose(targetPos: Point2D) = targetPos.distMe() <= 1
 
     private fun <T : Any> getClosestItem(type: KClass<T>): LootBox? {
         return game.lootBoxes.filter { it.item::class == type }.minBy { it.position.pathDist(me.position) }
