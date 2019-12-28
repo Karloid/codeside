@@ -7,7 +7,7 @@ import model.Unit
 import model.UnitAction
 import strats.AbstractStrategy
 
-class GoToTileStrat(tileTarget: Point2D) : AbstractStrategy() {
+class GoToTileStrat(tileTarget: Point2D, val label: String) : AbstractStrategy() {
     val target = tileTarget.copy().plus(0.5, 0.0)
 
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
@@ -22,7 +22,7 @@ class GoToTileStrat(tileTarget: Point2D) : AbstractStrategy() {
     }
 
     override fun toString(): String {
-        return "GoToJumpPad(target=$target)"
+        return "GoToTileStrat(label='$label', target=$target)"
     }
 
 }

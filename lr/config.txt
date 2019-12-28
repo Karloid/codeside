@@ -1,5 +1,5 @@
 {
-    "seed": 110,
+    "seed": 3,
     "options_preset": "Finals",
     "players": [
          {
