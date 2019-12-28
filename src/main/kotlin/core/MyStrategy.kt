@@ -41,7 +41,8 @@ import kotlin.math.absoluteValue
 
 class MyStrategy : AbstractStrategy() {
 
-    private var accumTook: Long = 0L
+    private var powerSaveMode: Boolean = false
+    private var accumTookMs: Long = 0L
     private var forceSimTill: Int = 0
     private var myLastHp = mutableMapOf<Int, Int>()
     private var simTill: Int = 0
@@ -65,6 +66,10 @@ class MyStrategy : AbstractStrategy() {
     override fun getAction(me: Unit, game: Game, debug: Debug): UnitAction {
         super.getAction(me, game, debug)
         checkPrevGame()
+        val maxTimeMs = getMaxTimeMs()
+
+        powerSaveMode =
+            game.currentTick > game.properties.maxTickCount / 3 && accumTookMs / maxTimeMs > game.currentTick / game.properties.maxTickCount
 
         log { "jumpInfo=${me.jumpState.description()}" }
         timeStart = System.currentTimeMillis()
@@ -139,11 +144,15 @@ class MyStrategy : AbstractStrategy() {
         myLastHp[me.id] = me.health
 
         val tookTime = timeEnd - timeStart
-        accumTook += tookTime
+        accumTookMs += tookTime
         if (game.currentTick % 200 == 0 && (getAnotherUnit()?.id ?: -1 < me.id) || tookTime > 100) {
-            println("${game.currentTick} : took=$tookTime total=$accumTook")
+            println("${game.currentTick} : took=$tookTime total=$accumTookMs")
         }
         return action
+    }
+
+    private fun getMaxTimeMs(): Int {
+       return 20 * game.properties.maxTickCount + 20000
     }
 
     private fun setCurrentStrat(newStrat: StrategyAdvCombined) {
@@ -281,9 +290,11 @@ class MyStrategy : AbstractStrategy() {
 
     private fun doSimMove(): UnitAction {
         val variants = mutableListOf<StrategyAdvCombined>()
-        val smartGuy = SmartGuyStrategy(this)
-        smartGuy.disableShooting = true
-        variants.add(smartGuy)
+        if (!powerSaveMode) {
+            val smartGuy = SmartGuyStrategy(this)
+            smartGuy.disableShooting = true
+            variants.add(smartGuy)
+        }
         MoveLeftRight.cValues.forEach { leftRight ->
             MoveUpDown.cValues.forEach { upDown ->
                 variants.add(MoveStrategy(leftRight, upDown))
