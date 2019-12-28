@@ -240,12 +240,24 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 false
             )
         ) {
+            //do not bomb if another me here
+            getAnotherMe()?.let {
+                if (Simulator.unitAffectedByExplosion(
+                        it,
+                        game.properties.mineExplosionParams.radius,
+                        me.position.copy().plus(0.0, game.properties.mineSize.y / 2),
+                        true
+                    )
+                ) {
+                    return false
+                }
+            }
             log {
                 val nearEnDist = me.position.copy().plus(
                     0.0,
                     game.properties.mineSize.y / 2
                 ).distance(nearestEnemy.position)
-                
+
                 "lets place mine and destroy yourself nearEnemyDist=" + nearEnDist
             }
             if (canPlaceMine) {

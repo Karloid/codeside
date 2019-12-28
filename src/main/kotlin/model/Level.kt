@@ -3,9 +3,11 @@ package model
 import util.PlainArray
 import util.StreamUtil
 
-val EMPTY = PlainArray(0,0,{Tile.WALL})
+val EMPTY = PlainArray(0, 0, { Tile.WALL })
+
 class Level {
-    val walls = ArrayList<Point2D>(30 * 40)
+    val walls = ArrayList<Point2D>(220)
+    val jumpPads = ArrayList<Point2D>(10)
     @JvmField
     var tiles: PlainArray<Tile> = EMPTY
 
@@ -38,6 +40,9 @@ class Level {
                     }
                     if (tile == Tile.WALL) {
                         result.walls.add(Point2D(x, y))
+                    }
+                    if (tile == Tile.JUMP_PAD) {
+                        result.jumpPads.add(Point2D(x, y))
                     }
                     plainArray!!.setFast(x, y, tile)
                 }

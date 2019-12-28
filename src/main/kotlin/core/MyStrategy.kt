@@ -308,6 +308,11 @@ class MyStrategy : AbstractStrategy() {
             smartGuy.disableShooting = true
             variants.add(smartGuy)
         }
+        val nearestJumpPad = getNearestJumpPad()
+        if ((nearestJumpPad?.distance(me.position) ?: 1000.0) < 16.0) {
+            variants.add(GoToJumpPad(nearestJumpPad!!))
+        }
+
         MoveLeftRight.cValues.forEach { leftRight ->
             MoveUpDown.cValues.forEach { upDown ->
                 variants.add(MoveStrategy(leftRight, upDown))
@@ -328,6 +333,10 @@ class MyStrategy : AbstractStrategy() {
         setCurrentStrat(strat)
 
         return strat.getAction(me, game, debug)
+    }
+
+    private fun getNearestJumpPad(): Point2D? {
+        return game.level.jumpPads.minBy { it.sqDistance(me.position) }
     }
 
     private fun pickBestStrat(strats: MutableList<StrategyAdvCombined>, tickK: Double): StrategyAdvCombined {
