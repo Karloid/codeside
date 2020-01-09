@@ -70,8 +70,19 @@ open class AbstractStrategy : StrategyAdvCombined {
     private fun getClosestWeaponItem(types: List<WeaponType>, en: Unit?): LootBox? {
         return game.lootBoxes.filter {
             val item = it.item
-            item is Item.Weapon && types.contains(item.weaponType) && !isEnemyCloser(en, it.position, 1f)
-        }.minBy { it.position.pathDist(me.position) }
+            item is Item.Weapon && types.contains(item.weaponType)
+        }.minBy { it.position.pathDist(me.position) - minDistToEnemy(it.position) }
+    }
+
+    fun minDistToEnemy(point: Point2D): Double {
+        val closestEnemy = game.units.minBy {
+            if (it.playerId != me.playerId) {
+                point.pathDist(it.position)
+            } else {
+                99999.0
+            }
+        }
+        return point.pathDist(closestEnemy!!.position)
     }
 
     protected fun getClosestWeaponItem(weaponType: WeaponType?): LootBox? {

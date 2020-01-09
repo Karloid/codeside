@@ -326,7 +326,7 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
     }
 
     private fun getHealthPack(ignoreIt: LootBox?): LootBox? {
-        val en = getClosestEnemy()
+        //val en = getClosestEnemy()
         return game.lootBoxes
             .filter {
                 (it.item::class == Item.HealthPack::class).not().then { return@filter false }
@@ -334,14 +334,13 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 if (it == ignoreIt) {
                     return@filter false
                 }
-               //  return true
-                return@filter !isEnemyCloser(en, it.position, 1.5f)
+                return@filter true
             }
             .minBy {
                 //point.pathDist(en.position)
                 //point.pathDist(en.position) * enDistKoeff
 
-                it.position.pathDist(me.position)
+                it.position.pathDist(me.position) - minDistToEnemy(it.position)
             }
     }
 
