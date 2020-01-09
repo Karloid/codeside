@@ -38,6 +38,9 @@ import kotlin.math.absoluteValue
 
 //TODO calc time and drop calculations 20*3600+20000
 
+//TODO canshot - do sim for simulate movements if jump pad or falling down
+//TODO do rush if points amount is smaller
+
 
 class MyStrategy : AbstractStrategy() {
 
