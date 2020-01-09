@@ -72,7 +72,7 @@ class MyStrategy : AbstractStrategy() {
         val maxTimeMs = getMaxTimeMs()
 
         powerSaveMode =
-            game.currentTick > game.properties.maxTickCount / 3 && accumTookMs / maxTimeMs > game.currentTick / game.properties.maxTickCount
+            game.currentTick > game.properties.maxTickCount / 3 && accumTookMs.toFloat() / maxTimeMs > game.currentTick.toFloat() / game.properties.maxTickCount
 
         log { "jumpInfo=${me.jumpState.description()}" }
         timeStart = System.currentTimeMillis()
