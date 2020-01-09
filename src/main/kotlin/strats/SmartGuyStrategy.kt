@@ -334,10 +334,15 @@ class SmartGuyStrategy(myStrategy: MyStrategy) : AbstractStrategy() {
                 if (it == ignoreIt) {
                     return@filter false
                 }
-
+               //  return true
                 return@filter !isEnemyCloser(en, it.position, 1.5f)
             }
-            .minBy { it.position.pathDist(me.position) }
+            .minBy {
+                //point.pathDist(en.position)
+                //point.pathDist(en.position) * enDistKoeff
+
+                it.position.pathDist(me.position)
+            }
     }
 
     private fun canShot(target: Unit, aims: List<Point2D>, action: UnitAction): Boolean {

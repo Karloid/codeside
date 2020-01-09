@@ -144,7 +144,7 @@ open class AbstractStrategy : StrategyAdvCombined {
         if (en == null) {
             return false
         }
-        val myDist = point.pathDist(en.position)
+        val myDist = point.pathDist(me.position)
         val enDist = point.pathDist(en.position) * enDistKoeff
         if (myDist < enDist) {
             return false
