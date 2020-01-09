@@ -1,5 +1,6 @@
 #!/bin/bash
-java -Dapple.awt.UIElement=true -jar ./strategy18520.jar $1 $2 $3
+java -Dapple.awt.UIElement=true -jar ./strategy18943.jar $1 $2 $3
+#java -Dapple.awt.UIElement=true -jar ./strategy18520.jar $1 $2 $3
 #java -Dapple.awt.UIElement=true -jar ./strategy18520.jar $1 $2 $3
 #java -Dapple.awt.UIElement=true -jar ./strategy18483.jar $1 $2 $3
 #java -Dapple.awt.UIElement=true -jar ./strategy17757.jar $1 $2 $3
